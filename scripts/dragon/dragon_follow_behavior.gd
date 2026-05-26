@@ -9,7 +9,11 @@ enum Mode { FOLLOW, REPOSITION }
 @export var ideal_distance: float = 90.0
 @export var min_distance: float = 55.0
 @export var max_distance: float = 130.0
+## Hard cap on how far the dragon may trail the follow anchor before forced catch-up.
+@export var max_lag_distance: float = 165.0
 @export var follow_speed: float = 180.0
+## Used when at or beyond max_lag_distance (should exceed player move_speed).
+@export var catch_up_speed: float = 260.0
 @export var reposition_speed: float = 120.0
 
 var mode: Mode = Mode.FOLLOW
@@ -49,15 +53,33 @@ func get_desired_velocity() -> Vector2:
 		return Vector2.ZERO
 
 	if mode == Mode.REPOSITION:
+		if _distance_to_anchor() > max_lag_distance:
+			finish_reposition()
+			return _velocity_for_follow()
 		return _velocity_toward(_reposition_point, reposition_speed, 14.0, true)
 
 	return _velocity_for_follow()
+
+
+## Pulls the dragon inward if physics still left it beyond the lag cap (safety net).
+func apply_lag_leash() -> void:
+	if _body == null or _target == null:
+		return
+	var anchor := _follow_anchor_global()
+	var offset := anchor - _body.global_position
+	var distance := offset.length()
+	if distance <= max_lag_distance:
+		return
+	_body.global_position = anchor - offset.normalized() * max_lag_distance
 
 
 func _velocity_for_follow() -> Vector2:
 	var anchor := _follow_anchor_global()
 	var offset := anchor - _body.global_position
 	var distance := offset.length()
+
+	if distance >= max_lag_distance:
+		return offset.normalized() * catch_up_speed
 
 	if distance < min_distance:
 		return -offset.normalized() * follow_speed * 0.75
@@ -67,6 +89,12 @@ func _velocity_for_follow() -> Vector2:
 		return offset.normalized() * follow_speed * 0.55
 
 	return Vector2.ZERO
+
+
+func _distance_to_anchor() -> float:
+	if _body == null or _target == null:
+		return 0.0
+	return _body.global_position.distance_to(_follow_anchor_global())
 
 
 func _velocity_toward(point: Vector2, speed: float, arrive_radius: float, finish_on_arrival: bool) -> Vector2:

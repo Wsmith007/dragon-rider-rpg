@@ -33,6 +33,7 @@ func _physics_process(delta: float) -> void:
 	_update_reposition_timer(delta)
 	velocity = follow_behavior.get_desired_velocity()
 	move_and_slide()
+	follow_behavior.apply_lag_leash()
 
 
 func _update_reposition_timer(delta: float) -> void:
