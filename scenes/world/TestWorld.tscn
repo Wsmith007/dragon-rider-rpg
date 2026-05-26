@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://btestworld01"]
+
+[ext_resource type="Script" path="res://scripts/world/test_world.gd" id="1_world"]
+[ext_resource type="Script" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://bplayer001" path="res://scenes/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://bdragon001" path="res://scenes/dragon/Dragon.tscn" id="4_dragon"]
+
+[node name="TestWorld" type="Node2D"]
+script = ExtResource("1_world")
+
+[node name="Ground" type="ColorRect" parent="."]
+z_index = -10
+offset_left = -2400.0
+offset_top = -2400.0
+offset_right = 2400.0
+offset_bottom = 2400.0
+color = Color(0.14, 0.2, 0.11, 1)
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(640, 360)
+
+[node name="Dragon" parent="Entities" instance=ExtResource("4_dragon")]
+position = Vector2(520, 400)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("2_camera")
