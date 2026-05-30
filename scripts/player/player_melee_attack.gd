@@ -62,6 +62,8 @@ func _on_area_entered(area: Area2D) -> void:
 func _try_damage(target: Node2D) -> void:
 	if target in _hit_targets:
 		return
+	if not is_instance_valid(target) or target.is_queued_for_deletion():
+		return
 	if not target.is_in_group("enemy"):
 		return
 

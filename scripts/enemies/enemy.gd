@@ -23,6 +23,7 @@ enum State { IDLE, CHASE, ENGAGE }
 var _state: State = State.IDLE
 var _player: Node2D
 var _attack_cooldown_remaining: float = 0.0
+var _is_dying: bool = false
 
 
 func _ready() -> void:
@@ -34,7 +35,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _health.is_alive():
+	if _is_dying or not _health.is_alive():
 		return
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
@@ -123,10 +124,17 @@ func _find_player() -> void:
 
 
 func _on_died() -> void:
+	if _is_dying:
+		return
+	_is_dying = true
+
 	collision_layer = 0
 	collision_mask = 0
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	_visual.modulate = Color(0.35, 0.35, 0.35, 0.5)
-	await get_tree().create_timer(0.4).timeout
-	queue_free()
+
+	if is_instance_valid(self) and not is_queued_for_deletion():
+		await get_tree().create_timer(0.4).timeout
+		if is_instance_valid(self) and not is_queued_for_deletion():
+			queue_free()
