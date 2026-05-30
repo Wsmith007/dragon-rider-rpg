@@ -18,14 +18,23 @@ func set_follow_target(target: Node2D) -> void:
 
 
 func get_current_threat() -> Node2D:
-	return _current_threat
+	return get_valid_threat()
+
+
+func get_valid_threat() -> Node2D:
+	if _is_valid_threat(_current_threat):
+		return _current_threat
+	_current_threat = null
+	return null
 
 
 func is_alert() -> bool:
-	return _is_alert
+	return _is_alert and get_valid_threat() != null
 
 
 func evaluate() -> void:
+	_clear_invalid_threat()
+
 	var threat := _find_nearest_threat_to_rider()
 	var should_alert := threat != null
 
@@ -39,6 +48,16 @@ func evaluate() -> void:
 		_is_alert = false
 		_current_threat = null
 		alert_ended.emit()
+	elif not should_alert:
+		_current_threat = null
+
+
+func _clear_invalid_threat() -> void:
+	if _current_threat != null and not _is_valid_threat(_current_threat):
+		_current_threat = null
+		if _is_alert:
+			_is_alert = false
+			alert_ended.emit()
 
 
 func _find_nearest_threat_to_rider() -> Node2D:
@@ -53,8 +72,7 @@ func _find_nearest_threat_to_rider() -> Node2D:
 		if not node is Node2D:
 			continue
 		var enemy := node as Node2D
-		var health := enemy.get_node_or_null("Health") as Health
-		if health != null and not health.is_alive():
+		if not _is_valid_threat(enemy):
 			continue
 
 		var distance := rider_pos.distance_to(enemy.global_position)
@@ -63,3 +81,14 @@ func _find_nearest_threat_to_rider() -> Node2D:
 			closest = enemy
 
 	return closest
+
+
+func _is_valid_threat(enemy: Node2D) -> bool:
+	if enemy == null or not is_instance_valid(enemy):
+		return false
+	if enemy.is_in_group("enemy") == false:
+		return false
+	var health := enemy.get_node_or_null("Health") as Health
+	if health != null and not health.is_alive():
+		return false
+	return true

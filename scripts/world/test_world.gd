@@ -5,9 +5,11 @@ extends Node2D
 @onready var _player: CharacterBody2D = $Entities/Player
 @onready var _dragon: CharacterBody2D = $Entities/Dragon
 @onready var _camera: Camera2D = $Camera2D
+@onready var _dragon_command: Node = $Entities/Player/DragonCommand
 
 
 func _ready() -> void:
 	_dragon.set_follow_target(_player)
 	if _camera.has_method("set_follow_target"):
 		_camera.set_follow_target(_player)
+	_dragon_command.command_toggle_requested.connect(_dragon.handle_command_toggle)

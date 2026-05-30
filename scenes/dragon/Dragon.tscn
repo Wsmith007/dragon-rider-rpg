@@ -1,20 +1,27 @@
-[gd_scene load_steps=5 format=3 uid="uid://bdragon001"]
+[gd_scene load_steps=7 format=3 uid="uid://bdragon001"]
 
 [ext_resource type="Script" path="res://scripts/dragon/dragon.gd" id="1_dragon"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_follow_behavior.gd" id="2_follow"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_threat_behavior.gd" id="3_threat"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_command_behavior.gd" id="4_command"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_assist_behavior.gd" id="5_assist"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
 
 [node name="Dragon" type="CharacterBody2D"]
 collision_layer = 2
-collision_mask = 5
+collision_mask = 1
 motion_mode = 1
 script = ExtResource("1_dragon")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_dragon")
+
+[node name="AttackFlash" type="Polygon2D" parent="."]
+visible = false
+color = Color(1, 0.85, 0.35, 0.85)
+polygon = PackedVector2Array(-26, -6, 0, -22, 26, -6, 18, 20, -18, 20)
 
 [node name="Visual" type="Polygon2D" parent="."]
 color = Color(0.9, 0.45, 0.15, 1)
@@ -25,3 +32,9 @@ script = ExtResource("2_follow")
 
 [node name="ThreatBehavior" type="Node" parent="."]
 script = ExtResource("3_threat")
+
+[node name="CommandBehavior" type="Node" parent="."]
+script = ExtResource("4_command")
+
+[node name="AssistBehavior" type="Node" parent="."]
+script = ExtResource("5_assist")

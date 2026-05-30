@@ -9,6 +9,7 @@ signal died
 @export var max_health: float = 100.0
 
 var current_health: float = 100.0
+var _death_handled: bool = false
 
 
 func _ready() -> void:
@@ -16,18 +17,20 @@ func _ready() -> void:
 
 
 func take_damage(amount: float) -> void:
-	if current_health <= 0.0:
+	if _death_handled or current_health <= 0.0:
+		return
+	if amount <= 0.0:
 		return
 
 	current_health = maxf(current_health - amount, 0.0)
 	health_changed.emit(current_health, max_health)
 
 	if current_health <= 0.0:
-		died.emit()
+		_handle_death()
 
 
 func heal(amount: float) -> void:
-	if current_health <= 0.0:
+	if _death_handled or current_health <= 0.0:
 		return
 
 	current_health = minf(current_health + amount, max_health)
@@ -35,4 +38,12 @@ func heal(amount: float) -> void:
 
 
 func is_alive() -> bool:
-	return current_health > 0.0
+	return not _death_handled and current_health > 0.0
+
+
+func _handle_death() -> void:
+	if _death_handled:
+		return
+	_death_handled = true
+	current_health = 0.0
+	died.emit()
