@@ -51,7 +51,7 @@ func take_approved_assist_target() -> Node2D:
 	var target := _approved_assist_target
 	_approved_assist_target = null
 	_pending_assist_target = null
-	if _is_enemy_valid(target):
+	if EnemyValidation.is_usable(target):
 		return target
 	return null
 
@@ -63,13 +63,28 @@ func consume_hesitation_outcome() -> HesitationOutcome:
 
 
 func get_pending_assist_target() -> Node2D:
-	if _is_enemy_valid(_pending_assist_target):
+	if EnemyValidation.is_usable(_pending_assist_target):
 		return _pending_assist_target
 	return null
 
 
 func clear_pending_assist_target() -> void:
 	_pending_assist_target = null
+	_approved_assist_target = null
+
+
+func clear_enemy_reference(enemy) -> void:
+	var enemy_id: int = EnemyValidation.resolve_instance_id(enemy)
+	if enemy_id == -1:
+		return
+
+	if EnemyValidation.resolve_instance_id(_pending_assist_target) == enemy_id:
+		_pending_assist_target = null
+	if EnemyValidation.resolve_instance_id(_approved_assist_target) == enemy_id:
+		_approved_assist_target = null
+
+	if _is_hesitating and not EnemyValidation.is_usable(_pending_assist_target):
+		_cancel_cooperative_assist("target_died", true)
 
 
 ## Phase 1 only: enter hesitation or immediate cancel check (no hesitation tier).
@@ -78,7 +93,7 @@ func request_cooperative_assist(target: Node2D) -> AssistStartResult:
 		return AssistStartResult.BLOCKED
 	if not can_attempt_cooperative_assist():
 		return AssistStartResult.BLOCKED
-	if not _is_enemy_valid(target):
+	if not EnemyValidation.is_usable(target):
 		return AssistStartResult.BLOCKED
 
 	_pending_assist_target = target
@@ -129,7 +144,7 @@ func _roll_cancel_decision(instability: float, from_hesitation_completion: bool)
 
 	if cancel_roll < cancel_chance:
 		print("CANCELED")
-		var reason := "post_hesitation_cancel" if from_hesitation_completion else "immediate_cancel"
+		var reason: String = "post_hesitation_cancel" if from_hesitation_completion else "immediate_cancel"
 		_cancel_cooperative_assist(reason, from_hesitation_completion)
 		return true
 
@@ -214,12 +229,3 @@ func get_shudder_modulate(base: Color) -> Color:
 		return base
 	var pulse := 1.0 - shudder_color_pulse + shudder_color_pulse * sin(_shudder_phase * 1.4)
 	return Color(base.r * pulse, base.g * pulse * 0.96, base.b * pulse * 1.02, base.a)
-
-
-func _is_enemy_valid(enemy: Node2D) -> bool:
-	if enemy == null or not is_instance_valid(enemy):
-		return false
-	if enemy.is_queued_for_deletion():
-		return false
-	var health := enemy.get_node_or_null("Health") as Health
-	return health == null or health.is_alive()

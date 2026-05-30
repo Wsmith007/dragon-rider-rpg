@@ -64,6 +64,18 @@ theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
 theme_override_font_sizes/font_size = 11
 text = "F4  Instability -5"
 
+[node name="F9Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F9  Bond Strength +5"
+
+[node name="F10Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F10 Bond Strength -5"
+
 [node name="HealthTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.8, 0.7, 0.9)
@@ -85,7 +97,7 @@ theme_override_font_sizes/font_size = 11
 text = "F6  Max HP +10 (and current)"
 mouse_filter = 2
 
-[node name="F8Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="F7Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
 theme_override_font_sizes/font_size = 11

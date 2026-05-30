@@ -31,6 +31,10 @@ func set_trust_state(value: String) -> void:
 	profile.trust_state = value
 
 
+func adjust_bond_strength(delta: float) -> void:
+	profile.bond_strength = profile.bond_strength + delta
+
+
 func adjust_sync(delta: float) -> void:
 	profile.sync = profile.sync + delta
 

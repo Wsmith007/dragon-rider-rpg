@@ -1,5 +1,6 @@
 extends Node
-## Temporary F1–F4 bond testers. Does not affect dragon behavior.
+## Temporary F1–F4 bond testers. F9/F10 adjust bond strength for protection testing.
+
 
 const ADJUST_STEP: float = 5.0
 
@@ -22,4 +23,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		KEY_F4:
 			BondSystem.adjust_instability(-ADJUST_STEP)
+			get_viewport().set_input_as_handled()
+		KEY_F9:
+			BondSystem.adjust_bond_strength(ADJUST_STEP)
+			get_viewport().set_input_as_handled()
+		KEY_F10:
+			BondSystem.adjust_bond_strength(-ADJUST_STEP)
 			get_viewport().set_input_as_handled()

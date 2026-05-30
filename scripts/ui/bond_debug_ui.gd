@@ -5,9 +5,13 @@ extends Control
 @onready var _sync_value: Label = $Panel/Margin/VBox/Grid/SyncValue
 @onready var _instability_value: Label = $Panel/Margin/VBox/Grid/InstabilityValue
 @onready var _trust_state_value: Label = $Panel/Margin/VBox/Grid/TrustStateValue
+@onready var _protection_radius_value: Label = $Panel/Margin/VBox/Grid/ProtectionRadiusValue
+@onready var _protection_delay_value: Label = $Panel/Margin/VBox/Grid/ProtectionDelayValue
+@onready var _protection_persistence_value: Label = $Panel/Margin/VBox/Grid/ProtectionPersistenceValue
 @onready var _dragon_state_value: Label = $Panel/Margin/VBox/Grid/DragonStateValue
 
 var _dragon: CharacterBody2D
+var _protection_behavior: DragonProtectionBehavior
 
 
 func bind_to_dragon(dragon: CharacterBody2D) -> void:
@@ -16,14 +20,17 @@ func bind_to_dragon(dragon: CharacterBody2D) -> void:
 		push_warning("BondDebugUI: dragon reference is null.")
 		return
 
+	_protection_behavior = _dragon.get_node_or_null("ProtectionBehavior") as DragonProtectionBehavior
+
 	if not _dragon.state_changed.is_connected(_on_dragon_state_changed):
 		_dragon.state_changed.connect(_on_dragon_state_changed)
 
 	_refresh_dragon_state(_dragon.state)
+	_refresh_protection_stats(BondSystem.get_profile().bond_strength)
 
 
 func _ready() -> void:
-	var bond := BondSystem.get_profile()
+	var bond: BondProfile = BondSystem.get_profile()
 	bond.profile_changed.connect(_on_bond_profile_changed)
 	BondSystem.bond_changed.connect(_on_bond_profile_changed)
 	_refresh_bond(bond)
@@ -43,6 +50,19 @@ func _refresh_bond(bond: BondProfile) -> void:
 	_sync_value.text = str(int(bond.sync))
 	_instability_value.text = str(int(bond.instability))
 	_trust_state_value.text = bond.trust_state
+	_refresh_protection_stats(bond.bond_strength)
+
+
+func _refresh_protection_stats(bond_strength: float) -> void:
+	if _protection_behavior == null:
+		_protection_radius_value.text = "-"
+		_protection_delay_value.text = "-"
+		_protection_persistence_value.text = "-"
+		return
+
+	_protection_radius_value.text = str(int(_protection_behavior.get_protection_radius(bond_strength)))
+	_protection_delay_value.text = str(_protection_behavior.get_response_delay(bond_strength))
+	_protection_persistence_value.text = str(_protection_behavior.get_persistence_duration(bond_strength))
 
 
 func _refresh_dragon_state(state: DragonState.State) -> void:

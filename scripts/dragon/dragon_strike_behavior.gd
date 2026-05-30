@@ -114,9 +114,26 @@ func can_begin_assist() -> bool:
 
 
 func get_target() -> Node2D:
-	if _is_enemy_alive(_target):
+	if EnemyValidation.is_usable(_target):
 		return _target
 	return null
+
+
+func clear_enemy_reference(enemy) -> void:
+	var enemy_id: int = EnemyValidation.resolve_instance_id(enemy)
+	if enemy_id == -1:
+		return
+	if _target == null or not is_instance_valid(_target):
+		_target = null
+		return
+	if _target.get_instance_id() != enemy_id:
+		return
+	if _phase == Phase.LUNGE and _hit_applied:
+		return
+	if _phase != Phase.IDLE:
+		_cancel_strike("target_died")
+	else:
+		_clear_target("target_died")
 
 
 func get_return_point() -> Vector2:
@@ -147,7 +164,7 @@ func clear_wait_protection_block_if_target_gone(origin: Vector2) -> void:
 			continue
 		if node.get_instance_id() != _last_wait_protection_target_id:
 			continue
-		if not _is_enemy_alive(node as Node2D):
+		if not EnemyValidation.is_usable(node):
 			_last_wait_protection_target_id = -1
 			return
 		if origin.distance_to((node as Node2D).global_position) <= wait_protection_radius:
@@ -230,7 +247,7 @@ func _try_begin_strike(
 	rider_position: Vector2,
 	return_label: String
 ) -> bool:
-	if not _is_enemy_alive(enemy):
+	if not EnemyValidation.is_usable(enemy):
 		return false
 	if is_busy():
 		return false
@@ -300,7 +317,7 @@ func _update_stuck_detection(delta: float, dragon_position: Vector2) -> void:
 
 
 func _validate_active_target(dragon_position: Vector2) -> void:
-	if not _is_enemy_alive(_target):
+	if not EnemyValidation.is_usable(_target):
 		if _phase == Phase.LUNGE or _phase == Phase.APPROACH:
 			_start_return("invalid_target")
 		else:
@@ -319,7 +336,7 @@ func _is_target_within_strike_range(enemy: Node2D) -> bool:
 
 
 func _should_approach_first(dragon_position: Vector2) -> bool:
-	if not _is_enemy_alive(_target):
+	if not EnemyValidation.is_usable(_target):
 		return false
 	if DragonCombatApproach.segment_passes_near_point(
 		dragon_position,
@@ -337,7 +354,7 @@ func _get_approach_velocity(dragon_position: Vector2) -> Vector2:
 		_cancel_strike("approach_timeout")
 		return Vector2.ZERO
 
-	if not _is_enemy_alive(_target):
+	if not EnemyValidation.is_usable(_target):
 		_cancel_strike("invalid_approach_target")
 		return Vector2.ZERO
 
@@ -359,7 +376,7 @@ func _get_approach_velocity(dragon_position: Vector2) -> Vector2:
 
 
 func _get_lunge_velocity(dragon_position: Vector2) -> Vector2:
-	if not _is_enemy_alive(_target):
+	if not EnemyValidation.is_usable(_target):
 		_clear_target("invalid_lunge_target")
 		_start_return("invalid_lunge_target")
 		return _get_return_velocity(dragon_position)
@@ -411,7 +428,7 @@ func _cancel_strike(reason: String) -> void:
 
 
 func _apply_damage() -> void:
-	if not _is_enemy_alive(_target):
+	if not EnemyValidation.is_usable(_target):
 		return
 	var health := _target.get_node_or_null("Health") as Health
 	if health != null and health.is_alive():
@@ -460,7 +477,7 @@ func _find_nearest_enemy(origin: Vector2, max_range: float, exclude_instance_id:
 		if not node is Node2D:
 			continue
 		var enemy := node as Node2D
-		if not _is_enemy_alive(enemy):
+		if not EnemyValidation.is_usable(enemy):
 			continue
 		if enemy.get_instance_id() == exclude_instance_id:
 			continue
@@ -471,12 +488,3 @@ func _find_nearest_enemy(origin: Vector2, max_range: float, exclude_instance_id:
 			closest = enemy
 
 	return closest
-
-
-func _is_enemy_alive(enemy: Node2D) -> bool:
-	if enemy == null or not is_instance_valid(enemy):
-		return false
-	if enemy.is_queued_for_deletion():
-		return false
-	var health := enemy.get_node_or_null("Health") as Health
-	return health == null or health.is_alive()

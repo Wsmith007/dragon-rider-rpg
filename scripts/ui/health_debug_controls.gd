@@ -1,6 +1,5 @@
 extends Node
 ## Temporary player health testers via InputMap actions.
-## Max HP down is on F7 because F8 is usually bound to Stop Scene in the Godot editor.
 
 
 const HEALTH_STEP: float = 10.0

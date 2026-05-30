@@ -32,8 +32,13 @@ func has_engagement_target() -> bool:
 	return get_assist_target() != null
 
 
+func clear_enemy_reference(enemy) -> void:
+	if EnemyValidation.resolve_instance_id(_last_attack_enemy) == EnemyValidation.resolve_instance_id(enemy):
+		_last_attack_enemy = null
+
+
 func _on_attack_hit(enemy: Node2D) -> void:
-	if not _is_valid_enemy(enemy):
+	if not EnemyValidation.is_usable(enemy):
 		return
 	_last_attack_enemy = enemy
 	_last_attack_time = Time.get_ticks_msec() / 1000.0
@@ -44,7 +49,7 @@ func _get_recent_attack_target() -> Node2D:
 		return null
 	if Time.get_ticks_msec() / 1000.0 - _last_attack_time > recent_attack_window:
 		return null
-	if not _is_valid_enemy(_last_attack_enemy):
+	if not EnemyValidation.is_usable(_last_attack_enemy):
 		_last_attack_enemy = null
 		return null
 	return _last_attack_enemy
@@ -64,7 +69,7 @@ func _find_facing_target() -> Node2D:
 		if not node is Node2D:
 			continue
 		var enemy := node as Node2D
-		if not _is_valid_enemy(enemy):
+		if not EnemyValidation.is_usable(enemy):
 			continue
 
 		var offset := enemy.global_position - origin
@@ -87,12 +92,3 @@ func _get_facing_direction() -> Vector2:
 	if _visual != null:
 		return Vector2.from_angle(_visual.rotation - PI * 0.5)
 	return Vector2.DOWN
-
-
-func _is_valid_enemy(enemy: Node2D) -> bool:
-	if enemy == null or not is_instance_valid(enemy):
-		return false
-	if enemy.is_queued_for_deletion():
-		return false
-	var health := enemy.get_node_or_null("Health") as Health
-	return health == null or health.is_alive()

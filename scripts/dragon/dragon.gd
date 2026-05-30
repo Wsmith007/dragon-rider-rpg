@@ -43,6 +43,38 @@ func _ready() -> void:
 	strike_behavior.strike_hit.connect(_on_strike_hit)
 	strike_behavior.strike_finished.connect(_on_strike_finished)
 	_attack_flash.visible = false
+	call_deferred("_connect_enemy_death_signals")
+
+
+func _connect_enemy_death_signals() -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	if not tree.node_added.is_connected(_on_enemy_node_added):
+		tree.node_added.connect(_on_enemy_node_added)
+	for node in tree.get_nodes_in_group("enemy"):
+		_connect_enemy_death(node)
+
+
+func _on_enemy_node_added(node: Node) -> void:
+	if node.is_in_group("enemy"):
+		_connect_enemy_death(node)
+
+
+func _connect_enemy_death(enemy: Node) -> void:
+	if not enemy.has_signal("enemy_died"):
+		return
+	if not enemy.enemy_died.is_connected(_on_enemy_died):
+		enemy.enemy_died.connect(_on_enemy_died)
+
+
+func _on_enemy_died(enemy: Node) -> void:
+	protection_behavior.clear_enemy_reference(enemy)
+	cooperation_behavior.clear_enemy_reference(enemy)
+	threat_behavior.clear_enemy_reference(enemy)
+	strike_behavior.clear_enemy_reference(enemy)
+	if _player_engagement != null:
+		_player_engagement.clear_enemy_reference(enemy)
 
 
 func set_follow_target(target: Node2D) -> void:
@@ -50,6 +82,7 @@ func set_follow_target(target: Node2D) -> void:
 	follow_behavior.set_follow_target(target)
 	threat_behavior.set_follow_target(target)
 	_player_engagement = target.get_node_or_null("Engagement") as PlayerEngagement
+	call_deferred("_connect_enemy_death_signals")
 
 
 func handle_command_toggle() -> void:
@@ -75,6 +108,7 @@ func _physics_process(delta: float) -> void:
 
 	strike_behavior.update_cooldown(delta)
 	cooperation_behavior.tick(delta)
+	_tick_protection_behavior(delta)
 	_handle_hesitation_completion()
 	_movement_owner = _determine_movement_owner()
 
@@ -256,6 +290,18 @@ func _execute_cooperative_assist(target: Node2D) -> void:
 		dragon_assisted.emit(target)
 
 
+func _tick_protection_behavior(delta: float) -> void:
+	if _follow_target == null:
+		return
+	protection_behavior.tick_protection(
+		delta,
+		_follow_target,
+		global_position,
+		threat_behavior.get_valid_threat(),
+		_get_engaged_enemy_instance_id()
+	)
+
+
 ## Defensive protection: automatic when enemies chase, crowd, or threaten the rider.
 func _try_defensive_protection() -> void:
 	if strike_behavior.is_busy() or not strike_behavior.can_begin_protection():
@@ -263,19 +309,14 @@ func _try_defensive_protection() -> void:
 	if not follow_behavior.is_at_alert_position():
 		return
 
-	var threat := threat_behavior.get_valid_threat()
-	var target := protection_behavior.find_protection_target(
-		_follow_target,
-		global_position,
-		threat,
-		_get_engaged_enemy_instance_id()
-	)
+	var target := protection_behavior.get_ready_protection_target()
 	if target == null:
 		return
 
 	follow_behavior.finish_reposition()
 	var return_point := follow_behavior.get_alert_movement_anchor()
 	if strike_behavior.try_begin_protection(target, return_point, _get_rider_position()):
+		protection_behavior.notify_protection_triggered(target)
 		state = DragonState.State.PROTECTING
 		follow_behavior.exit_alert()
 		dragon_assisted.emit(target)

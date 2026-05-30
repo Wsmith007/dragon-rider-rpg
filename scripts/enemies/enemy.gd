@@ -4,6 +4,7 @@ extends CharacterBody2D
 signal player_detected
 signal player_lost
 signal attacked_player
+signal enemy_died(enemy: Node)
 
 
 enum State { IDLE, CHASE, ENGAGE }
@@ -23,7 +24,7 @@ enum State { IDLE, CHASE, ENGAGE }
 var _state: State = State.IDLE
 var _player: Node2D
 var _attack_cooldown_remaining: float = 0.0
-var _is_dying: bool = false
+var is_dead: bool = false
 
 
 func _ready() -> void:
@@ -35,7 +36,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _is_dying or not _health.is_alive():
+	if is_dead or not _health.is_alive():
 		return
 
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
@@ -132,9 +133,10 @@ func _find_player() -> void:
 
 
 func _on_died() -> void:
-	if _is_dying:
+	if is_dead:
 		return
-	_is_dying = true
+	is_dead = true
+	enemy_died.emit(self)
 
 	collision_layer = 0
 	collision_mask = 0
