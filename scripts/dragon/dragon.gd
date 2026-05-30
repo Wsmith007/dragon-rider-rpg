@@ -6,11 +6,14 @@ signal behavior_changed(mode_name: String)
 signal state_changed(state: DragonState.State)
 signal dragon_assisted(enemy: Node2D)
 
+enum MovementOwner { NORMAL, HESITATION, STRIKE }
+
 @onready var follow_behavior: DragonFollowBehavior = $FollowBehavior
 @onready var threat_behavior: DragonThreatBehavior = $ThreatBehavior
 @onready var command_behavior: DragonCommandBehavior = $CommandBehavior
 @onready var protection_behavior: DragonProtectionBehavior = $ProtectionBehavior
 @onready var strike_behavior: DragonStrikeBehavior = $StrikeBehavior
+@onready var cooperation_behavior: DragonCooperationBehavior = $CooperationBehavior
 @onready var _visual: Polygon2D = $Visual
 @onready var _attack_flash: Polygon2D = $AttackFlash
 
@@ -21,6 +24,7 @@ signal dragon_assisted(enemy: Node2D)
 @export var rider_slow_speed_threshold: float = 40.0
 
 var state: DragonState.State = DragonState.State.FOLLOWING
+var _movement_owner: MovementOwner = MovementOwner.NORMAL
 
 var _follow_target: Node2D
 var _player_engagement: PlayerEngagement
@@ -52,6 +56,7 @@ func handle_command_toggle() -> void:
 	if command_behavior.is_waiting:
 		command_behavior.recall()
 		strike_behavior.cancel_strike(false)
+		cooperation_behavior.cancel_cooperative_assist("command_recall")
 		follow_behavior.exit_waiting()
 		follow_behavior.exit_alert()
 		threat_behavior.evaluate()
@@ -69,24 +74,89 @@ func _physics_process(delta: float) -> void:
 		return
 
 	strike_behavior.update_cooldown(delta)
+	cooperation_behavior.tick(delta)
+	_handle_hesitation_completion()
+	_movement_owner = _determine_movement_owner()
 
-	if strike_behavior.is_busy():
-		strike_behavior.update_strike(delta, global_position, _get_rider_position())
-		_set_combat_state_from_strike()
-		if not strike_behavior.is_busy():
-			_resolve_post_strike_state()
-	else:
-		_update_non_combat_state(delta)
+	match _movement_owner:
+		MovementOwner.STRIKE:
+			_process_strike_frame(delta)
+		MovementOwner.HESITATION:
+			_process_hesitation_frame(delta)
+		_:
+			_process_normal_frame(delta)
 
-	velocity = _get_movement_velocity()
+	_reset_hesitation_visuals_if_idle()
 	move_and_slide()
 
-	if not strike_behavior.is_busy() or strike_behavior.is_returning():
+	if _movement_owner == MovementOwner.NORMAL:
 		_apply_post_move_separation()
 
 	_update_facing()
 	_update_visual_modulate()
 	_emit_state_if_changed()
+
+
+func _determine_movement_owner() -> MovementOwner:
+	if strike_behavior.is_busy():
+		return MovementOwner.STRIKE
+	if cooperation_behavior.is_hesitating():
+		return MovementOwner.HESITATION
+	return MovementOwner.NORMAL
+
+
+func _process_strike_frame(delta: float) -> void:
+	strike_behavior.update_strike(delta, global_position, _get_rider_position())
+	_set_combat_state_from_strike()
+	velocity = strike_behavior.get_movement_velocity(global_position)
+
+
+func _process_hesitation_frame(_delta: float) -> void:
+	_update_non_combat_state_without_assist(_delta)
+	state = DragonState.State.HESITATING
+	velocity = follow_behavior.get_desired_velocity()
+
+
+func _handle_hesitation_completion() -> void:
+	var outcome := cooperation_behavior.consume_hesitation_outcome()
+	if outcome == DragonCooperationBehavior.HesitationOutcome.NONE:
+		return
+
+	if outcome == DragonCooperationBehavior.HesitationOutcome.CANCELED:
+		_transition_to_contextual_state("hesitation_canceled")
+		return
+
+	var target := cooperation_behavior.take_approved_assist_target()
+	if target == null:
+		return
+
+	_execute_cooperative_assist(target)
+
+
+func _update_non_combat_state_without_assist(_delta: float) -> void:
+	if command_behavior.is_waiting:
+		state = DragonState.State.WAITING
+		follow_behavior.enter_waiting(command_behavior.wait_position)
+		return
+
+	threat_behavior.evaluate()
+
+	if threat_behavior.is_alert():
+		var threat := threat_behavior.get_valid_threat()
+		follow_behavior.enter_alert(threat)
+		if not cooperation_behavior.is_hesitating():
+			state = DragonState.State.ALERT
+	else:
+		if not cooperation_behavior.is_hesitating():
+			_set_following_state()
+
+	if not cooperation_behavior.is_hesitating() and not strike_behavior.is_busy():
+		_try_defensive_protection()
+
+
+func _process_normal_frame(delta: float) -> void:
+	_update_non_combat_state(delta)
+	velocity = follow_behavior.get_desired_velocity()
 
 
 func _update_non_combat_state(delta: float) -> void:
@@ -97,16 +167,19 @@ func _update_non_combat_state(delta: float) -> void:
 	threat_behavior.evaluate()
 
 	if threat_behavior.is_alert():
-		var entering_alert := state != DragonState.State.ALERT
-		state = DragonState.State.ALERT
-		follow_behavior.enter_alert(threat_behavior.get_valid_threat())
-		if entering_alert:
-			_log_alert_debug("state_enter")
+		var threat := threat_behavior.get_valid_threat()
+		follow_behavior.enter_alert(threat)
+		if not cooperation_behavior.is_hesitating():
+			var entering_alert := state != DragonState.State.ALERT
+			state = DragonState.State.ALERT
+			if entering_alert:
+				_log_alert_debug("state_enter")
 		_try_cooperative_assist()
 		if not strike_behavior.is_busy():
 			_try_defensive_protection()
 	else:
-		_set_following_state()
+		if not cooperation_behavior.is_hesitating():
+			_set_following_state()
 		_try_cooperative_assist()
 		_update_reposition_timer(delta)
 
@@ -137,8 +210,14 @@ func _process_waiting_state() -> void:
 		dragon_assisted.emit(defense_target)
 
 
-## Cooperative assist: only when the rider is intentionally engaging a target.
+## Cooperative assist only — never affects protection.
 func _try_cooperative_assist() -> void:
+	if cooperation_behavior.is_hesitating():
+		return
+	if cooperation_behavior.has_pending_hesitation_outcome():
+		return
+	if not cooperation_behavior.can_attempt_cooperative_assist():
+		return
 	if strike_behavior.is_busy() or not strike_behavior.can_begin_assist():
 		return
 	if _player_engagement == null:
@@ -150,6 +229,26 @@ func _try_cooperative_assist() -> void:
 	if not strike_behavior.is_target_within_strike_range(target):
 		return
 
+	match cooperation_behavior.request_cooperative_assist(target):
+		DragonCooperationBehavior.AssistStartResult.HESITATING:
+			state = DragonState.State.HESITATING
+			return
+		DragonCooperationBehavior.AssistStartResult.CANCELED:
+			_transition_to_contextual_state("assist_canceled")
+			return
+		DragonCooperationBehavior.AssistStartResult.APPROVED:
+			_execute_cooperative_assist(target)
+		_:
+			return
+
+
+func _execute_cooperative_assist(target: Node2D) -> void:
+	if not is_instance_valid(target) or strike_behavior.is_busy():
+		return
+	if not strike_behavior.can_begin_assist():
+		return
+
+	follow_behavior.finish_reposition()
 	var return_point := follow_behavior.get_alert_movement_anchor()
 	if strike_behavior.try_begin_assist(target, return_point, _get_rider_position()):
 		state = DragonState.State.ASSISTING
@@ -174,6 +273,7 @@ func _try_defensive_protection() -> void:
 	if target == null:
 		return
 
+	follow_behavior.finish_reposition()
 	var return_point := follow_behavior.get_alert_movement_anchor()
 	if strike_behavior.try_begin_protection(target, return_point, _get_rider_position()):
 		state = DragonState.State.PROTECTING
@@ -197,18 +297,16 @@ func _set_combat_state_from_strike() -> void:
 		state = DragonState.State.PROTECTING
 
 
-func _get_movement_velocity() -> Vector2:
-	if strike_behavior.is_busy():
-		return strike_behavior.get_movement_velocity(global_position)
-	return follow_behavior.get_desired_velocity()
-
-
-func _resolve_post_strike_state() -> void:
+func _transition_to_contextual_state(reason: String) -> void:
+	follow_behavior.finish_reposition()
 	follow_behavior.exit_alert()
+	cooperation_behavior.clear_pending_assist_target()
+	_reset_hesitation_visuals_if_idle()
 
 	if command_behavior.is_waiting:
 		state = DragonState.State.WAITING
 		follow_behavior.enter_waiting(command_behavior.wait_position)
+		print("RETURN STATE | WAITING | reason=", reason)
 		return
 
 	threat_behavior.evaluate()
@@ -216,8 +314,10 @@ func _resolve_post_strike_state() -> void:
 	if threat != null:
 		state = DragonState.State.ALERT
 		follow_behavior.enter_alert(threat)
+		print("RETURN STATE | ALERT | reason=", reason)
 	else:
 		_set_following_state()
+		print("RETURN STATE | FOLLOWING | reason=", reason)
 
 
 func _set_following_state() -> void:
@@ -234,12 +334,12 @@ func _get_rider_position() -> Vector2:
 func _update_facing() -> void:
 	var look_target: Vector2
 
-	if strike_behavior.is_busy() and strike_behavior.is_returning():
+	if _movement_owner == MovementOwner.STRIKE and strike_behavior.is_returning():
 		if _follow_target:
 			look_target = follow_behavior.get_alert_movement_anchor()
 		else:
 			return
-	elif strike_behavior.is_busy():
+	elif _movement_owner == MovementOwner.STRIKE:
 		var strike_target := strike_behavior.get_target()
 		if strike_target != null and is_instance_valid(strike_target):
 			look_target = strike_target.global_position
@@ -257,20 +357,35 @@ func _update_facing() -> void:
 
 
 func _update_visual_modulate() -> void:
+	var base := _base_modulate
 	match state:
 		DragonState.State.ASSISTING:
-			_visual.modulate = Color(1.0, 0.55, 0.35, 1.0)
+			base = Color(1.0, 0.55, 0.35, 1.0)
 		DragonState.State.PROTECTING:
-			_visual.modulate = Color(1.0, 0.45, 0.4, 1.0)
+			base = Color(1.0, 0.45, 0.4, 1.0)
 		DragonState.State.ALERT:
-			_visual.modulate = Color(1.0, 0.85, 0.55, 1.0)
+			base = Color(1.0, 0.85, 0.55, 1.0)
 		DragonState.State.WAITING:
-			_visual.modulate = Color(0.75, 0.85, 1.0, 1.0)
-		_:
-			_visual.modulate = _base_modulate
+			base = Color(0.75, 0.85, 1.0, 1.0)
+		DragonState.State.HESITATING:
+			base = Color(0.82, 0.78, 1.0, 1.0)
+
+	if cooperation_behavior.is_hesitating():
+		_visual.modulate = cooperation_behavior.get_shudder_modulate(base)
+	else:
+		_visual.modulate = base
+
+
+func _reset_hesitation_visuals_if_idle() -> void:
+	if cooperation_behavior.is_hesitating():
+		_visual.position = cooperation_behavior.get_shudder_visual_offset()
+	else:
+		_visual.position = Vector2.ZERO
 
 
 func _update_reposition_timer(delta: float) -> void:
+	if _movement_owner != MovementOwner.NORMAL:
+		return
 	if state != DragonState.State.FOLLOWING:
 		return
 	if threat_behavior.is_alert():
@@ -316,8 +431,10 @@ func _on_strike_hit(enemy: Node2D, _kind: DragonStrikeBehavior.StrikeKind) -> vo
 	dragon_assisted.emit(enemy)
 
 
-func _on_strike_finished(_kind: DragonStrikeBehavior.StrikeKind) -> void:
-	_resolve_post_strike_state()
+func _on_strike_finished(kind: DragonStrikeBehavior.StrikeKind) -> void:
+	if kind == DragonStrikeBehavior.StrikeKind.ASSIST:
+		print("EXIT ASSIST")
+	_transition_to_contextual_state("strike_finished_signal")
 	_emit_state_if_changed()
 
 
@@ -355,9 +472,6 @@ func _schedule_next_reposition_check() -> void:
 
 
 func _apply_post_move_separation() -> void:
-	if strike_behavior.is_busy() and not strike_behavior.is_returning():
-		return
-
 	const SEPARATION_RADIUS := 40.0
 	const NUDGE := 6.0
 

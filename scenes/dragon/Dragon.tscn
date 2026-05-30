@@ -1,44 +1,48 @@
-[gd_scene load_steps=8 format=3 uid="uid://bdragon001"]
+[gd_scene format=3 uid="uid://bdragon001"]
 
-[ext_resource type="Script" path="res://scripts/dragon/dragon.gd" id="1_dragon"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_follow_behavior.gd" id="2_follow"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_threat_behavior.gd" id="3_threat"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_command_behavior.gd" id="4_command"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_strike_behavior.gd" id="5_strike"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_protection_behavior.gd" id="6_protection"]
+[ext_resource type="Script" uid="uid://cwbufe130uh1g" path="res://scripts/dragon/dragon.gd" id="1_dragon"]
+[ext_resource type="Script" uid="uid://deojrsxqqd3ph" path="res://scripts/dragon/dragon_follow_behavior.gd" id="2_follow"]
+[ext_resource type="Script" uid="uid://cb17pglsnkkd6" path="res://scripts/dragon/dragon_threat_behavior.gd" id="3_threat"]
+[ext_resource type="Script" uid="uid://croqhrprdol17" path="res://scripts/dragon/dragon_command_behavior.gd" id="4_command"]
+[ext_resource type="Script" uid="uid://cit034tshkkac" path="res://scripts/dragon/dragon_strike_behavior.gd" id="5_strike"]
+[ext_resource type="Script" uid="uid://b2m4loh58674o" path="res://scripts/dragon/dragon_protection_behavior.gd" id="6_protection"]
+[ext_resource type="Script" uid="uid://cbqfpscv3rhaf" path="res://scripts/dragon/dragon_cooperation_behavior.gd" id="7_cooperation"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
 
-[node name="Dragon" type="CharacterBody2D"]
+[node name="Dragon" type="CharacterBody2D" unique_id=754245264]
 collision_layer = 2
-collision_mask = 1
 motion_mode = 1
 script = ExtResource("1_dragon")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1942304064]
 shape = SubResource("CircleShape2D_dragon")
 
-[node name="AttackFlash" type="Polygon2D" parent="."]
+[node name="AttackFlash" type="Polygon2D" parent="." unique_id=740701565]
 visible = false
 color = Color(1, 0.85, 0.35, 0.85)
 polygon = PackedVector2Array(-26, -6, 0, -22, 26, -6, 18, 20, -18, 20)
 
-[node name="Visual" type="Polygon2D" parent="."]
+[node name="Visual" type="Polygon2D" parent="." unique_id=546948265]
 color = Color(0.9, 0.45, 0.15, 1)
 polygon = PackedVector2Array(-18, 4, -8, -14, 8, -14, 18, 4, 10, 16, -10, 16)
 
-[node name="FollowBehavior" type="Node" parent="."]
+[node name="FollowBehavior" type="Node" parent="." unique_id=1509442859]
 script = ExtResource("2_follow")
 
-[node name="ThreatBehavior" type="Node" parent="."]
+[node name="ThreatBehavior" type="Node" parent="." unique_id=1331357934]
 script = ExtResource("3_threat")
 
-[node name="CommandBehavior" type="Node" parent="."]
+[node name="CommandBehavior" type="Node" parent="." unique_id=1752904057]
 script = ExtResource("4_command")
 
-[node name="ProtectionBehavior" type="Node" parent="."]
+[node name="ProtectionBehavior" type="Node" parent="." unique_id=901601361]
 script = ExtResource("6_protection")
 
-[node name="StrikeBehavior" type="Node" parent="."]
+[node name="StrikeBehavior" type="Node" parent="." unique_id=771512061]
 script = ExtResource("5_strike")
+
+[node name="CooperationBehavior" type="Node" parent="." unique_id=430149769]
+script = ExtResource("7_cooperation")
+hesitation_duration = 0.45

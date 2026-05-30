@@ -9,7 +9,7 @@ signal attacked_player
 enum State { IDLE, CHASE, ENGAGE }
 
 
-@export var max_health: float = 50.0
+@export var max_health: float = 150.0
 @export var detection_radius: float = 220.0
 @export var lose_radius: float = 320.0
 @export var chase_speed: float = 130.0

@@ -6,6 +6,7 @@ enum State {
 	FOLLOWING,
 	WAITING,
 	ALERT,
+	HESITATING,
 	PROTECTING,
 	ASSISTING,
 }
@@ -19,6 +20,8 @@ static func state_name(state: State) -> String:
 			return "waiting"
 		State.ALERT:
 			return "alert"
+		State.HESITATING:
+			return "hesitating"
 		State.PROTECTING:
 			return "protecting"
 		State.ASSISTING:
@@ -35,6 +38,8 @@ static func state_display_name(state: State) -> String:
 			return "WAITING"
 		State.ALERT:
 			return "ALERT"
+		State.HESITATING:
+			return "HESITATING"
 		State.PROTECTING:
 			return "PROTECTING"
 		State.ASSISTING:

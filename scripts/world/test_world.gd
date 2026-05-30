@@ -22,3 +22,6 @@ func _ready() -> void:
 		_bond_debug_ui.bind_to_dragon(_dragon)
 	if _health_debug_controls.has_method("bind_to_player"):
 		_health_debug_controls.bind_to_player(_player)
+	var enemy_indicators := get_node_or_null("UI/EnemyOffscreenIndicators") as Control
+	if enemy_indicators != null and enemy_indicators.has_method("bind_to_player"):
+		enemy_indicators.bind_to_player(_player)

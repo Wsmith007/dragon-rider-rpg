@@ -7,7 +7,7 @@ signal player_died
 
 
 @export var move_speed: float = 220.0
-@export var max_health: float = 100.0
+@export var max_health: float = 1000.0
 
 @onready var _health: Health = $Health
 @onready var _visual: Polygon2D = $Visual

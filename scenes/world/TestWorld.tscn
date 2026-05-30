@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://r18i6xvaiaug" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
 [ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="10_bond_test_help"]
 [ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
+[ext_resource type="PackedScene" uid="uid://benemyindicators" path="res://scenes/ui/EnemyOffscreenIndicators.tscn" id="12_enemy_indicators"]
 
 [node name="TestWorld" type="Node2D" unique_id=1840992113]
 script = ExtResource("1_world")
@@ -33,18 +34,24 @@ script = ExtResource("6_floor_grid")
 position = Vector2(1233, 85)
 
 [node name="Dragon" parent="Entities" unique_id=1275625938 instance=ExtResource("4_dragon")]
-position = Vector2(520, 400)
+position = Vector2(1233, 118)
 
 [node name="Enemies" type="Node2D" parent="Entities" unique_id=977589883]
 
 [node name="EnemyA" parent="Entities/Enemies" unique_id=734008255 instance=ExtResource("5_enemy")]
-position = Vector2(920, 360)
+position = Vector2(680, 420)
 
 [node name="EnemyB" parent="Entities/Enemies" unique_id=1732174798 instance=ExtResource("5_enemy")]
-position = Vector2(780, 520)
+position = Vector2(560, 580)
 
 [node name="EnemyC" parent="Entities/Enemies" unique_id=227574411 instance=ExtResource("5_enemy")]
-position = Vector2(480, 180)
+position = Vector2(380, 80)
+
+[node name="EnemyD" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1680, 320)
+
+[node name="EnemyE" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1780, 520)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=305802096]
 script = ExtResource("2_camera")
@@ -62,3 +69,5 @@ script = ExtResource("9_bond_test_controls")
 script = ExtResource("11_health_debug")
 
 [node name="BondTestHelpUI" parent="UI" unique_id=2074700217 instance=ExtResource("10_bond_test_help")]
+
+[node name="EnemyOffscreenIndicators" parent="UI" instance=ExtResource("12_enemy_indicators")]

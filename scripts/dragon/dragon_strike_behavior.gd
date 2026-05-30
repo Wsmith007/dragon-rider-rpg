@@ -429,7 +429,10 @@ func _start_return(reason: String) -> void:
 
 func _finish_strike() -> void:
 	var finished_kind := _kind
-	print("EXIT STRIKE (complete) | kind=", finished_kind)
+	if finished_kind == StrikeKind.ASSIST:
+		print("EXIT ASSIST | strike_complete")
+	else:
+		print("EXIT STRIKE (complete) | kind=", finished_kind)
 	_reset_strike_state()
 	strike_finished.emit(finished_kind)
 
