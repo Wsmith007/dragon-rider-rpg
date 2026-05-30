@@ -1,14 +1,15 @@
-[gd_scene format=3 uid="uid://bdragon001"]
+[gd_scene load_steps=5 format=3 uid="uid://bdragon001"]
 
 [ext_resource type="Script" path="res://scripts/dragon/dragon.gd" id="1_dragon"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_follow_behavior.gd" id="2_follow"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_threat_behavior.gd" id="3_threat"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
 
 [node name="Dragon" type="CharacterBody2D"]
 collision_layer = 2
-collision_mask = 1
+collision_mask = 5
 motion_mode = 1
 script = ExtResource("1_dragon")
 
@@ -21,3 +22,6 @@ polygon = PackedVector2Array(-18, 4, -8, -14, 8, -14, 18, 4, 10, 16, -10, 16)
 
 [node name="FollowBehavior" type="Node" parent="."]
 script = ExtResource("2_follow")
+
+[node name="ThreatBehavior" type="Node" parent="."]
+script = ExtResource("3_threat")

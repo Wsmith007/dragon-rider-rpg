@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://btestworld01"]
 
-[ext_resource type="Script" path="res://scripts/world/test_world.gd" id="1_world"]
-[ext_resource type="Script" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
+[ext_resource type="Script" uid="uid://bqcwqak64ul8j" path="res://scripts/world/test_world.gd" id="1_world"]
+[ext_resource type="Script" uid="uid://dil8lfxc3noe6" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
 [ext_resource type="PackedScene" uid="uid://bplayer001" path="res://scenes/player/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" uid="uid://bdragon001" path="res://scenes/dragon/Dragon.tscn" id="4_dragon"]
+[ext_resource type="PackedScene" uid="uid://benemy001" path="res://scenes/enemies/Enemy.tscn" id="5_enemy"]
 
-[node name="TestWorld" type="Node2D"]
+[node name="TestWorld" type="Node2D" unique_id=1840992113]
 script = ExtResource("1_world")
 
-[node name="Ground" type="ColorRect" parent="."]
+[node name="Ground" type="ColorRect" parent="." unique_id=371928750]
 z_index = -10
 offset_left = -2400.0
 offset_top = -2400.0
@@ -16,13 +17,24 @@ offset_right = 2400.0
 offset_bottom = 2400.0
 color = Color(0.14, 0.2, 0.11, 1)
 
-[node name="Entities" type="Node2D" parent="."]
+[node name="Entities" type="Node2D" parent="." unique_id=83008799]
 
-[node name="Player" parent="Entities" instance=ExtResource("3_player")]
-position = Vector2(640, 360)
+[node name="Player" parent="Entities" unique_id=309061533 instance=ExtResource("3_player")]
+position = Vector2(1233, 85)
 
-[node name="Dragon" parent="Entities" instance=ExtResource("4_dragon")]
+[node name="Dragon" parent="Entities" unique_id=1275625938 instance=ExtResource("4_dragon")]
 position = Vector2(520, 400)
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Enemies" type="Node2D" parent="Entities" unique_id=977589883]
+
+[node name="EnemyA" parent="Entities/Enemies" unique_id=734008255 instance=ExtResource("5_enemy")]
+position = Vector2(920, 360)
+
+[node name="EnemyB" parent="Entities/Enemies" unique_id=1732174798 instance=ExtResource("5_enemy")]
+position = Vector2(780, 520)
+
+[node name="EnemyC" parent="Entities/Enemies" unique_id=227574411 instance=ExtResource("5_enemy")]
+position = Vector2(480, 180)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=305802096]
 script = ExtResource("2_camera")

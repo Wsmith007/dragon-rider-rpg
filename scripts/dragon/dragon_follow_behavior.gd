@@ -3,24 +3,27 @@ class_name DragonFollowBehavior
 ## Movement-only follow logic. Dragon.gd owns timing and mode changes; bond/combat layers plug in later.
 
 
-enum Mode { FOLLOW, REPOSITION }
+enum Mode { FOLLOW, REPOSITION, ALERT }
 
 
-@export var ideal_distance: float = 90.0
-@export var min_distance: float = 55.0
-@export var max_distance: float = 130.0
+@export var ideal_distance: float = 110.0
+@export var min_distance: float = 75.0
+@export var max_distance: float = 155.0
 ## Hard cap on how far the dragon may trail the follow anchor before forced catch-up.
-@export var max_lag_distance: float = 165.0
+@export var max_lag_distance: float = 195.0
 @export var follow_speed: float = 180.0
 ## Used when at or beyond max_lag_distance (should exceed player move_speed).
 @export var catch_up_speed: float = 260.0
 @export var reposition_speed: float = 120.0
+@export var alert_distance: float = 55.0
+@export var alert_speed: float = 200.0
 
 var mode: Mode = Mode.FOLLOW
 
 var _body: CharacterBody2D
 var _target: Node2D
 var _reposition_point: Vector2 = Vector2.ZERO
+var _alert_threat: Node2D
 
 
 func setup(body: CharacterBody2D) -> void:
@@ -41,11 +44,33 @@ func start_reposition() -> void:
 
 
 func finish_reposition() -> void:
-	mode = Mode.FOLLOW
+	if mode == Mode.REPOSITION:
+		mode = Mode.FOLLOW
+
+
+func enter_alert(threat: Node2D) -> void:
+	mode = Mode.ALERT
+	_alert_threat = threat
+
+
+func exit_alert() -> void:
+	if mode == Mode.ALERT:
+		mode = Mode.FOLLOW
+	_alert_threat = null
+
+
+func get_alert_threat() -> Node2D:
+	return _alert_threat
 
 
 func get_mode_name() -> String:
-	return "reposition" if mode == Mode.REPOSITION else "follow"
+	match mode:
+		Mode.REPOSITION:
+			return "reposition"
+		Mode.ALERT:
+			return "alert"
+		_:
+			return "follow"
 
 
 func get_desired_velocity() -> Vector2:
@@ -57,6 +82,9 @@ func get_desired_velocity() -> Vector2:
 			finish_reposition()
 			return _velocity_for_follow()
 		return _velocity_toward(_reposition_point, reposition_speed, 14.0, true)
+
+	if mode == Mode.ALERT:
+		return _velocity_for_alert()
 
 	return _velocity_for_follow()
 
@@ -87,6 +115,20 @@ func _velocity_for_follow() -> Vector2:
 		return offset.normalized() * follow_speed
 	if distance > ideal_distance * 1.12:
 		return offset.normalized() * follow_speed * 0.55
+
+	return Vector2.ZERO
+
+
+func _velocity_for_alert() -> Vector2:
+	if _target == null:
+		return Vector2.ZERO
+
+	var anchor := _target.global_position
+	var offset := anchor - _body.global_position
+	var distance := offset.length()
+
+	if distance > alert_distance:
+		return offset.normalized() * alert_speed
 
 	return Vector2.ZERO
 
