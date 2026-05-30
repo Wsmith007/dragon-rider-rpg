@@ -1,6 +1,12 @@
 extends Resource
 class_name BondProfile
 ## Persistent rider–dragon bond data. Future systems read and modify through BondSystem.
+##
+## Active gameplay stats (3-stat model):
+## - bond_strength — relationship depth; protection and future command responsiveness
+## - sync — coordination; cooperative assist frequency
+## - instability — strain; assist hesitation and cancellation
+
 
 signal profile_changed
 
@@ -34,6 +40,8 @@ signal profile_changed
 		_instability = clamped
 		_emit_changed()
 
+## DEPRECATED: Retained for save compatibility and legacy references only.
+## Not used for active gameplay decisions. Use bond_strength for relationship depth.
 @export var trust_state: String = "Neutral":
 	get:
 		return _trust_state
@@ -55,6 +63,17 @@ func reset_to_defaults() -> void:
 	_instability = 0.0
 	_trust_state = "Neutral"
 	_emit_changed()
+
+
+static func get_command_response_delay(bond_strength: float) -> float:
+	## Planned hook for Q wait/recall responsiveness under bond_strength (not wired yet).
+	if bond_strength <= 25.0:
+		return 0.75
+	if bond_strength <= 50.0:
+		return 0.50
+	if bond_strength <= 75.0:
+		return 0.25
+	return 0.0
 
 
 func _emit_changed() -> void:

@@ -36,13 +36,13 @@ The prototype should include:
 - dodging
 - dragon follow behavior
 - dragon combat assist behavior
-- basic synchronization system
-- basic instability system
-- basic trust_state progression
-- early communication behavior
+- basic sync system (assist frequency)
+- basic instability system (assist hesitation / cancel)
+- bond strength protection tuning
+- early communication behavior (future)
 - Human race option
 - Elf race option
-- simple UI for bond variables
+- simple UI for active bond stats (bond strength, sync, instability)
 
 ---
 
@@ -141,14 +141,17 @@ World size should remain intentionally limited.
 
 ## Bond Systems
 
-- bond_strength
-- sync
-- instability
-- trust_state
-- communication_stage
-- resonance_style
+**Active gameplay stats:**
+- `bond_strength` — relationship depth; protection (prototype)
+- `sync` — coordination; assist frequency (prototype)
+- `instability` — strain; assist hesitation and cancellation (prototype)
 
-Bond variables should visibly influence dragon behavior.
+**Compatibility / future (not active gameplay):**
+- `trust_state` — **deprecated**; retained on `BondProfile` only
+- `communication_stage` — design only
+- `resonance_style` — design only
+
+The three active stats should visibly influence dragon behavior. See `project_checkpoint_milestone5.md` for implemented hooks.
 
 ---
 
@@ -198,10 +201,10 @@ Low synchronization creates hesitation and inconsistency.
 # First Bond Goals
 
 The prototype should demonstrate:
-- evolving communication
-- trust_state growth
-- synchronization improvement
-- emotional instability
+- evolving communication (future)
+- bond strength growth (relationship depth → protection behavior)
+- sync improvement (coordination → assist frequency)
+- instability tension (strain → assist reliability)
 - changing dragon behavior
 
 The dragon relationship should feel different after extended play.
@@ -257,17 +260,17 @@ Dragon combat assistance.
 ---
 
 ## Milestone 5
-Synchronization affecting dragon behavior.
+Sync affecting dragon behavior (assist cooldown tiers). **Done in prototype.**
 
 ---
 
 ## Milestone 6
-Instability reactions and emotional behavior.
+Instability reactions (assist hesitation and cancellation). Bond strength protection tuning. **Partial / done in prototype.**
 
 ---
 
 ## Milestone 7
-`communication_stage` progression (`early` → `mid`).
+`communication_stage` progression (`early` → `mid`). Bond strength command responsiveness (planned).
 
 ---
 

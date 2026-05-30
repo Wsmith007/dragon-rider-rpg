@@ -1,6 +1,7 @@
 extends Node
 class_name DragonCommandBehavior
-## Player command layer: FOLLOW vs WAIT. Future trust/sync may delay or refuse toggles.
+## Player command layer: FOLLOW vs WAIT.
+## Future command responsiveness (delay, refusal) belongs under bond_strength — not trust_state.
 
 
 signal command_mode_changed(is_waiting: bool)

@@ -8,9 +8,9 @@ Combat effectiveness depends heavily on:
 - movement
 - timing
 - positioning
-- synchronization
-- emotional stability
-- dragon trust
+- sync (coordination)
+- instability (strain)
+- bond strength (relationship depth)
 
 The dragon participates dynamically during combat based on bond conditions.
 
@@ -27,9 +27,9 @@ Combat is designed to feel:
 
 The player should feel like they are fighting alongside an intelligent companion rather than controlling a secondary weapon system.
 
-Strong synchronization creates fluid and highly coordinated combat.
+Strong sync creates fluid and highly coordinated cooperative assists.
 
-Poor synchronization creates instability, hesitation, and dangerous unpredictability.
+Poor sync or high instability creates hesitation, cancellation, and unpredictable assist reliability.
 
 ---
 
@@ -38,12 +38,11 @@ Poor synchronization creates instability, hesitation, and dangerous unpredictabi
 Observe -> Move -> Attack -> Dragon Responds -> Bond State Updates -> Combat Behavior Changes
 
 Combat constantly modifies:
-- sync
-- instability
-- trust_state
-- bond_strength
+- bond_strength (relationship depth — protection)
+- sync (coordination — assist frequency)
+- instability (strain — assist reliability)
 - dragon behavior
-- emotional state
+- emotional state (future)
 
 Every encounter potentially changes the rider-dragon relationship.
 
@@ -94,18 +93,18 @@ depending on combat conditions.
 # Dynamic Participation System
 
 Dragon combat participation changes dynamically based on:
-- sync
-- instability
-- trust_state
-- emotional state
-- dragon personality
+- bond_strength (protection eagerness, response delay, persistence)
+- sync (cooperative assist frequency)
+- instability (assist hesitation and cancellation)
+- emotional state (future)
+- dragon personality (future)
 - combat pressure
 
 A dragon may:
-- coordinate perfectly during one encounter
-- become emotionally unstable during another
-- fight cautiously under low trust
-- act aggressively under stress
+- coordinate assists more often during high sync
+- hesitate or cancel assists under high instability
+- protect the rider sooner and longer under high bond strength
+- act aggressively under stress (future emotional layer)
 
 The dragon should never feel mechanically static.
 
@@ -113,23 +112,23 @@ The dragon should never feel mechanically static.
 
 # Synchronization Mechanics
 
-High synchronization improves:
-- coordinated attacks
-- combo timing
-- dragon reaction speed
-- positioning synergy
-- defensive cooperation
-- magical amplification
+High sync improves (prototype: shorter assist cooldown between cooperative strikes):
+- coordinated assists
+- combo timing (future)
+- dragon reaction speed (future)
+- positioning synergy (future)
+- defensive cooperation (future)
+- magical amplification (future)
 
-Strong synchronization creates moments where rider and dragon appear to fight almost instinctively as a unified pair.
+Strong sync creates moments where rider and dragon appear to fight almost instinctively as a unified pair.
 
-Synchronization may rise through:
+Sync may rise through (design target):
 - successful coordinated combat
 - protecting each other
-- emotional trust
+- deep bond strength (relationship depth)
 - compatible combat behavior
 
-Synchronization may fall through:
+Sync may fall through (design target):
 - conflicting actions
 - failed coordination
 - emotional stress
@@ -139,25 +138,27 @@ Synchronization may fall through:
 
 # Instability During Combat
 
-Instability represents emotional and magical strain placed on the bond during combat.
+Instability represents **strain** on the bond during combat.
 
-Instability may increase from:
+In the prototype, instability affects cooperative assist **reliability** (hesitation, post-hesitation cancel). It does not affect protection (bond strength).
+
+Instability may increase from (design target):
 - heavy damage
 - emotional panic
 - magical overload
-- synchronization failures
+- sync failures
 - aggressive overextension
 - dragon fear or anger
 
-High instability may cause:
-- delayed dragon reactions
-- erratic positioning
-- failed coordination
-- emotional outbursts
-- aggressive behavior
-- temporary autonomy
+High instability may cause (prototype + design target):
+- assist hesitation before striking
+- assist cancellation after hesitation
+- delayed dragon reactions (future)
+- erratic positioning (future)
+- emotional outbursts (future)
+- temporary autonomy (future)
 
-Critical instability creates highly dangerous and unpredictable combat situations.
+Critical instability creates highly dangerous and unpredictable combat situations (design target).
 
 ---
 
@@ -292,20 +293,22 @@ Strong synchronization improves cooperation but never removes dragon individuali
 
 # Early Vertical Slice Combat
 
-The first playable combat prototype focuses only on:
+The first playable combat prototype focuses on:
 - player movement
 - dodging
 - basic attacks
 - enemy pursuit
 - dragon follow behavior
-- simple dragon assist attacks
-- basic synchronization reactions
-- instability response behavior
+- cooperative assist (sync + instability)
+- defensive protection (bond strength)
+- sync-tiered assist cooldown
+- instability hesitation and cancel
 
 The first goal is proving:
 - dragon cooperation feels alive
 - combat feels fast and responsive
-- synchronization changes gameplay meaningfully
+- sync and instability change assist behavior meaningfully
+- bond strength changes protection behavior meaningfully
 
 Large-scale systems are intentionally postponed.
 
@@ -332,8 +335,8 @@ Future systems should remain modular and expandable.
 
 Combat should create the feeling that:
 - the dragon is intelligent
-- synchronization matters emotionally and mechanically
-- trust affects battle outcomes
+- sync and instability matter emotionally and mechanically (assist)
+- bond strength matters for protection and relationship depth
 - instability creates meaningful tension
 - the rider and dragon relationship evolves through conflict
 

@@ -44,12 +44,29 @@ depending on bond conditions.
 
 Persistent bond data uses these field names everywhere (docs and code):
 
-- `bond_strength` — 0–100
-- `sync` — 0–100 (coordination; design prose may say "synchronization")
-- `instability` — 0–100
-- `trust_state` — enum (see below)
-- `communication_stage` — enum: `early`, `mid`, `deep` (see below)
-- `resonance_style` — enum: `adaptive`, `harmonic`, `structured`, `fractured` (see below; race-default)
+### Active gameplay stats (3-stat model)
+
+- `bond_strength` — 0–100 · **relationship depth** (protection; future command responsiveness)
+- `sync` — 0–100 · **coordination** (cooperative assist frequency)
+- `instability` — 0–100 · **strain** (assist hesitation and cancellation)
+
+### Compatibility / future fields
+
+- `trust_state` — **DEPRECATED** · retained on `BondProfile` for save compatibility only. Not used in active gameplay. Do not add new systems that read this field.
+- `communication_stage` — enum: `early`, `mid`, `deep` (design; not in prototype code yet)
+- `resonance_style` — enum: `adaptive`, `harmonic`, `structured`, `fractured` (design; not in prototype code yet)
+
+---
+
+# Active Stat Identities (Prototype)
+
+| Stat | Identity | Implemented in prototype |
+|------|----------|--------------------------|
+| Bond Strength | Relationship / connection | Protection radius, response delay, persistence |
+| Sync | Cooperation / frequency | Assist cooldown tiers |
+| Instability | Reliability / strain | Hesitation + post-hesitation cancel (assist only) |
+
+Command responsiveness (Q wait/recall delay) is **planned under Bond Strength**, not trust.
 
 ---
 
@@ -57,59 +74,73 @@ Persistent bond data uses these field names everywhere (docs and code):
 
 ## bond_strength
 
-Represents the emotional and spiritual depth of the rider-dragon relationship.
+Represents the emotional and spiritual **depth of the rider–dragon relationship**.
 
-Range: 0-100
+Range: 0–100
 
-Higher bond strength improves:
-- trust
+**Primary relationship stat** in the 3-stat gameplay model.
+
+In the current prototype, bond strength affects **defensive protection** only:
+- detection radius
+- response delay before protection strike
+- alert persistence after threat leaves range
+
+Planned (not wired): command responsiveness on Q wait/recall.
+
+Does **not** affect cooperative assist frequency (sync) or assist reliability (instability).
+
+Higher bond strength (design target) may eventually improve:
 - emotional understanding
-- magical amplification
-- advanced bond abilities
 - communication clarity
+- magical amplification
 
 ---
 
 ## sync
 
-Represents how accurately the dragon and rider understand and coordinate with each other.
+Represents how accurately the dragon and rider **coordinate** with each other.
 
-Range: 0-100
+Range: 0–100
 
-High sync improves:
+In the prototype, sync affects **cooperative assist cooldown** (how often the dragon can assist after a strike).
+
+High sync improves (design target):
 - combo timing
 - coordinated movement
-- dragon reaction speed
 - combat cooperation
-- intent interpretation
 
-Low sync may cause:
+Low sync may cause (design target):
 - delayed reactions
-- incorrect responses
 - poor coordination
-- failed abilities
+
+Does **not** affect protection behavior or assist cancellation (instability).
 
 ---
 
 ## instability
 
-Represents emotional strain, magical overload, and bond stress.
+Represents emotional **strain**, magical overload, and bond stress.
 
-Range: 0-100
+Range: 0–100
 
-High instability may cause:
+In the prototype, instability affects **cooperative assist reliability** only:
+- hesitation before assist
+- chance to cancel assist after hesitation
+
+Does **not** affect protection behavior or assist cooldown (sync).
+
+High instability (design target) may cause:
 - emotional surges
-- magical fluctuations
 - dragon disobedience
-- synchronization collapse
 - autonomous dragon behavior
-- bond fractures
 
 ---
 
-# trust_state
+# trust_state (DEPRECATED)
 
-Enum values for `trust_state`:
+> **Deprecated.** `trust_state` remains on `BondProfile` for save compatibility and legacy documentation. It is **not used for active gameplay decisions** in the prototype. Relationship depth is expressed through **`bond_strength`**.
+
+Enum values preserved for future narrative/save migration:
 
 ## hostile
 The dragon resists cooperation.

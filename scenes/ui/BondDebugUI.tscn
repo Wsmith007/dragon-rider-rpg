@@ -68,14 +68,6 @@ text = "Instability"
 layout_mode = 2
 text = "0"
 
-[node name="TrustStateLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
-layout_mode = 2
-text = "Trust State"
-
-[node name="TrustStateValue" type="Label" parent="Panel/Margin/VBox/Grid"]
-layout_mode = 2
-text = "Neutral"
-
 [node name="ProtectionRadiusLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
 layout_mode = 2
 text = "Prot. Radius"

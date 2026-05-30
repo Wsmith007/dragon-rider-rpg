@@ -4,7 +4,6 @@ extends Control
 @onready var _bond_strength_value: Label = $Panel/Margin/VBox/Grid/BondStrengthValue
 @onready var _sync_value: Label = $Panel/Margin/VBox/Grid/SyncValue
 @onready var _instability_value: Label = $Panel/Margin/VBox/Grid/InstabilityValue
-@onready var _trust_state_value: Label = $Panel/Margin/VBox/Grid/TrustStateValue
 @onready var _protection_radius_value: Label = $Panel/Margin/VBox/Grid/ProtectionRadiusValue
 @onready var _protection_delay_value: Label = $Panel/Margin/VBox/Grid/ProtectionDelayValue
 @onready var _protection_persistence_value: Label = $Panel/Margin/VBox/Grid/ProtectionPersistenceValue
@@ -49,7 +48,6 @@ func _refresh_bond(bond: BondProfile) -> void:
 	_bond_strength_value.text = str(int(bond.bond_strength))
 	_sync_value.text = str(int(bond.sync))
 	_instability_value.text = str(int(bond.instability))
-	_trust_state_value.text = bond.trust_state
 	_refresh_protection_stats(bond.bond_strength)
 
 

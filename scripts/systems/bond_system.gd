@@ -27,6 +27,7 @@ func set_instability(value: float) -> void:
 	profile.instability = value
 
 
+## DEPRECATED: Retained for compatibility. Does not affect gameplay.
 func set_trust_state(value: String) -> void:
 	profile.trust_state = value
 

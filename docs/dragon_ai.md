@@ -12,7 +12,7 @@ The dragon AI system is designed to create the feeling of fighting and traveling
 
 The dragon should never feel like a controllable pet or scripted weapon.
 
-Player influence increases through synchronization and trust, but dragon individuality always remains present.
+Player influence increases through bond strength, sync, and instability, but dragon individuality always remains present.
 
 ---
 
@@ -83,44 +83,55 @@ Emotions directly influence:
 
 # Bond Influence
 
-`bond_strength` affects:
-- trust
-- cooperation willingness
-- communication clarity
-- emotional openness
-- synchronization potential
+## bond_strength (relationship depth)
 
-Low bond strength may result in:
-- hesitation
-- distrust
-- emotional distance
-- inconsistent combat behavior
+`bond_strength` is the **primary relationship stat**.
 
-High bond strength allows:
-- deeper communication
-- instinctive coordination
-- emotional transparency
-- advanced synchronization states
+In the prototype:
+- protection detection radius, response delay, and persistence
+- planned: command responsiveness (Q wait/recall delay)
+
+Design target — low bond strength:
+- slower protection reactions
+- shorter protective persistence
+
+Design target — high bond strength:
+- notices threats sooner
+- reacts faster
+- stays protective longer
+
+## sync (coordination)
+
+In the prototype: cooperative **assist cooldown** tiers.
+
+Design target: combat coordination, movement synergy, intent interpretation.
+
+## instability (strain)
+
+In the prototype: assist **hesitation** and **cancellation** after hesitation.
+
+Does not affect protection.
+
+Design target: emotional outbursts, communication breakdown, temporary autonomy.
 
 ---
 
 # Sync Influence
 
-`sync` represents mutual understanding between rider and dragon.
+`sync` represents mutual **coordination** between rider and dragon.
 
-High synchronization improves:
+In the prototype, sync controls cooperative assist **frequency** (cooldown between assists).
+
+High synchronization improves (design target):
 - combat coordination
 - movement synergy
 - reaction timing
 - intent interpretation
-- communication flow
 
-Low synchronization may cause:
+Low synchronization may cause (design target):
 - delayed reactions
 - positioning mistakes
-- emotional confusion
 - failed cooperation
-- incorrect action interpretation
 
 Synchronization should feel earned through shared experiences.
 
@@ -128,19 +139,17 @@ Synchronization should feel earned through shared experiences.
 
 # Instability Influence
 
-Instability represents emotional and magical strain within the bond.
+Instability represents **strain** within the bond.
 
-High instability may cause:
+In the prototype, instability affects cooperative assist **reliability** (hesitation, cancel). Protection is separate and driven by bond strength.
+
+High instability (design target) may cause:
 - emotional outbursts
 - panic reactions
-- aggression spikes
 - communication breakdown
-- synchronization collapse
 - temporary autonomy increases
 
-Critical instability may temporarily override rider influence entirely.
-
-Instability should create meaningful emotional tension during gameplay.
+Critical instability (design target) may temporarily override rider influence entirely.
 
 ---
 

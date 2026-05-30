@@ -24,11 +24,11 @@ The central gameplay experience revolves around building and maintaining a bond 
 Explore -> Encounter Conflict -> Fight Alongside Dragon -> Bond State Changes -> Unlock New Abilities and Communication
 
 The player's actions continuously influence:
-- trust
-- synchronization
-- instability
+- bond strength (relationship depth)
+- sync (coordination)
+- instability (strain)
 - dragon behavior
-- communication clarity
+- communication clarity (future)
 
 The dragon responds dynamically during both combat and exploration.
 
@@ -38,16 +38,12 @@ The dragon responds dynamically during both combat and exploration.
 
 ## Dragon Bonding
 
-The dragon is not a controllable pet or weapon.
-
 The dragon is an intelligent companion influenced through:
-- trust
-- emotional state
-- synchronization
-- magical resonance
+- bond strength (relationship depth)
+- sync (coordination)
+- instability (strain)
+- emotional state (future)
 - player intent
-
-The bond evolves over time through gameplay.
 
 ---
 
@@ -120,9 +116,10 @@ The dragon is a semi-independent AI companion.
 
 The dragon continuously evaluates:
 - danger
-- trust
-- synchronization
-- emotional state
+- bond strength
+- sync
+- instability
+- emotional state (future)
 - instinct
 - rider intent
 
@@ -140,23 +137,26 @@ Dragon communication evolves over time as the bond deepens.
 
 # Bond System Integration
 
-The bond system connects nearly all major gameplay systems.
+The bond system connects major gameplay systems through three **active** stats:
 
-Core bond variables (`BondProfile`):
-- bond_strength
-- sync
-- instability
-- trust_state
-- communication_stage
-- resonance_style
+| Stat | Role |
+|------|------|
+| `bond_strength` | Relationship depth — protection (prototype); commands (planned) |
+| `sync` | Coordination — assist frequency (prototype) |
+| `instability` | Strain — assist reliability (prototype) |
 
-These variables influence:
+Additional persisted fields (compatibility / future):
+- `trust_state` — **deprecated**, not used in gameplay
+- `communication_stage` — design only
+- `resonance_style` — design only
+
+These variables influence (design target):
 - combat behavior
 - communication
-- magical amplification
 - dragon AI behavior
-- advanced abilities
 - emotional reactions
+
+In the vertical slice prototype, only the three active stats above have gameplay hooks.
 
 ---
 
@@ -240,10 +240,9 @@ Communication progression is intended to feel emotionally meaningful.
 Dragons are intelligent beings, not controllable pets.
 
 The player influences dragon behavior through:
-- synchronization
-- trust
-- emotional state
-- bond strength
+- bond strength (relationship depth)
+- sync (coordination)
+- instability (strain)
 - combat behavior
 
 Strong bonds improve cooperation but never completely remove dragon autonomy.

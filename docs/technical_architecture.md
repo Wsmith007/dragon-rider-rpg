@@ -113,28 +113,31 @@ The game should not be architected around swapping dragons.
 
 The bond system tracks the persistent relationship between rider and dragon.
 
-Core bond data (`BondProfile` fields — use these names in docs and code):
+### Active gameplay stats (3-stat model)
 
-| Field | Range / type | Notes |
-|-------|----------------|-------|
-| `bond_strength` | 0–100 | Emotional depth of the bond |
-| `sync` | 0–100 | Coordination; prose may say "synchronization" |
-| `instability` | 0–100 | Bond stress and magical overload |
-| `trust_state` | enum | See `bond_system.md` |
-| `communication_stage` | enum | `early`, `mid`, `deep` |
-| `resonance_style` | enum | `adaptive`, `harmonic`, `structured`, `fractured` (race-default) |
+| Field | Range | Role in prototype |
+|-------|-------|-------------------|
+| `bond_strength` | 0–100 | Relationship depth — protection; future command responsiveness and communication |
+| `sync` | 0–100 | Coordination — cooperative assist frequency (cooldown tiers) |
+| `instability` | 0–100 | Strain — assist hesitation and cancellation |
 
-`trust_state` values: `hostile`, `cautious`, `neutral`, `allied`, `deep_bond`, `symbiotic`
+### Compatibility / future fields (`BondProfile`)
+
+| Field | Status |
+|-------|--------|
+| `trust_state` | **Deprecated** — retained for save compatibility only. Not used in gameplay. See `bond_system.md`. |
+| `communication_stage` | Design — `early`, `mid`, `deep` (not in prototype code yet) |
+| `resonance_style` | Design — race-default enum (not in prototype code yet) |
 
 Bond data should persist across the full game.
 
 BondSystem should influence:
 - dragon AI
-- combat cooperation
-- communication clarity
-- ability unlocks
+- combat cooperation (sync, instability, bond strength — see `project_checkpoint_milestone5.md`)
+- communication clarity (future)
+- ability unlocks (future)
 - instability events
-- magical awakening
+- magical awakening (future)
 
 ---
 
@@ -154,9 +157,10 @@ The dragon should not behave like a directly controlled unit.
 The player influences the dragon through:
 - movement
 - combat behavior
-- trust
-- sync
-- emotional state
+- bond strength (relationship depth)
+- sync (coordination)
+- instability (strain)
+- emotional state (future)
 - intent signals
 
 ---
@@ -297,8 +301,9 @@ The dragon bond system is the central pillar of the game.
 When adding new systems, consider how they interact with:
 - rider
 - dragon
-- bond_strength
-- sync
-- instability
-- trust
-- communication growth
+- bond_strength (relationship depth)
+- sync (coordination)
+- instability (strain)
+- communication growth (future)
+
+`trust_state` is deprecated — do not add new gameplay hooks that read it.
