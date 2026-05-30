@@ -1,5 +1,5 @@
 extends CharacterBody2D
-## Dragon actor: state machine orchestrating follow, wait, alert, and assist layers.
+## Dragon actor: follow, wait, alert, defensive protection, and cooperative assist.
 
 
 signal behavior_changed(mode_name: String)
@@ -9,7 +9,8 @@ signal dragon_assisted(enemy: Node2D)
 @onready var follow_behavior: DragonFollowBehavior = $FollowBehavior
 @onready var threat_behavior: DragonThreatBehavior = $ThreatBehavior
 @onready var command_behavior: DragonCommandBehavior = $CommandBehavior
-@onready var assist_behavior: DragonAssistBehavior = $AssistBehavior
+@onready var protection_behavior: DragonProtectionBehavior = $ProtectionBehavior
+@onready var strike_behavior: DragonStrikeBehavior = $StrikeBehavior
 @onready var _visual: Polygon2D = $Visual
 @onready var _attack_flash: Polygon2D = $AttackFlash
 
@@ -22,6 +23,7 @@ signal dragon_assisted(enemy: Node2D)
 var state: DragonState.State = DragonState.State.FOLLOWING
 
 var _follow_target: Node2D
+var _player_engagement: PlayerEngagement
 var _reposition_cooldown: float = 0.0
 var _last_reported_state: DragonState.State = DragonState.State.FOLLOWING
 var _base_modulate: Color = Color.WHITE
@@ -34,8 +36,8 @@ func _ready() -> void:
 	_schedule_next_reposition_check()
 	threat_behavior.alert_started.connect(_on_rider_alert_started)
 	threat_behavior.alert_ended.connect(_on_rider_alert_ended)
-	assist_behavior.assist_hit.connect(_on_assist_hit)
-	assist_behavior.assist_finished.connect(_on_assist_finished)
+	strike_behavior.strike_hit.connect(_on_strike_hit)
+	strike_behavior.strike_finished.connect(_on_strike_finished)
 	_attack_flash.visible = false
 
 
@@ -43,12 +45,13 @@ func set_follow_target(target: Node2D) -> void:
 	_follow_target = target
 	follow_behavior.set_follow_target(target)
 	threat_behavior.set_follow_target(target)
+	_player_engagement = target.get_node_or_null("Engagement") as PlayerEngagement
 
 
 func handle_command_toggle() -> void:
 	if command_behavior.is_waiting:
 		command_behavior.recall()
-		assist_behavior.cancel_assist(false)
+		strike_behavior.cancel_strike(false)
 		follow_behavior.exit_waiting()
 		follow_behavior.exit_alert()
 		threat_behavior.evaluate()
@@ -65,20 +68,20 @@ func _physics_process(delta: float) -> void:
 	if _follow_target == null:
 		return
 
-	assist_behavior.update_cooldown(delta)
+	strike_behavior.update_cooldown(delta)
 
-	if state == DragonState.State.ASSISTING or assist_behavior.is_busy():
-		state = DragonState.State.ASSISTING
-		if not assist_behavior.is_busy():
-			_resolve_post_assist_state()
+	if strike_behavior.is_busy():
+		strike_behavior.update_strike(delta, global_position, _get_rider_position())
+		_set_combat_state_from_strike()
+		if not strike_behavior.is_busy():
+			_resolve_post_strike_state()
 	else:
-		_update_non_assisting_state(delta)
+		_update_non_combat_state(delta)
 
 	velocity = _get_movement_velocity()
 	move_and_slide()
 
-	# If still overlapping an enemy after movement, nudge away (not during assist lunge).
-	if not assist_behavior.is_busy() or assist_behavior.is_returning():
+	if not strike_behavior.is_busy() or strike_behavior.is_returning():
 		_apply_post_move_separation()
 
 	_update_facing()
@@ -86,7 +89,7 @@ func _physics_process(delta: float) -> void:
 	_emit_state_if_changed()
 
 
-func _update_non_assisting_state(delta: float) -> void:
+func _update_non_combat_state(delta: float) -> void:
 	if command_behavior.is_waiting:
 		_process_waiting_state()
 		return
@@ -99,9 +102,12 @@ func _update_non_assisting_state(delta: float) -> void:
 		follow_behavior.enter_alert(threat_behavior.get_valid_threat())
 		if entering_alert:
 			_log_alert_debug("state_enter")
-		_try_alert_assist()
+		_try_cooperative_assist()
+		if not strike_behavior.is_busy():
+			_try_defensive_protection()
 	else:
 		_set_following_state()
+		_try_cooperative_assist()
 		_update_reposition_timer(delta)
 
 
@@ -109,47 +115,95 @@ func _process_waiting_state() -> void:
 	state = DragonState.State.WAITING
 	follow_behavior.enter_waiting(command_behavior.wait_position)
 
-	if assist_behavior.is_busy() or not assist_behavior.can_begin_defense():
+	if strike_behavior.is_busy() or not strike_behavior.can_begin_protection():
 		return
 
-	var defense_target := assist_behavior.find_defense_target(global_position)
+	var defense_target := strike_behavior.find_wait_protection_target(
+		global_position,
+		strike_behavior.get_wait_protection_exclude_id()
+	)
 	if defense_target == null:
-		assist_behavior.clear_defense_block_if_target_gone(global_position)
+		strike_behavior.clear_wait_protection_block_if_target_gone(global_position)
 		return
 
-	if assist_behavior.try_begin_defense_assist(defense_target, command_behavior.wait_position):
-		state = DragonState.State.ASSISTING
+	var rider_position := _get_rider_position()
+	if strike_behavior.try_begin_wait_protection(
+		defense_target,
+		command_behavior.wait_position,
+		rider_position
+	):
+		state = DragonState.State.PROTECTING
 		follow_behavior.exit_waiting()
 		dragon_assisted.emit(defense_target)
 
 
-func _try_alert_assist() -> void:
-	if assist_behavior.is_busy() or assist_behavior.is_on_cooldown():
+## Cooperative assist: only when the rider is intentionally engaging a target.
+func _try_cooperative_assist() -> void:
+	if strike_behavior.is_busy() or not strike_behavior.can_begin_assist():
 		return
-	if not follow_behavior.is_at_alert_position():
+	if _player_engagement == null:
 		return
 
-	var target := assist_behavior.find_assist_target(global_position)
+	var target := _player_engagement.get_assist_target()
 	if target == null:
+		return
+	if not strike_behavior.is_target_within_strike_range(target):
 		return
 
 	var return_point := follow_behavior.get_alert_movement_anchor()
-	if assist_behavior.try_begin_alert_assist(target, return_point):
+	if strike_behavior.try_begin_assist(target, return_point, _get_rider_position()):
 		state = DragonState.State.ASSISTING
 		follow_behavior.exit_alert()
 		dragon_assisted.emit(target)
 
 
-func _get_movement_velocity() -> Vector2:
-	if assist_behavior.is_busy():
-		if assist_behavior.is_returning():
-			return assist_behavior.get_return_velocity(global_position)
-		return assist_behavior.get_lunge_velocity(global_position)
+## Defensive protection: automatic when enemies chase, crowd, or threaten the rider.
+func _try_defensive_protection() -> void:
+	if strike_behavior.is_busy() or not strike_behavior.can_begin_protection():
+		return
+	if not follow_behavior.is_at_alert_position():
+		return
 
+	var threat := threat_behavior.get_valid_threat()
+	var target := protection_behavior.find_protection_target(
+		_follow_target,
+		global_position,
+		threat,
+		_get_engaged_enemy_instance_id()
+	)
+	if target == null:
+		return
+
+	var return_point := follow_behavior.get_alert_movement_anchor()
+	if strike_behavior.try_begin_protection(target, return_point, _get_rider_position()):
+		state = DragonState.State.PROTECTING
+		follow_behavior.exit_alert()
+		dragon_assisted.emit(target)
+
+
+func _get_engaged_enemy_instance_id() -> int:
+	if _player_engagement == null:
+		return -1
+	var engaged := _player_engagement.get_assist_target()
+	if engaged == null:
+		return -1
+	return engaged.get_instance_id()
+
+
+func _set_combat_state_from_strike() -> void:
+	if strike_behavior.get_strike_kind() == DragonStrikeBehavior.StrikeKind.ASSIST:
+		state = DragonState.State.ASSISTING
+	else:
+		state = DragonState.State.PROTECTING
+
+
+func _get_movement_velocity() -> Vector2:
+	if strike_behavior.is_busy():
+		return strike_behavior.get_movement_velocity(global_position)
 	return follow_behavior.get_desired_velocity()
 
 
-func _resolve_post_assist_state() -> void:
+func _resolve_post_strike_state() -> void:
 	follow_behavior.exit_alert()
 
 	if command_behavior.is_waiting:
@@ -171,18 +225,24 @@ func _set_following_state() -> void:
 	follow_behavior.exit_alert()
 
 
+func _get_rider_position() -> Vector2:
+	if _follow_target:
+		return _follow_target.global_position
+	return global_position
+
+
 func _update_facing() -> void:
 	var look_target: Vector2
 
-	if assist_behavior.is_busy() and assist_behavior.is_returning():
+	if strike_behavior.is_busy() and strike_behavior.is_returning():
 		if _follow_target:
 			look_target = follow_behavior.get_alert_movement_anchor()
 		else:
 			return
-	elif assist_behavior.is_busy():
-		var assist_target := assist_behavior.get_target()
-		if assist_target != null and is_instance_valid(assist_target):
-			look_target = assist_target.global_position
+	elif strike_behavior.is_busy():
+		var strike_target := strike_behavior.get_target()
+		if strike_target != null and is_instance_valid(strike_target):
+			look_target = strike_target.global_position
 		else:
 			return
 	elif state == DragonState.State.ALERT:
@@ -200,6 +260,8 @@ func _update_visual_modulate() -> void:
 	match state:
 		DragonState.State.ASSISTING:
 			_visual.modulate = Color(1.0, 0.55, 0.35, 1.0)
+		DragonState.State.PROTECTING:
+			_visual.modulate = Color(1.0, 0.45, 0.4, 1.0)
 		DragonState.State.ALERT:
 			_visual.modulate = Color(1.0, 0.85, 0.55, 1.0)
 		DragonState.State.WAITING:
@@ -249,12 +311,13 @@ func _on_rider_alert_ended() -> void:
 	_emit_state_if_changed()
 
 
-func _on_assist_hit(_enemy: Node2D) -> void:
+func _on_strike_hit(enemy: Node2D, _kind: DragonStrikeBehavior.StrikeKind) -> void:
 	_flash_attack()
+	dragon_assisted.emit(enemy)
 
 
-func _on_assist_finished() -> void:
-	_resolve_post_assist_state()
+func _on_strike_finished(_kind: DragonStrikeBehavior.StrikeKind) -> void:
+	_resolve_post_strike_state()
 	_emit_state_if_changed()
 
 
@@ -292,7 +355,7 @@ func _schedule_next_reposition_check() -> void:
 
 
 func _apply_post_move_separation() -> void:
-	if assist_behavior.is_busy() and not assist_behavior.is_returning():
+	if strike_behavior.is_busy() and not strike_behavior.is_returning():
 		return
 
 	const SEPARATION_RADIUS := 40.0

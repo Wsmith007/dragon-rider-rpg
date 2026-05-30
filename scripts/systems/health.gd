@@ -37,6 +37,31 @@ func heal(amount: float) -> void:
 	health_changed.emit(current_health, max_health)
 
 
+func increase_max_health(amount: float, also_heal: bool = false) -> void:
+	if _death_handled:
+		return
+	if amount <= 0.0:
+		return
+
+	max_health += amount
+	if also_heal:
+		current_health = minf(current_health + amount, max_health)
+	else:
+		current_health = minf(current_health, max_health)
+	health_changed.emit(current_health, max_health)
+
+
+func decrease_max_health(amount: float, minimum_max: float = 10.0) -> void:
+	if _death_handled:
+		return
+	if amount <= 0.0:
+		return
+
+	max_health = maxf(max_health - amount, minimum_max)
+	current_health = minf(current_health, max_health)
+	health_changed.emit(current_health, max_health)
+
+
 func is_alive() -> bool:
 	return not _death_handled and current_health > 0.0
 

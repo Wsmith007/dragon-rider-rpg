@@ -5,8 +5,12 @@
 [ext_resource type="PackedScene" uid="uid://bplayer001" path="res://scenes/player/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" uid="uid://bdragon001" path="res://scenes/dragon/Dragon.tscn" id="4_dragon"]
 [ext_resource type="PackedScene" uid="uid://benemy001" path="res://scenes/enemies/Enemy.tscn" id="5_enemy"]
-[ext_resource type="Script" path="res://scripts/world/floor_grid_visual.gd" id="6_floor_grid"]
-[ext_resource type="PackedScene" uid="uid://bplayerhealthui" path="res://scenes/ui/PlayerHealthUI.tscn" id="7_player_health_ui"]
+[ext_resource type="Script" uid="uid://blbnkkh5l4fbo" path="res://scripts/world/floor_grid_visual.gd" id="6_floor_grid"]
+[ext_resource type="PackedScene" uid="uid://drckc1d62aiqe" path="res://scenes/ui/PlayerHealthUI.tscn" id="7_player_health_ui"]
+[ext_resource type="PackedScene" uid="uid://bbonddebugui" path="res://scenes/ui/BondDebugUI.tscn" id="8_bond_debug_ui"]
+[ext_resource type="Script" uid="uid://r18i6xvaiaug" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
+[ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="10_bond_test_help"]
+[ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
 
 [node name="TestWorld" type="Node2D" unique_id=1840992113]
 script = ExtResource("1_world")
@@ -19,7 +23,7 @@ offset_right = 2400.0
 offset_bottom = 2400.0
 color = Color(0.14, 0.2, 0.11, 1)
 
-[node name="FloorGrid" type="Node2D" parent="."]
+[node name="FloorGrid" type="Node2D" parent="." unique_id=23395110]
 z_index = -9
 script = ExtResource("6_floor_grid")
 
@@ -45,6 +49,16 @@ position = Vector2(480, 180)
 [node name="Camera2D" type="Camera2D" parent="." unique_id=305802096]
 script = ExtResource("2_camera")
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1641708234]
 
-[node name="PlayerHealthUI" parent="UI" instance=ExtResource("7_player_health_ui")]
+[node name="PlayerHealthUI" parent="UI" unique_id=1385748611 instance=ExtResource("7_player_health_ui")]
+
+[node name="BondDebugUI" parent="UI" unique_id=1536371996 instance=ExtResource("8_bond_debug_ui")]
+
+[node name="BondTestControls" type="Node" parent="UI" unique_id=1772487714]
+script = ExtResource("9_bond_test_controls")
+
+[node name="HealthDebugControls" type="Node" parent="UI"]
+script = ExtResource("11_health_debug")
+
+[node name="BondTestHelpUI" parent="UI" unique_id=2074700217 instance=ExtResource("10_bond_test_help")]

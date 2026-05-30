@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://bdragon001"]
+[gd_scene load_steps=8 format=3 uid="uid://bdragon001"]
 
 [ext_resource type="Script" path="res://scripts/dragon/dragon.gd" id="1_dragon"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_follow_behavior.gd" id="2_follow"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_threat_behavior.gd" id="3_threat"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_command_behavior.gd" id="4_command"]
-[ext_resource type="Script" path="res://scripts/dragon/dragon_assist_behavior.gd" id="5_assist"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_strike_behavior.gd" id="5_strike"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_protection_behavior.gd" id="6_protection"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
@@ -36,5 +37,8 @@ script = ExtResource("3_threat")
 [node name="CommandBehavior" type="Node" parent="."]
 script = ExtResource("4_command")
 
-[node name="AssistBehavior" type="Node" parent="."]
-script = ExtResource("5_assist")
+[node name="ProtectionBehavior" type="Node" parent="."]
+script = ExtResource("6_protection")
+
+[node name="StrikeBehavior" type="Node" parent="."]
+script = ExtResource("5_strike")

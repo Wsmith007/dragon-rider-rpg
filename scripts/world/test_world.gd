@@ -7,6 +7,8 @@ extends Node2D
 @onready var _camera: Camera2D = $Camera2D
 @onready var _dragon_command: Node = $Entities/Player/DragonCommand
 @onready var _player_health_ui: Control = $UI/PlayerHealthUI
+@onready var _bond_debug_ui: Control = $UI/BondDebugUI
+@onready var _health_debug_controls: Node = $UI/HealthDebugControls
 
 
 func _ready() -> void:
@@ -16,3 +18,7 @@ func _ready() -> void:
 	_dragon_command.command_toggle_requested.connect(_dragon.handle_command_toggle)
 	if _player_health_ui.has_method("bind_to_player"):
 		_player_health_ui.bind_to_player(_player)
+	if _bond_debug_ui.has_method("bind_to_dragon"):
+		_bond_debug_ui.bind_to_dragon(_dragon)
+	if _health_debug_controls.has_method("bind_to_player"):
+		_health_debug_controls.bind_to_player(_player)

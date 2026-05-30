@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://bbondtesthelp"]
+
+[node name="BondTestHelpUI" type="Control" unique_id=1638809239]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = -12.0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=1625512638]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=2146976644]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin" unique_id=1090832448]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox" unique_id=1217401217]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.7, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Bond test keys"
+
+[node name="F1Label" type="Label" parent="Panel/Margin/VBox" unique_id=159036538]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F1  Sync +5"
+
+[node name="F2Label" type="Label" parent="Panel/Margin/VBox" unique_id=674035082]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F2  Sync -5"
+
+[node name="F3Label" type="Label" parent="Panel/Margin/VBox" unique_id=587717061]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F3  Instability +5"
+
+[node name="F4Label" type="Label" parent="Panel/Margin/VBox" unique_id=2094137343]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F4  Instability -5"
+
+[node name="HealthTitleLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.7, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "Health test keys"
+mouse_filter = 2
+
+[node name="F5Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F5  Current HP +10"
+mouse_filter = 2
+
+[node name="F6Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F6  Max HP +10 (and current)"
+mouse_filter = 2
+
+[node name="F8Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "F7  Max HP -10"
+mouse_filter = 2

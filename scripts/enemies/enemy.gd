@@ -115,6 +115,14 @@ func _update_facing() -> void:
 		_visual.rotation = velocity.angle() + PI * 0.5
 
 
+func is_chasing_player() -> bool:
+	return _state == State.CHASE
+
+
+func is_engaging_player() -> bool:
+	return _state == State.ENGAGE
+
+
 func _find_player() -> void:
 	var players := get_tree().get_nodes_in_group("player")
 	if players.is_empty():
