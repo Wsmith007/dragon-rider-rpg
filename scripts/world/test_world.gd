@@ -6,6 +6,7 @@ extends Node2D
 @onready var _dragon: CharacterBody2D = $Entities/Dragon
 @onready var _camera: Camera2D = $Camera2D
 @onready var _dragon_command: Node = $Entities/Player/DragonCommand
+@onready var _player_health_ui: Control = $UI/PlayerHealthUI
 
 
 func _ready() -> void:
@@ -13,3 +14,5 @@ func _ready() -> void:
 	if _camera.has_method("set_follow_target"):
 		_camera.set_follow_target(_player)
 	_dragon_command.command_toggle_requested.connect(_dragon.handle_command_toggle)
+	if _player_health_ui.has_method("bind_to_player"):
+		_player_health_ui.bind_to_player(_player)
