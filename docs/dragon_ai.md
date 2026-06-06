@@ -83,13 +83,16 @@ Emotions directly influence:
 
 # Bond Influence
 
-## bond_strength (relationship depth)
+## bond_strength (relationship resilience)
 
 `bond_strength` is the **primary relationship stat**.
 
+Bond tier boundaries (shared across all systems): **0–30, 31–60, 61–85, 86–100** via `BondResilience.get_bond_tier()`.
+
 In the prototype:
 - protection detection radius, response delay, and persistence
-- planned: command responsiveness (Q wait/recall delay)
+- wait/recall command responsiveness (Q)
+- communication message complexity (rider-perceived clarity)
 
 Design target — low bond strength:
 - slower protection reactions

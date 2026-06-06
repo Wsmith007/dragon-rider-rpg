@@ -1,13 +1,29 @@
 [gd_scene format=3 uid="uid://bbondtesthelp"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_help_panel"]
+bg_color = Color(0.94, 0.96, 0.91, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.52, 0.4, 0.85)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
 [node name="BondTestHelpUI" type="Control" unique_id=1638809239]
 layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 12.0
-offset_top = -200.0
-offset_right = 300.0
+offset_top = -248.0
+offset_right = 340.0
 offset_bottom = -12.0
 grow_vertical = 0
 mouse_filter = 2
@@ -20,86 +36,87 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_help_panel")
 
 [node name="Margin" type="MarginContainer" parent="Panel" unique_id=2146976644]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin" unique_id=1090832448]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="Panel/Margin/VBox" unique_id=1217401217]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.8, 0.7, 0.9)
-theme_override_font_sizes/font_size = 11
-text = "Bond test keys"
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Bond test keys (hold Ctrl)"
 
-[node name="F1Label" type="Label" parent="Panel/Margin/VBox" unique_id=159036538]
+[node name="Ctrl1Label" type="Label" parent="Panel/Margin/VBox" unique_id=159036538]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F1  Sync +5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+1  Bond Strength +5"
 
-[node name="F2Label" type="Label" parent="Panel/Margin/VBox" unique_id=674035082]
+[node name="Ctrl2Label" type="Label" parent="Panel/Margin/VBox" unique_id=674035082]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F2  Sync -5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+2  Bond Strength -5"
 
-[node name="F3Label" type="Label" parent="Panel/Margin/VBox" unique_id=587717061]
+[node name="Ctrl3Label" type="Label" parent="Panel/Margin/VBox" unique_id=587717061]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F3  Instability +5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+3  Sync +5"
 
-[node name="F4Label" type="Label" parent="Panel/Margin/VBox" unique_id=2094137343]
+[node name="Ctrl4Label" type="Label" parent="Panel/Margin/VBox" unique_id=2094137343]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F4  Instability -5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+4  Sync -5"
 
-[node name="F9Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="Ctrl5Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F9  Bond Strength +5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+5  Instability +5"
 
-[node name="F10Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="Ctrl6Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
-text = "F10 Bond Strength -5"
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ctrl+6  Instability -5"
 
 [node name="HealthTitleLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.8, 0.7, 0.9)
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Health test keys"
 mouse_filter = 2
 
 [node name="F5Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
 text = "F5  Current HP +10"
 mouse_filter = 2
 
 [node name="F6Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
 text = "F6  Max HP +10 (and current)"
 mouse_filter = 2
 
 [node name="F7Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.75, 0.68, 0.85)
-theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
 text = "F7  Max HP -10"
 mouse_filter = 2

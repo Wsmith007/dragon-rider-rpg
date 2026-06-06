@@ -7,10 +7,10 @@ layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -220.0
+offset_left = -240.0
 offset_top = 12.0
 offset_right = -12.0
-offset_bottom = 280.0
+offset_bottom = 480.0
 grow_horizontal = 0
 grow_vertical = 0
 script = ExtResource("1_ui")
@@ -92,6 +92,22 @@ text = "Prot. Persist"
 layout_mode = 2
 text = "2"
 
+[node name="PendingCommandLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Pending Cmd"
+
+[node name="PendingCommandValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "NONE"
+
+[node name="CommandDelayLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Cmd Delay"
+
+[node name="CommandDelayValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "0"
+
 [node name="DragonStateLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
 layout_mode = 2
 text = "Dragon State"
@@ -99,3 +115,64 @@ text = "Dragon State"
 [node name="DragonStateValue" type="Label" parent="Panel/Margin/VBox/Grid"]
 layout_mode = 2
 text = "FOLLOWING"
+
+[node name="BondTierLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Bond Tier"
+
+[node name="BondTierValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Tier 2"
+
+[node name="BondTierProgressLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Tier Progress"
+
+[node name="BondTierProgressValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "0.66"
+
+[node name="PlannedEffectsTitle" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Planned Effects"
+
+[node name="PlannedEffectsSpacer" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "(not active)"
+
+[node name="FutureSyncFloorLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Sync Floor"
+
+[node name="FutureSyncFloorValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "20.0"
+
+[node name="FutureInstabilityResistanceLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Inst. Resist"
+
+[node name="FutureInstabilityResistanceValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "10%"
+
+[node name="FutureInstabilityRecoveryLabel" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Inst. Recovery"
+
+[node name="FutureInstabilityRecoveryValue" type="Label" parent="Panel/Margin/VBox/Grid"]
+layout_mode = 2
+text = "1.20x"
+
+[node name="Communication" type="VBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="DragonThoughtLabel" type="Label" parent="Panel/Margin/VBox/Communication"]
+layout_mode = 2
+text = "Dragon Thought"
+
+[node name="DragonThoughtValue" type="Label" parent="Panel/Margin/VBox/Communication"]
+layout_mode = 2
+autowrap_mode = 3
+text = "\"Watching.\""

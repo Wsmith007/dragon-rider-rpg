@@ -71,7 +71,7 @@ Gameplay uses three active numeric stats. **`bond_strength` is the primary relat
 - **Instability → hesitation + cancel** (cooperative assist only)
 - **Bond Strength → protection** (radius, delay, persistence)
 - Debug panel: 3 active stats + protection tuning readout + dragon state
-- F1/F2 sync · F3/F4 instability · F9/F10 bond strength
+- Ctrl+1/2 bond strength · Ctrl+3/4 sync · Ctrl+5/6 instability
 
 ### Enemies
 - Idle → detect → chase → engage → melee damage
@@ -91,9 +91,9 @@ Gameplay uses three active numeric stats. **`bond_strength` is the primary relat
 | Move | **WASD** or **Arrow keys** |
 | Attack | **Space**, **J**, or **Left click** |
 | Dragon wait / recall | **Q** |
-| Sync +5 / −5 | **F1** / **F2** |
-| Instability +5 / −5 | **F3** / **F4** |
-| Bond Strength +5 / −5 | **F9** / **F10** |
+| Bond Strength +5 / −5 | **Ctrl+1** / **Ctrl+2** |
+| Sync +5 / −5 | **Ctrl+3** / **Ctrl+4** |
+| Instability +5 / −5 | **Ctrl+5** / **Ctrl+6** |
 | Current HP +10 | **F5** |
 | Max HP +10 (+ current) | **F6** |
 | Max HP −10 (min 10) | **F7** |

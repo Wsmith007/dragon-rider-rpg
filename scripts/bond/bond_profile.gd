@@ -3,7 +3,7 @@ class_name BondProfile
 ## Persistent rider–dragon bond data. Future systems read and modify through BondSystem.
 ##
 ## Active gameplay stats (3-stat model):
-## - bond_strength — relationship depth; protection and future command responsiveness
+## - bond_strength — relationship resilience; protection, command responsiveness, future stat floors/recovery
 ## - sync — coordination; cooperative assist frequency
 ## - instability — strain; assist hesitation and cancellation
 
@@ -66,14 +66,27 @@ func reset_to_defaults() -> void:
 
 
 static func get_command_response_delay(bond_strength: float) -> float:
-	## Planned hook for Q wait/recall responsiveness under bond_strength (not wired yet).
-	if bond_strength <= 25.0:
-		return 0.75
-	if bond_strength <= 50.0:
-		return 0.50
-	if bond_strength <= 75.0:
-		return 0.25
-	return 0.0
+	return BondResilience.get_command_response_delay(bond_strength)
+
+
+static func get_bond_tier(bond_strength: float) -> int:
+	return BondResilience.get_bond_tier(bond_strength)
+
+
+static func get_bond_tier_progress(bond_strength: float) -> float:
+	return BondResilience.get_bond_tier_progress(bond_strength)
+
+
+static func get_sync_floor(bond_strength: float) -> float:
+	return BondResilience.get_sync_floor(bond_strength)
+
+
+static func get_instability_resistance(bond_strength: float) -> float:
+	return BondResilience.get_instability_resistance(bond_strength)
+
+
+static func get_instability_recovery_rate(bond_strength: float) -> float:
+	return BondResilience.get_instability_recovery_rate(bond_strength)
 
 
 func _emit_changed() -> void:

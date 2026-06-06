@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://cit034tshkkac" path="res://scripts/dragon/dragon_strike_behavior.gd" id="5_strike"]
 [ext_resource type="Script" uid="uid://b2m4loh58674o" path="res://scripts/dragon/dragon_protection_behavior.gd" id="6_protection"]
 [ext_resource type="Script" uid="uid://cbqfpscv3rhaf" path="res://scripts/dragon/dragon_cooperation_behavior.gd" id="7_cooperation"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_communication_behavior.gd" id="8_communication"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
@@ -46,3 +47,6 @@ script = ExtResource("5_strike")
 [node name="CooperationBehavior" type="Node" parent="." unique_id=430149769]
 script = ExtResource("7_cooperation")
 hesitation_duration = 0.45
+
+[node name="CommunicationBehavior" type="Node" parent="."]
+script = ExtResource("8_communication")

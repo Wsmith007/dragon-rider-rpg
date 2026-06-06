@@ -141,9 +141,19 @@ The bond system connects major gameplay systems through three **active** stats:
 
 | Stat | Role |
 |------|------|
-| `bond_strength` | Relationship depth — protection (prototype); commands (planned) |
+| `bond_strength` | Relationship **resilience** — protection, commands, communication (active); sync floors, instability resistance/recovery (planned) |
 | `sync` | Coordination — assist frequency (prototype) |
 | `instability` | Strain — assist reliability (prototype) |
+
+### Bond Strength = Resilience (Not Power)
+
+High Bond Strength does not prevent conflict. It makes the relationship harder to destabilize and easier to recover from stress. It supports the bond rather than directly increasing combat damage.
+
+### Bond Tiers & Progress
+
+Relationship stages use four unequal tiers (0–30, 31–60, 61–85, 86–100). **Bond Tier Progress** (0.0–1.0) tracks advancement within a tier so Bond 100 is more resilient than Bond 86 even though both are Tier 4.
+
+Central helpers live in `scripts/bond/bond_resilience.gd`. Protection, command delay, communication, and planned resilience effects all read tier boundaries from this module — do not duplicate thresholds.
 
 Additional persisted fields (compatibility / future):
 - `trust_state` — **deprecated**, not used in gameplay

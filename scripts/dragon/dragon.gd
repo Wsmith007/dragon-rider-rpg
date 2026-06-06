@@ -42,6 +42,8 @@ func _ready() -> void:
 	threat_behavior.alert_ended.connect(_on_rider_alert_ended)
 	strike_behavior.strike_hit.connect(_on_strike_hit)
 	strike_behavior.strike_finished.connect(_on_strike_finished)
+	command_behavior.wait_position_set.connect(_on_command_wait_applied)
+	command_behavior.recalled.connect(_on_command_recall_applied)
 	_attack_flash.visible = false
 	call_deferred("_connect_enemy_death_signals")
 
@@ -86,19 +88,22 @@ func set_follow_target(target: Node2D) -> void:
 
 
 func handle_command_toggle() -> void:
-	if command_behavior.is_waiting:
-		command_behavior.recall()
-		strike_behavior.cancel_strike(false)
-		cooperation_behavior.cancel_cooperative_assist("command_recall")
-		follow_behavior.exit_waiting()
-		follow_behavior.exit_alert()
-		threat_behavior.evaluate()
-		_set_following_state()
-	else:
-		command_behavior.set_wait(global_position)
-		state = DragonState.State.WAITING
-		follow_behavior.enter_waiting(command_behavior.wait_position)
+	command_behavior.request_toggle(global_position)
 
+
+func _on_command_wait_applied(_wait_pos: Vector2) -> void:
+	state = DragonState.State.WAITING
+	follow_behavior.enter_waiting(command_behavior.wait_position)
+	_emit_state_if_changed()
+
+
+func _on_command_recall_applied() -> void:
+	strike_behavior.cancel_strike(false)
+	cooperation_behavior.cancel_cooperative_assist("command_recall")
+	follow_behavior.exit_waiting()
+	follow_behavior.exit_alert()
+	threat_behavior.evaluate()
+	_set_following_state()
 	_emit_state_if_changed()
 
 
@@ -107,6 +112,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	strike_behavior.update_cooldown(delta)
+	command_behavior.tick(delta, global_position)
 	cooperation_behavior.tick(delta)
 	_tick_protection_behavior(delta)
 	_handle_hesitation_completion()

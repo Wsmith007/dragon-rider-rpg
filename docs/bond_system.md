@@ -46,7 +46,7 @@ Persistent bond data uses these field names everywhere (docs and code):
 
 ### Active gameplay stats (3-stat model)
 
-- `bond_strength` — 0–100 · **relationship depth** (protection; future command responsiveness)
+- `bond_strength` — 0–100 · **relationship resilience** (protection, command responsiveness, communication clarity; future sync floors and instability resistance/recovery)
 - `sync` — 0–100 · **coordination** (cooperative assist frequency)
 - `instability` — 0–100 · **strain** (assist hesitation and cancellation)
 
@@ -62,11 +62,98 @@ Persistent bond data uses these field names everywhere (docs and code):
 
 | Stat | Identity | Implemented in prototype |
 |------|----------|--------------------------|
-| Bond Strength | Relationship / connection | Protection radius, response delay, persistence |
+| Bond Strength | Relationship / resilience | Protection, command delay, communication tiers; resilience helpers (planned wiring) |
 | Sync | Cooperation / frequency | Assist cooldown tiers |
 | Instability | Reliability / strain | Hesitation + post-hesitation cancel (assist only) |
 
-Command responsiveness (Q wait/recall delay) is **planned under Bond Strength**, not trust.
+Command responsiveness (Q wait/recall delay) and communication tiering are **active under Bond Strength**.
+
+---
+
+# Bond Strength Philosophy
+
+Bond Strength is **not combat power**. It is **relationship resilience**.
+
+A strong bond does not prevent hardship. It makes the relationship:
+- harder to destabilize
+- easier to recover from stress
+- more resistant to ordinary strain
+- more difficult to permanently damage
+
+Bond Strength does **not** directly increase dragon damage.
+
+---
+
+# Bond Tiers (Relationship Stages)
+
+Major relationship stages use **unequal tier ranges** (single source of truth in `BondResilience`):
+
+| Tier | Bond Strength | Stage |
+|------|---------------|-------|
+| 1 | 0–30 | Early / fragile connection |
+| 2 | 31–60 | Developing trust |
+| 3 | 61–85 | Established bond |
+| 4 | 86–100 | Deep, resilient bond |
+
+**Bond Tier Progress** (0.0–1.0) measures advancement **within** the current tier. Bond 86 and Bond 100 are both Tier 4, but Bond 100 provides stronger planned resilience benefits than Bond 86.
+
+Helpers: `BondResilience.get_bond_tier()`, `BondResilience.get_bond_tier_progress()` (also on `BondProfile`).
+
+All Bond Strength gameplay systems (protection, command delay, communication) use these tier boundaries via `scripts/bond/bond_resilience.gd`.
+
+---
+
+# Bond Strength — Active & Planned Effects
+
+| Effect | Status |
+|--------|--------|
+| Protection radius / delay / persistence | **Active** — Tier 1–4 via `BondResilience.get_bond_tier()` |
+| Wait/recall command responsiveness | **Active** — `BondResilience.get_command_response_delay()` |
+| Communication message complexity | **Active** — tier mapped in `DragonCommunicationCatalog` |
+| Sync floor (minimum coordination) | **Planned** — helpers only |
+| Instability resistance (stress impact reduction) | **Planned** — helpers only |
+| Instability recovery rate (decay multiplier) | **Planned** — helpers only |
+
+### Planned Sync Floor (not wired)
+
+Minimum sync the bond can support. Interpolated within each tier:
+
+| Tier | Bond range | Sync floor range |
+|------|------------|------------------|
+| 1 | 0–30 | 0 → 10 |
+| 2 | 31–60 | 15 → 25 |
+| 3 | 61–85 | 30 → 45 |
+| 4 | 86–100 | 50 → 65 |
+
+Helper: `get_sync_floor(bond_strength)`
+
+### Planned Instability Resistance (not wired)
+
+Fraction of ordinary stress impact reduced (does not eliminate instability):
+
+| Tier | Bond range | Resistance range |
+|------|------------|----------------------|
+| 1 | 0–30 | 0% → 5% |
+| 2 | 31–60 | 10% → 18% |
+| 3 | 61–85 | 25% → 35% |
+| 4 | 86–100 | 40% → 45% |
+
+Helper: `get_instability_resistance(bond_strength)` — returns 0.0–0.45
+
+### Planned Instability Recovery (not wired)
+
+Multiplier on future instability decay. **Recovery is the primary long-term reward of high Bond Strength.**
+
+| Tier | Bond range | Recovery multiplier |
+|------|------------|---------------------|
+| 1 | 0–30 | 1.00x → 1.15x |
+| 2 | 31–60 | 1.20x → 1.40x |
+| 3 | 61–85 | 1.50x → 1.75x |
+| 4 | 86–100 | 1.80x → 2.00x |
+
+Helper: `get_instability_recovery_rate(bond_strength)`
+
+Implementation: `scripts/bond/bond_resilience.gd`
 
 ---
 
@@ -74,25 +161,30 @@ Command responsiveness (Q wait/recall delay) is **planned under Bond Strength**,
 
 ## bond_strength
 
-Represents the emotional and spiritual **depth of the rider–dragon relationship**.
+Represents the emotional and spiritual **resilience of the rider–dragon relationship**.
 
 Range: 0–100
 
 **Primary relationship stat** in the 3-stat gameplay model.
 
-In the current prototype, bond strength affects **defensive protection** only:
-- detection radius
-- response delay before protection strike
-- alert persistence after threat leaves range
+In the current prototype, bond strength affects:
+- defensive protection (radius, response delay, persistence)
+- wait/recall command responsiveness (Q)
+- communication message complexity (what the rider perceives)
 
-Planned (not wired): command responsiveness on Q wait/recall.
+Planned (helpers exist, not wired to gameplay):
+- sync floor — coordination cannot fully collapse below tier minimum
+- instability resistance — ordinary stress has reduced impact
+- instability recovery — faster return to calm after strain
 
-Does **not** affect cooperative assist frequency (sync) or assist reliability (instability).
+Does **not** affect cooperative assist frequency (sync) or assist cancellation rolls (instability) today.
+
+Does **not** directly increase dragon damage.
 
 Higher bond strength (design target) may eventually improve:
 - emotional understanding
 - communication clarity
-- magical amplification
+- magical amplification (future)
 
 ---
 

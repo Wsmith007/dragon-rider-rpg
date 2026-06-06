@@ -3,6 +3,9 @@ class_name DragonCooperationBehavior
 ## Cooperative assist gate: hesitation, then immediate cancel decision on completion.
 
 
+signal hesitation_started
+signal cooperative_assist_canceled(reason: String)
+
 enum HesitationOutcome { NONE, APPROVED, CANCELED }
 enum AssistStartResult { BLOCKED, HESITATING, CANCELED, APPROVED }
 
@@ -170,6 +173,8 @@ func _cancel_cooperative_assist(reason: String, set_completion_outcome: bool) ->
 		_completed_outcome = HesitationOutcome.CANCELED
 	_assist_cancel_cooldown = assist_cancel_cooldown_duration
 	_clear_active_strike_assist(reason)
+	if reason == "immediate_cancel" or reason == "post_hesitation_cancel":
+		cooperative_assist_canceled.emit(reason)
 	print("RETURNING WITHOUT ASSIST | reason=", reason)
 
 
@@ -187,6 +192,7 @@ func _start_hesitation() -> void:
 	_hesitation_remaining = hesitation_duration
 	_shudder_phase = 0.0
 	_completed_outcome = HesitationOutcome.NONE
+	hesitation_started.emit()
 
 
 func _clear_hesitation_state() -> void:

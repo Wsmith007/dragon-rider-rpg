@@ -111,36 +111,36 @@ func clear_enemy_reference(enemy) -> void:
 
 
 func get_protection_radius(bond_strength: float) -> float:
-	match _tier_for_bond(bond_strength):
-		0:
+	match BondResilience.get_bond_tier(bond_strength):
+		BondResilience.BondTier.ONE:
 			return radius_tier_low
-		1:
+		BondResilience.BondTier.TWO:
 			return radius_tier_mid
-		2:
+		BondResilience.BondTier.THREE:
 			return radius_tier_high
 		_:
 			return radius_tier_max
 
 
 func get_response_delay(bond_strength: float) -> float:
-	match _tier_for_bond(bond_strength):
-		0:
+	match BondResilience.get_bond_tier(bond_strength):
+		BondResilience.BondTier.ONE:
 			return delay_tier_low
-		1:
+		BondResilience.BondTier.TWO:
 			return delay_tier_mid
-		2:
+		BondResilience.BondTier.THREE:
 			return delay_tier_high
 		_:
 			return delay_tier_max
 
 
 func get_persistence_duration(bond_strength: float) -> float:
-	match _tier_for_bond(bond_strength):
-		0:
+	match BondResilience.get_bond_tier(bond_strength):
+		BondResilience.BondTier.ONE:
 			return persistence_tier_low
-		1:
+		BondResilience.BondTier.TWO:
 			return persistence_tier_mid
-		2:
+		BondResilience.BondTier.THREE:
 			return persistence_tier_high
 		_:
 			return persistence_tier_max
@@ -148,7 +148,7 @@ func get_persistence_duration(bond_strength: float) -> float:
 
 func _update_bond_tuning() -> void:
 	var bond_strength: float = BondSystem.get_profile().bond_strength
-	var bond_tier: int = _tier_for_bond(bond_strength)
+	var bond_tier: int = BondResilience.get_bond_tier(bond_strength)
 	if bond_tier == _cached_bond_tier:
 		return
 
@@ -195,16 +195,6 @@ func _sanitize_tracked_target() -> void:
 		_tracked_target_id = -1
 		if _protection_interest_active and _persistence_remaining <= 0.0:
 			_end_protection_interest()
-
-
-static func _tier_for_bond(bond_strength: float) -> int:
-	if bond_strength <= 25.0:
-		return 0
-	if bond_strength <= 50.0:
-		return 1
-	if bond_strength <= 75.0:
-		return 2
-	return 3
 
 
 func _find_protection_target(

@@ -117,7 +117,7 @@ The bond system tracks the persistent relationship between rider and dragon.
 
 | Field | Range | Role in prototype |
 |-------|-------|-------------------|
-| `bond_strength` | 0–100 | Relationship depth — protection; future command responsiveness and communication |
+| `bond_strength` | 0–100 | Relationship resilience — protection, command delay, communication; planned sync floor / instability resistance / recovery |
 | `sync` | 0–100 | Coordination — cooperative assist frequency (cooldown tiers) |
 | `instability` | 0–100 | Strain — assist hesitation and cancellation |
 
@@ -130,6 +130,20 @@ The bond system tracks the persistent relationship between rider and dragon.
 | `resonance_style` | Design — race-default enum (not in prototype code yet) |
 
 Bond data should persist across the full game.
+
+### Bond Strength tiers (single source of truth)
+
+All Bond Strength tier lookups use `scripts/bond/bond_resilience.gd`:
+
+| Tier | Bond Strength |
+|------|---------------|
+| 1 | 0–30 |
+| 2 | 31–60 |
+| 3 | 61–85 |
+| 4 | 86–100 |
+
+Key helpers: `get_bond_tier()`, `get_bond_tier_progress()`, `get_command_response_delay()`.  
+`BondProfile` exposes thin wrappers; do not hardcode tier thresholds elsewhere.
 
 BondSystem should influence:
 - dragon AI
