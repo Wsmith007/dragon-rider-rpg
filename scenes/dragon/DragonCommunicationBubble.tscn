@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://cr8anykqv3ti"]
+
+[ext_resource type="Script" path="res://scripts/dragon/dragon_communication_bubble.gd" id="1_bubble"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bubble"]
+bg_color = Color(0.96, 0.95, 0.9, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.32, 0.28, 0.85)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+
+[node name="CommunicationBubble" type="Node2D"]
+z_index = 8
+script = ExtResource("1_bubble")
+
+[node name="BubbleRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="BubbleRoot"]
+layout_mode = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bubble")
+
+[node name="MarginContainer" type="MarginContainer" parent="BubbleRoot/Panel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 0
+
+[node name="Label" type="Label" parent="BubbleRoot/Panel/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.15, 0.14, 0.12, 1)
+theme_override_font_sizes/font_size = 12
+text = "Watch."
+horizontal_alignment = 1
+autowrap_mode = 3

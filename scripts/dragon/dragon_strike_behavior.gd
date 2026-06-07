@@ -50,6 +50,7 @@ var _assist_cooldown_remaining: float = 0.0
 var _protection_cooldown_remaining: float = 0.0
 var _phase: Phase = Phase.IDLE
 var _kind: StrikeKind = StrikeKind.PROTECTION
+var _active_strike_kind: StrikeKind = StrikeKind.PROTECTION
 var _target: Node2D
 var _return_point: Vector2 = Vector2.ZERO
 var _return_label: String = "PLAYER"
@@ -259,6 +260,7 @@ func _try_begin_strike(
 		return false
 
 	_kind = kind
+	_active_strike_kind = kind
 	_target = enemy
 	_return_point = return_point
 	_return_label = return_label
@@ -274,7 +276,7 @@ func _try_begin_strike(
 		player_clearance
 	)
 	_approach_time_remaining = minf(approach_timeout, _get_max_duration_for_kind())
-	_begin_strike_tracking(dragon_position, kind)
+	_begin_strike_tracking(dragon_position)
 
 	if _should_approach_first(dragon_position):
 		_phase = Phase.APPROACH
@@ -292,7 +294,7 @@ func _try_begin_strike(
 	return true
 
 
-func _begin_strike_tracking(dragon_position: Vector2, kind: StrikeKind) -> void:
+func _begin_strike_tracking(dragon_position: Vector2) -> void:
 	_strike_time_remaining = _get_max_duration_for_kind()
 	_stuck_sample_position = dragon_position
 	_stuck_timer = 0.0
@@ -316,7 +318,7 @@ func _update_stuck_detection(delta: float, dragon_position: Vector2) -> void:
 		_stuck_sample_position = dragon_position
 
 
-func _validate_active_target(dragon_position: Vector2) -> void:
+func _validate_active_target(_dragon_position: Vector2) -> void:
 	if not EnemyValidation.is_usable(_target):
 		if _phase == Phase.LUNGE or _phase == Phase.APPROACH:
 			_start_return("invalid_target")
@@ -433,7 +435,7 @@ func _apply_damage() -> void:
 	var health := _target.get_node_or_null("Health") as Health
 	if health != null and health.is_alive():
 		health.take_damage(strike_damage)
-		strike_hit.emit(_target, _kind)
+		strike_hit.emit(_target, _active_strike_kind)
 
 
 func _start_return(reason: String) -> void:

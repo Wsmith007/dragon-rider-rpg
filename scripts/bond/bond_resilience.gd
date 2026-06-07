@@ -21,6 +21,9 @@ const TIER_MAX_BOND: Array[float] = [30.0, 60.0, 85.0, 100.0]
 
 const COMMAND_RESPONSE_DELAY_BY_TIER: Array[float] = [0.75, 0.50, 0.25, 0.0]
 
+const ALERT_RANGE_BY_TIER: Array[float] = [185.0, 230.0, 285.0, 345.0]
+const PROTECTION_RADIUS_BY_TIER: Array[float] = [135.0, 185.0, 240.0, 295.0]
+
 const SYNC_FLOOR_RANGE: Array[Vector2] = [
 	Vector2(0.0, 10.0),
 	Vector2(15.0, 25.0),
@@ -67,6 +70,14 @@ static func get_bond_tier_progress(bond_strength: float) -> float:
 
 static func get_command_response_delay(bond_strength: float) -> float:
 	return COMMAND_RESPONSE_DELAY_BY_TIER[get_bond_tier(bond_strength) - 1]
+
+
+static func get_alert_range(bond_strength: float) -> float:
+	return ALERT_RANGE_BY_TIER[get_bond_tier(bond_strength) - 1]
+
+
+static func get_protection_radius(bond_strength: float) -> float:
+	return PROTECTION_RADIUS_BY_TIER[get_bond_tier(bond_strength) - 1]
 
 
 static func get_sync_floor(bond_strength: float) -> float:

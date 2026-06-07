@@ -19,10 +19,12 @@ This document is the **source of truth** for current prototype status. Prefer th
 | 5 Sync → assist cooldown | Done |
 | 6 Instability reactions | Partial — hesitation + assist cancel (assist only) |
 | 6+ Bond Strength → command delay | Done |
-| **7 Unified Bond tiers + resilience framework** | **Done — calculations + debug** |
-| **7 Dragon communication feedback** | **Done — tier-based state messages in debug UI** |
+| **7 Unified Bond tiers + resilience framework** | **Done** |
+| **7 Dragon communication + speech bubbles** | **Done** |
+| **7 Bond-scaled alert + protection ranges** | **Done** |
 | Bond update loop | Not started |
-| `communication_stage` field in profile | Not started |
+| Wire resilience helpers to gameplay | Not started |
+| `communication_stage` in profile | Not started |
 
 ---
 
@@ -37,24 +39,25 @@ This document is the **source of truth** for current prototype status. Prefer th
 ### Dragon
 - Follow via `FollowAnchor` (lag catch-up, idle reposition)
 - **Q:** WAIT / RECALL with bond-strength response delay (pending, cancel-safe)
-- **ALERT** when enemy threatens rider
-- **HESITATING** before cooperative assist (instability)
-- **PROTECTING** — automatic defensive strike (bond strength)
+- **ALERT** — bond-scaled threat awareness (separate from protection)
+- **PROTECTING** — bond-scaled defensive strike
+- **HESITATING** / assist cancel — instability (cooperative assist only)
 - **ASSISTING** — cooperative strike (sync + instability)
-- Flank approach; assist/protection failsafes; safe enemy cleanup on death
+- Flank approach; failsafes; safe enemy cleanup on death
 
 ### Bond
 - 3 active stats: `bond_strength`, `sync`, `instability`
 - `trust_state` deprecated (compatibility only)
-- Unified Bond Strength tiers via `BondResilience`
-- Resilience helpers (planned effects shown in debug, not wired)
-- Debug panel, help panel, Ctrl stat testers
+- Unified tiers via `BondResilience` (single source of truth)
+- Resilience helpers calculated; sync floor / instability resistance / recovery **not wired**
+- Debug panel (tier, alert/protection ranges, threat distance, planned effects)
+- Help panel; Ctrl stat testers
 
 ### Communication
-- Short state feedback lines (not dialogue)
-- Shown in Bond Debug UI as **Dragon Thought**
-- Updates on state change, hesitation, assist cancel, bond tier change
-- Message complexity scales with Bond Strength tier
+- Tier-based state feedback (not dialogue)
+- **Bond Debug UI:** Dragon Thought line
+- **In-world:** floating speech/thought bubble above dragon (~1.75 s + fade)
+- Both listen to `DragonCommunicationBehavior.message_changed`
 
 ### Enemies & World
 - Enemy AI: idle → chase → engage → melee; health bar; idempotent death
@@ -79,18 +82,28 @@ This document is the **source of truth** for current prototype status. Prefer th
 
 ---
 
-## Dragon States
+## Dragon State Flow
 
-| State | Driver | Communication cue |
-|-------|--------|---------------------|
-| **FOLLOWING** | Default | FOLLOWING |
-| **WAITING** | Q (after delay) | WAITING |
-| **ALERT** | Threat detection | ALERT |
-| **HESITATING** | Instability | HESITATING |
-| **PROTECTING** | Bond Strength | PROTECTING |
-| **ASSISTING** | Sync + Instability | ASSISTING |
+Intended combat awareness progression:
 
-Assist cancel emits **ASSIST_CANCELED** (event, not a persistent state).
+```
+FOLLOWING → ALERT → PROTECTING → ASSISTING
+                ↘ HESITATING → ASSISTING or ASSIST_CANCELED
+WAITING (player command, parallel branch)
+```
+
+| State | Meaning | Driver |
+|-------|---------|--------|
+| **FOLLOWING** | Default follow | — |
+| **WAITING** | Hold position | Q (after command delay) |
+| **ALERT** | Threat detected | Bond-scaled alert range |
+| **PROTECTING** | Defensive intervention | Bond-scaled protection range |
+| **HESITATING** | Assist gate | Instability |
+| **ASSISTING** | Cooperative strike | Sync + instability + engagement |
+
+**ALERT ≠ PROTECTING.** Alert = notice; protect = intervene. Alert range always exceeds protection range.
+
+**ASSIST_CANCELED** is a communication event, not a persistent state.
 
 ---
 
@@ -98,11 +111,11 @@ Assist cancel emits **ASSIST_CANCELED** (event, not a persistent state).
 
 | Stat | Role | Affects (active) |
 |------|------|------------------|
-| **Bond Strength** | Relationship **resilience** | Protection, Q delay, communication clarity |
+| **Bond Strength** | Relationship **resilience** | Alert range, protection, Q delay, communication clarity |
 | **Sync** | Coordination | Assist cooldown frequency |
 | **Instability** | Strain | Assist hesitation + cancellation |
 
-Bond Strength does **not** directly increase damage. Instability does **not** affect protection or commands.
+Bond Strength does **not** increase damage. Instability does **not** affect alert, protection, or commands.
 
 ### Sync → assist cooldown
 
@@ -125,9 +138,7 @@ Bond Strength does **not** directly increase damage. Instability does **not** af
 
 ## Unified Bond Strength Tier Model
 
-**Single source of truth:** `scripts/bond/bond_resilience.gd`
-
-All Bond Strength tier lookups use:
+**Source of truth:** `scripts/bond/bond_resilience.gd`
 
 | Tier | Bond Strength |
 |------|---------------|
@@ -136,53 +147,62 @@ All Bond Strength tier lookups use:
 | 3 | 61–85 |
 | 4 | 86–100 |
 
-Used by: protection, command delay, communication, debug tier display.
+**Tier progress** (`get_bond_tier_progress()`): 0.0 at tier start → 1.0 at tier end.
 
-**Tier progress** (`get_bond_tier_progress()`): 0.0 at tier start, 1.0 at tier end. Bond 86 and 100 are both Tier 4 but differ in progress and planned resilience benefits.
+Used by: alert range, protection radius, command delay, communication, debug UI.
 
-### Active tier values (protection + Q delay)
+### Bond-scaled ranges (active)
 
-| Tier | Radius | Prot. delay | Persistence | Q delay |
-|------|--------|-------------|-------------|---------|
-| 1 | 100 | 0.75 s | 1 s | 0.75 s |
-| 2 | 150 | 0.50 s | 2 s | 0.50 s |
-| 3 | 200 | 0.25 s | 3 s | 0.25 s |
-| 4 | 250 | 0 s | 5 s | 0 s |
+Alert always wider than protection. Values from `BondResilience`:
+
+| Tier | **Alert range** | **Protection radius** | Prot. delay | Persistence | Q delay |
+|------|-----------------|----------------------|-------------|-------------|---------|
+| 1 | 185 | 135 | 0.75 s | 1 s | 0.75 s |
+| 2 | 230 | 185 | 0.50 s | 2 s | 0.50 s |
+| 3 | 285 | 240 | 0.25 s | 3 s | 0.25 s |
+| 4 | 345 | 295 | 0 s | 5 s | 0 s |
+
+Helpers: `get_alert_range()`, `get_protection_radius()`, `get_command_response_delay()`.
 
 ---
 
 ## Bond Resilience Framework
 
-Bond Strength = resilience, not power. Helpers exist; **planned effects not wired to gameplay**.
+Bond Strength = resilience, not power. Strong bonds are harder to destabilize and (when wired) recover faster.
 
 | Helper | Purpose | Status |
 |--------|---------|--------|
-| `get_bond_tier()` | Relationship stage | Active (tier selection) |
-| `get_bond_tier_progress()` | Within-tier advancement | Active (debug) |
-| `get_command_response_delay()` | Q responsiveness | Active |
+| `get_bond_tier()` | Relationship stage | **Active** |
+| `get_bond_tier_progress()` | Within-tier advancement | **Active** (debug) |
+| `get_alert_range()` | Threat awareness radius | **Active** |
+| `get_protection_radius()` | Defensive intervention radius | **Active** |
+| `get_command_response_delay()` | Q responsiveness | **Active** |
 | `get_sync_floor()` | Minimum coordination floor | Planned |
 | `get_instability_resistance()` | Stress impact reduction | Planned |
 | `get_instability_recovery_rate()` | Faster instability decay | Planned |
 
-Debug UI shows **Planned Effects (not active)** for the three future helpers.
+Debug UI: **Planned Effects (not active)** for the three future helpers. Also shows **Alert Range**, **Prot. Radius**, **Threat Dist**.
 
 ---
 
 ## Dragon Communication System
 
-**Not dialogue.** Short situational feedback the rider perceives. Dragon is always intelligent; low bond = simpler impressions.
+**Not dialogue.** Short situational feedback — dragon is always intelligent; low bond = simpler perceived impressions.
 
-- **Catalog:** `scripts/dragon/dragon_communication_catalog.gd`
-- **Behavior:** `scripts/dragon/dragon_communication_behavior.gd` → `message_changed` signal
-- **Display:** Bond Debug UI → **Dragon Thought**
-- **Lookup:** `get_dragon_message(cue, bond_strength)`
+| Layer | Path / role |
+|-------|-------------|
+| Catalog | `scripts/dragon/dragon_communication_catalog.gd` |
+| Behavior | `scripts/dragon/dragon_communication_behavior.gd` → `message_changed` |
+| Debug UI | Bond panel → **Dragon Thought** |
+| Speech bubble | `scenes/dragon/DragonCommunicationBubble.tscn` on dragon |
 
-Triggers: dragon state change, hesitation start, assist cancel, bond tier boundary change.
+**Triggers:** state change, hesitation, assist cancel, bond tier boundary change.  
+**Timing:** bubble visible ~1.75 s, fades ~0.25 s; new message replaces current.
 
-### Message progression (by Bond tier)
+### Message progression (approved copy)
 
-| Cue | Tier 1 (0–30) | Tier 2 (31–60) | Tier 3 (61–85) | Tier 4 (86–100) |
-|-----|---------------|----------------|----------------|-----------------|
+| Cue | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+|-----|--------|--------|--------|--------|
 | FOLLOWING | Watch. | Observing. | Keeping watch. | Watching over us. |
 | WAITING | Stay. | Holding. | Waiting here. | I'll be here. |
 | ALERT | Danger. | Threat. | Something's there. | We aren't alone. |
@@ -191,7 +211,7 @@ Triggers: dragon state change, hesitation start, assist cancel, bond tier bounda
 | HESITATING | Wrong. | Uncertain. | Something's off. | I don't trust this. |
 | ASSIST_CANCELED | No. | Wait. | Not now. | Bad timing. |
 
-Ready for future speech bubbles via `message_changed` or catalog lookup.
+Bubble scene is swappable for future styles, emotion icons, race themes, or hide option.
 
 ---
 
@@ -199,11 +219,11 @@ Ready for future speech bubbles via `message_changed` or catalog lookup.
 
 - Player movement, attack, health, death
 - Dragon follow / wait / recall (delay + cancel-safe pending)
-- Threat → alert; bond-tier protection pipeline
+- Bond-tier alert → protect → assist flow
 - Sync-tiered assist cooldown; instability hesitation/cancel
-- Unified Bond tier model across protection, commands, communication
+- Unified Bond tiers across alert, protection, commands, communication
 - Bond resilience helpers + debug readout
-- Dragon communication feedback in debug UI
+- Communication in debug UI + in-world speech bubble
 - Enemy AI, death cleanup, off-screen indicators
 
 ---
@@ -214,9 +234,10 @@ Ready for future speech bubbles via `message_changed` or catalog lookup.
 - Resilience helpers not applied to sync/instability gameplay
 - No command refusal (delay only, by design)
 - `trust_state` retained for save compatibility
-- `communication_stage`, `resonance_style` — design only, not in profile code
-- No player dodge, race selection, save/load, speech bubble UI
+- `communication_stage`, `resonance_style` — design only, not in profile
+- No player dodge, race selection, save/load
 - Instability reactions limited to cooperative assist
+- Speech bubble is placeholder art only
 - Single test scene; no progression or narrative
 
 ---
@@ -225,7 +246,7 @@ Ready for future speech bubbles via `message_changed` or catalog lookup.
 
 1. **Bond update loop** — combat outcomes adjust bond_strength / sync / instability
 2. **Wire resilience helpers** — sync floor, instability resistance, instability recovery
-3. **Speech bubble UI** — subscribe to `message_changed` (keep catalog as source)
+3. **Speech bubble polish** — art, optional hide setting, emotion/style variants
 4. **Player dodge** — without breaking engagement tracking
 5. **Save/load** — persist `BondProfile`
 
@@ -238,11 +259,13 @@ Ready for future speech bubbles via `message_changed` or catalog lookup.
 | Bond tier source of truth | `scripts/bond/bond_resilience.gd` |
 | Bond data + wrappers | `scripts/bond/bond_profile.gd` |
 | Bond autoload | `scripts/systems/bond_system.gd` |
+| Alert detection | `scripts/dragon/dragon_threat_behavior.gd` |
+| Protection | `scripts/dragon/dragon_protection_behavior.gd` |
 | Communication catalog | `scripts/dragon/dragon_communication_catalog.gd` |
 | Communication behavior | `scripts/dragon/dragon_communication_behavior.gd` |
+| Speech bubble | `scripts/dragon/dragon_communication_bubble.gd` |
 | Command delay | `scripts/dragon/dragon_command_behavior.gd` |
 | Dragon orchestration | `scripts/dragon/dragon.gd` |
-| Protection | `scripts/dragon/dragon_protection_behavior.gd` |
 | Assist / hesitation | `scripts/dragon/dragon_cooperation_behavior.gd` |
 | Debug UI | `scripts/ui/bond_debug_ui.gd` |
 

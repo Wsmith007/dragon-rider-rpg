@@ -17,6 +17,7 @@ enum State { IDLE, CHASE, ENGAGE }
 @export var attack_range: float = 36.0
 @export var attack_damage: float = 12.0
 @export var attack_cooldown: float = 1.0
+@export var engage_windup: float = 0.45
 
 @onready var _health: Health = $Health
 @onready var _visual: Polygon2D = $Visual
@@ -102,6 +103,9 @@ func _try_attack_player() -> void:
 func _set_state(new_state: State) -> void:
 	if _state == new_state:
 		return
+
+	if new_state == State.ENGAGE and _state != State.ENGAGE:
+		_attack_cooldown_remaining = maxf(_attack_cooldown_remaining, engage_windup)
 
 	if _state == State.IDLE and new_state == State.CHASE:
 		player_detected.emit()

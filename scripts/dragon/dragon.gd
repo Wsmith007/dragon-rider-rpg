@@ -5,6 +5,7 @@ extends CharacterBody2D
 signal behavior_changed(mode_name: String)
 signal state_changed(state: DragonState.State)
 signal dragon_assisted(enemy: Node2D)
+signal protection_triggered(target: Node2D)
 
 enum MovementOwner { NORMAL, HESITATION, STRIKE }
 
@@ -323,6 +324,7 @@ func _try_defensive_protection() -> void:
 	var return_point := follow_behavior.get_alert_movement_anchor()
 	if strike_behavior.try_begin_protection(target, return_point, _get_rider_position()):
 		protection_behavior.notify_protection_triggered(target)
+		protection_triggered.emit(target)
 		state = DragonState.State.PROTECTING
 		follow_behavior.exit_alert()
 		dragon_assisted.emit(target)
@@ -504,10 +506,20 @@ func _emit_state_if_changed() -> void:
 
 
 func _log_alert_debug(context: String) -> void:
+	var bond_strength: float = BondSystem.get_profile().bond_strength
+	var threat := threat_behavior.get_valid_threat()
+	var enemy_distance: float = -1.0
+	if threat != null and _follow_target != null:
+		enemy_distance = _follow_target.global_position.distance_to(threat.global_position)
 	var movement_type := "rider_anchor"
 	var look_type := "enemy" if follow_behavior.get_alert_threat() != null else "rider"
 	print(
 		"ENTER ALERT | context=", context,
+		" | bond=", int(bond_strength),
+		" | tier=", BondResilience.get_bond_tier(bond_strength),
+		" | alert_range=", threat_behavior.get_alert_range(),
+		" | prot_radius=", protection_behavior.get_protection_radius(bond_strength),
+		" | enemy_distance=", snapped(enemy_distance, 0.1),
 		" | movement_target=", movement_type,
 		" | look_target=", look_type,
 		" | state=", DragonState.state_name(state)

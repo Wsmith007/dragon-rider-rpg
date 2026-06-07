@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bbondtesthelp"]
 
+[ext_resource type="Script" path="res://scripts/ui/bond_test_help_ui.gd" id="1_help"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_help_panel"]
 bg_color = Color(0.94, 0.96, 0.91, 0.94)
 border_width_left = 1
@@ -22,11 +24,12 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 12.0
-offset_top = -248.0
+offset_top = -296.0
 offset_right = 340.0
 offset_bottom = -12.0
 grow_vertical = 0
 mouse_filter = 2
+script = ExtResource("1_help")
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=1625512638]
 layout_mode = 1
@@ -57,11 +60,23 @@ theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
 theme_override_font_sizes/font_size = 16
 text = "Bond test keys (hold Ctrl)"
 
-[node name="Ctrl1Label" type="Label" parent="Panel/Margin/VBox" unique_id=159036538]
+[node name="Ctrl1Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Ctrl1Label" type="Label" parent="Panel/Margin/VBox/Ctrl1Row"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ctrl+1  Bond Strength +5"
+
+[node name="BondStrengthValue" type="Label" parent="Panel/Margin/VBox/Ctrl1Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "50"
+horizontal_alignment = 2
 
 [node name="Ctrl2Label" type="Label" parent="Panel/Margin/VBox" unique_id=674035082]
 layout_mode = 2
@@ -69,11 +84,23 @@ theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ctrl+2  Bond Strength -5"
 
-[node name="Ctrl3Label" type="Label" parent="Panel/Margin/VBox" unique_id=587717061]
+[node name="Ctrl3Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Ctrl3Label" type="Label" parent="Panel/Margin/VBox/Ctrl3Row"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ctrl+3  Sync +5"
+
+[node name="SyncValue" type="Label" parent="Panel/Margin/VBox/Ctrl3Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "50"
+horizontal_alignment = 2
 
 [node name="Ctrl4Label" type="Label" parent="Panel/Margin/VBox" unique_id=2094137343]
 layout_mode = 2
@@ -81,11 +108,23 @@ theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ctrl+4  Sync -5"
 
-[node name="Ctrl5Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="Ctrl5Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Ctrl5Label" type="Label" parent="Panel/Margin/VBox/Ctrl5Row"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ctrl+5  Instability +5"
+
+[node name="InstabilityValue" type="Label" parent="Panel/Margin/VBox/Ctrl5Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "0"
+horizontal_alignment = 2
 
 [node name="Ctrl6Label" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
@@ -119,4 +158,25 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 14
 text = "F7  Max HP -10"
+mouse_filter = 2
+
+[node name="SpawnTitleLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Enemy spawn keys"
+mouse_filter = 2
+
+[node name="F8Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "F1  Spawn enemy nearby"
+mouse_filter = 2
+
+[node name="ShiftF8Label" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+text = "Shift+F1  Spawn 3 enemies"
 mouse_filter = 2

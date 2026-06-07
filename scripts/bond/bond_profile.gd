@@ -65,28 +65,36 @@ func reset_to_defaults() -> void:
 	_emit_changed()
 
 
-static func get_command_response_delay(bond_strength: float) -> float:
-	return BondResilience.get_command_response_delay(bond_strength)
+static func get_command_response_delay(bond_value: float) -> float:
+	return BondResilience.get_command_response_delay(bond_value)
 
 
-static func get_bond_tier(bond_strength: float) -> int:
-	return BondResilience.get_bond_tier(bond_strength)
+static func get_alert_range(bond_value: float) -> float:
+	return BondResilience.get_alert_range(bond_value)
 
 
-static func get_bond_tier_progress(bond_strength: float) -> float:
-	return BondResilience.get_bond_tier_progress(bond_strength)
+static func get_protection_radius(bond_value: float) -> float:
+	return BondResilience.get_protection_radius(bond_value)
 
 
-static func get_sync_floor(bond_strength: float) -> float:
-	return BondResilience.get_sync_floor(bond_strength)
+static func get_bond_tier(bond_value: float) -> int:
+	return BondResilience.get_bond_tier(bond_value)
 
 
-static func get_instability_resistance(bond_strength: float) -> float:
-	return BondResilience.get_instability_resistance(bond_strength)
+static func get_bond_tier_progress(bond_value: float) -> float:
+	return BondResilience.get_bond_tier_progress(bond_value)
 
 
-static func get_instability_recovery_rate(bond_strength: float) -> float:
-	return BondResilience.get_instability_recovery_rate(bond_strength)
+static func get_sync_floor(bond_value: float) -> float:
+	return BondResilience.get_sync_floor(bond_value)
+
+
+static func get_instability_resistance(bond_value: float) -> float:
+	return BondResilience.get_instability_resistance(bond_value)
+
+
+static func get_instability_recovery_rate(bond_value: float) -> float:
+	return BondResilience.get_instability_recovery_rate(bond_value)
 
 
 func _emit_changed() -> void:

@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://b2m4loh58674o" path="res://scripts/dragon/dragon_protection_behavior.gd" id="6_protection"]
 [ext_resource type="Script" uid="uid://cbqfpscv3rhaf" path="res://scripts/dragon/dragon_cooperation_behavior.gd" id="7_cooperation"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_communication_behavior.gd" id="8_communication"]
+[ext_resource type="PackedScene" uid="uid://bdragoncommbubble" path="res://scenes/dragon/DragonCommunicationBubble.tscn" id="9_comm_bubble"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
@@ -50,3 +51,5 @@ hesitation_duration = 0.45
 
 [node name="CommunicationBehavior" type="Node" parent="."]
 script = ExtResource("8_communication")
+
+[node name="CommunicationBubble" parent="." instance=ExtResource("9_comm_bubble")]

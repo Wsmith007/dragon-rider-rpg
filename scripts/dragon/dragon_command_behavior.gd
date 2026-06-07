@@ -48,6 +48,9 @@ func request_toggle(dragon_global_position: Vector2) -> void:
 	_pending_command = requested
 	_command_delay_remaining = delay
 
+	if delay > 0.0:
+		RelationshipSystem.notify_command_delayed(command_name, delay)
+
 	if delay <= 0.0:
 		_pending_command = PendingCommand.NONE
 		_command_delay_remaining = 0.0

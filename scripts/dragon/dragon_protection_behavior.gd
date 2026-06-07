@@ -5,10 +5,10 @@ class_name DragonProtectionBehavior
 
 
 @export_group("Bond Strength — Protection Radius")
-@export var radius_tier_low: float = 100.0
-@export var radius_tier_mid: float = 150.0
-@export var radius_tier_high: float = 200.0
-@export var radius_tier_max: float = 250.0
+@export var radius_tier_low: float = 135.0
+@export var radius_tier_mid: float = 185.0
+@export var radius_tier_high: float = 240.0
+@export var radius_tier_max: float = 295.0
 
 @export_group("Bond Strength — Response Delay")
 @export var delay_tier_low: float = 0.75
@@ -32,7 +32,7 @@ var _persistence_remaining: float = 0.0
 var _target_in_range: bool = false
 var _protection_interest_active: bool = false
 var _cached_bond_tier: int = -1
-var _cached_bond_radius: float = 150.0
+var _cached_bond_radius: float = 185.0
 var _cached_bond_delay: float = 0.5
 var _cached_bond_persistence: float = 2.0
 
@@ -97,10 +97,25 @@ func get_ready_protection_target() -> Node2D:
 func notify_protection_triggered(target: Node2D) -> void:
 	if not debug_protection:
 		return
+
+	var bond_strength: float = BondSystem.get_profile().bond_strength
 	var target_name: String = "unknown"
+	var enemy_distance: float = -1.0
 	if EnemyValidation.is_usable(target):
 		target_name = str(target.name)
-	print("PROTECTION TRIGGERED | target=", target_name)
+		for node in get_tree().get_nodes_in_group("player"):
+			if node is Node2D:
+				enemy_distance = (node as Node2D).global_position.distance_to(target.global_position)
+				break
+
+	print(
+		"PROTECTION TRIGGERED | bond=", int(bond_strength),
+		" | tier=", BondResilience.get_bond_tier(bond_strength),
+		" | alert_range=", BondResilience.get_alert_range(bond_strength),
+		" | prot_radius=", _cached_bond_radius,
+		" | enemy_distance=", snapped(enemy_distance, 0.1),
+		" | target=", target_name
+	)
 
 
 func clear_enemy_reference(enemy) -> void:
@@ -111,15 +126,7 @@ func clear_enemy_reference(enemy) -> void:
 
 
 func get_protection_radius(bond_strength: float) -> float:
-	match BondResilience.get_bond_tier(bond_strength):
-		BondResilience.BondTier.ONE:
-			return radius_tier_low
-		BondResilience.BondTier.TWO:
-			return radius_tier_mid
-		BondResilience.BondTier.THREE:
-			return radius_tier_high
-		_:
-			return radius_tier_max
+	return BondResilience.get_protection_radius(bond_strength)
 
 
 func get_response_delay(bond_strength: float) -> float:
@@ -208,13 +215,13 @@ func _find_protection_target(
 		return null
 
 	if EnemyValidation.is_usable(_tracked_target):
-		var rider_position: Vector2 = rider.global_position
-		var distance_to_rider: float = rider_position.distance_to(_tracked_target.global_position)
+		var current_rider_position: Vector2 = rider.global_position
+		var distance_to_rider: float = current_rider_position.distance_to(_tracked_target.global_position)
 		if distance_to_rider <= protection_radius \
 				and dragon_position.distance_to(_tracked_target.global_position) <= protection_radius:
 			var priority: int = _get_threat_priority(
 				_tracked_target,
-				rider_position,
+				current_rider_position,
 				distance_to_rider,
 				threat
 			)
@@ -255,7 +262,7 @@ func _find_protection_target(
 
 func _get_threat_priority(
 	enemy: Node2D,
-	rider_position: Vector2,
+	_rider_position: Vector2,
 	distance_to_rider: float,
 	threat: Node2D
 ) -> int:
