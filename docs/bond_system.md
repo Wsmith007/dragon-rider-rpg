@@ -7,10 +7,10 @@ Dragons are semi-independent intelligent beings influenced by emotional, magical
 The player does not directly control the dragon.
 
 Instead, the rider influences dragon behavior through:
-- trust
-- synchronization
-- emotional state
-- magical resonance
+- synchronization (`sync`)
+- emotional state (including strain / `instability`)
+- bond strength (relationship resilience)
+- magical resonance (future)
 - intent
 
 Dragon behavior evolves over time as the bond deepens.
@@ -24,10 +24,10 @@ Player intent -> Bond system -> Dragon interpretation -> Dragon action -> Bond s
 The dragon continuously evaluates:
 - survival
 - danger
-- trust
+- bond strength (relationship resilience)
 - emotional resonance
 - rider intent
-- instability
+- instability (strain)
 
 The dragon may choose to:
 - cooperate
@@ -62,11 +62,53 @@ Persistent bond data uses these field names everywhere (docs and code):
 
 | Stat | Identity | Implemented in prototype |
 |------|----------|--------------------------|
-| Bond Strength | Relationship / resilience | Protection, command delay, communication tiers; resilience helpers (planned wiring) |
-| Sync | Cooperation / frequency | Assist cooldown tiers |
-| Instability | Reliability / strain | Hesitation + post-hesitation cancel (assist only) |
+| Bond Strength | Relationship / resilience | Protection, command delay, communication tiers; **not modified at encounter resolve**; resilience helpers (planned wiring) |
+| Sync | Cooperation / coordination | Assist cooldown tiers; **Sync Δ applied live** from Cooperation Rating at encounter resolve |
+| Instability | Strain / stress | Hesitation + post-hesitation cancel (gameplay); **Instability Δ applied live** from Encounter Quality at encounter resolve |
 
 Command responsiveness (Q wait/recall delay) and communication tiering are **active under Bond Strength**.
+
+---
+
+# Encounter Resolution (Milestone 9A — Live)
+
+Resolved combat encounters update **Sync** and **Instability** through the **RelationshipSystem** autoload. **Bond Strength is not modified** at encounter resolve.
+
+| Stat | Encounter driver | Applied live? |
+|------|------------------|---------------|
+| **Sync** | **Cooperation Rating** (teamwork: assists, protections, cancels, hesitations, contribution balance) | **Yes** |
+| **Instability** | **Encounter Quality** (outcome/stress: harm, near-death, death, resolve outcome) | **Yes** |
+| **Bond Strength** | Session/pattern evaluation (future); debug preview only today | **No** |
+
+### Live delta tables
+
+**Cooperation Rating → Sync**
+
+| Rating | Sync Δ |
+|--------|--------|
+| Excellent | +2 |
+| Good | +1 |
+| Neutral | 0 |
+| Poor | −1 |
+| Disastrous | −2 |
+
+**Encounter Quality → Instability**
+
+| Quality | Instability Δ |
+|---------|---------------|
+| Excellent | −2 |
+| Good | −1 |
+| Neutral | 0 |
+| Poor | +2 |
+| Disastrous | +4 |
+
+Ratings are **independent** — a clean win with poor teamwork can yield Excellent Quality and Poor Cooperation (Instability ↓, Sync ↓).
+
+**Safeguards:** one stat application per `encounter_id`; stats clamped 0–100. Debug keys still allow manual adjustment.
+
+**Source of truth:** `docs/relationship_event_framework.md` (Current Implementation), `docs/project_checkpoint_milestone9A.md`.
+
+**Planned (not live):** Outcome Rating rename with combined harm bands; Bond pattern pass; Bond resilience modifiers.
 
 ---
 

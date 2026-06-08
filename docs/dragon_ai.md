@@ -125,7 +125,9 @@ Design target: emotional outbursts, communication breakdown, temporary autonomy.
 
 In the prototype, sync controls cooperative assist **frequency** (cooldown between assists).
 
-High synchronization improves (design target):
+**At encounter resolve (Milestone 9A — live):** `RelationshipSystem` applies a **Sync Δ** from **Cooperation Rating** (assists, protections, cancels, hesitations, rider/dragon contribution). Bond Strength is not modified at resolve.
+
+High synchronization improves (design target + gameplay):
 - combat coordination
 - movement synergy
 - reaction timing
@@ -146,6 +148,8 @@ Instability represents **strain** within the bond.
 
 In the prototype, instability affects cooperative assist **reliability** (hesitation, cancel). Protection is separate and driven by bond strength.
 
+**At encounter resolve (Milestone 9A — live):** `RelationshipSystem` applies an **Instability Δ** from **Encounter Quality** (player harm, near-death, death, resolve outcome). Harm/outcome is separate from Cooperation Rating.
+
 High instability (design target) may cause:
 - emotional outbursts
 - panic reactions
@@ -153,6 +157,30 @@ High instability (design target) may cause:
 - temporary autonomy increases
 
 Critical instability (design target) may temporarily override rider influence entirely.
+
+---
+
+# Relationship Events (Milestone 9A)
+
+Dragon combat behaviors emit **relationship events** consumed by `RelationshipSystem`. Events accumulate into encounter summaries; **stats apply at resolve**, not per swing.
+
+| Behavior | Relationship signal | Rating impact |
+|----------|---------------------|---------------|
+| Cooperative assist success | Assist succeeded | **Cooperation Rating** (Sync) |
+| Protection strike success | Protection succeeded | **Cooperation Rating** (Sync) |
+| Assist hesitation | Assist hesitated | **Cooperation Rating** (Sync) |
+| Assist cancel (instability/AI) | Assist canceled | **Cooperation Rating** (Sync) |
+| Protection triggered (no hit yet) | Protection triggered | Tracking only |
+| Player damaged in combat | Player damaged | **Encounter Quality** (Instability) via harm totals |
+| Player near-death / death | Critical HP / death | **Encounter Quality** (Instability) |
+
+**Assist and protection are separate systems** — one strike emits one success type, never both.
+
+- **Cooperation Rating** measures teamwork → drives **Sync** at resolve.
+- **Encounter Quality** measures outcome stress → drives **Instability** at resolve.
+- Cancellations and hesitations affect **Cooperation**, not Encounter Quality directly.
+
+See `docs/relationship_event_framework.md` and `docs/project_checkpoint_milestone9A.md`.
 
 ---
 

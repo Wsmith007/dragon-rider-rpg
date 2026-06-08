@@ -1,77 +1,50 @@
 [gd_scene format=3 uid="uid://btestworld01"]
 
 [ext_resource type="Script" uid="uid://bqcwqak64ul8j" path="res://scripts/world/test_world.gd" id="1_world"]
-[ext_resource type="Script" uid="uid://dil8lfxc3noe6" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
-[ext_resource type="PackedScene" uid="uid://bplayer001" path="res://scenes/player/Player.tscn" id="3_player"]
-[ext_resource type="PackedScene" uid="uid://bdragon001" path="res://scenes/dragon/Dragon.tscn" id="4_dragon"]
-[ext_resource type="PackedScene" uid="uid://benemy001" path="res://scenes/enemies/Enemy.tscn" id="5_enemy"]
-[ext_resource type="Script" uid="uid://blbnkkh5l4fbo" path="res://scripts/world/floor_grid_visual.gd" id="6_floor_grid"]
-[ext_resource type="PackedScene" uid="uid://drckc1d62aiqe" path="res://scenes/ui/PlayerHealthUI.tscn" id="7_player_health_ui"]
-[ext_resource type="PackedScene" uid="uid://bbonddebugui" path="res://scenes/ui/BondDebugUI.tscn" id="8_bond_debug_ui"]
-[ext_resource type="Script" uid="uid://r18i6xvaiaug" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
-[ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="10_bond_test_help"]
-[ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
-[ext_resource type="Script" path="res://scripts/world/enemy_spawn_debug.gd" id="13_enemy_spawn"]
-[ext_resource type="PackedScene" uid="uid://benemyindicators" path="res://scenes/ui/EnemyOffscreenIndicators.tscn" id="12_enemy_indicators"]
+[ext_resource type="PackedScene" uid="uid://btestworldgame01" path="res://scenes/world/TestWorldGame.tscn" id="2_game"]
+[ext_resource type="PackedScene" uid="uid://bbonddebugui" path="res://scenes/ui/BondDebugUI.tscn" id="3_debug"]
 
-[node name="TestWorld" type="Node2D" unique_id=1840992113]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_debug_panel"]
+bg_color = Color(0.12, 0.14, 0.16, 1)
+border_width_left = 2
+border_color = Color(0.28, 0.32, 0.36, 1)
+
+[node name="TestWorld" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_world")
 
-[node name="Ground" type="ColorRect" parent="." unique_id=371928750]
-z_index = -10
-offset_left = -2400.0
-offset_top = -2400.0
-offset_right = 2400.0
-offset_bottom = 2400.0
-color = Color(0.14, 0.2, 0.11, 1)
+[node name="LayoutHBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
 
-[node name="FloorGrid" type="Node2D" parent="." unique_id=23395110]
-z_index = -9
-script = ExtResource("6_floor_grid")
+[node name="GameplayViewportContainer" type="SubViewportContainer" parent="LayoutHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
 
-[node name="Entities" type="Node2D" parent="." unique_id=83008799]
+[node name="GameplayViewport" type="SubViewport" parent="LayoutHBox/GameplayViewportContainer"]
+handle_input_locally = true
+size = Vector2i(1200, 900)
+render_target_update_mode = 4
 
-[node name="Player" parent="Entities" unique_id=309061533 instance=ExtResource("3_player")]
-position = Vector2(1233, 85)
+[node name="TestWorldGame" parent="LayoutHBox/GameplayViewportContainer/GameplayViewport" instance=ExtResource("2_game")]
 
-[node name="Dragon" parent="Entities" unique_id=1275625938 instance=ExtResource("4_dragon")]
-position = Vector2(1233, 118)
+[node name="DebugPanel" type="PanelContainer" parent="LayoutHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_debug_panel")
 
-[node name="Enemies" type="Node2D" parent="Entities" unique_id=977589883]
-
-[node name="EnemyA" parent="Entities/Enemies" unique_id=734008255 instance=ExtResource("5_enemy")]
-position = Vector2(680, 420)
-
-[node name="EnemyB" parent="Entities/Enemies" unique_id=1732174798 instance=ExtResource("5_enemy")]
-position = Vector2(560, 580)
-
-[node name="EnemyC" parent="Entities/Enemies" unique_id=227574411 instance=ExtResource("5_enemy")]
-position = Vector2(380, 80)
-
-[node name="EnemyD" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
-position = Vector2(1680, 320)
-
-[node name="EnemyE" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
-position = Vector2(1780, 520)
-
-[node name="Camera2D" type="Camera2D" parent="." unique_id=305802096]
-script = ExtResource("2_camera")
-
-[node name="UI" type="CanvasLayer" parent="." unique_id=1641708234]
-
-[node name="PlayerHealthUI" parent="UI" unique_id=1385748611 instance=ExtResource("7_player_health_ui")]
-
-[node name="BondDebugUI" parent="UI" unique_id=1536371996 instance=ExtResource("8_bond_debug_ui")]
-
-[node name="BondTestControls" type="Node" parent="UI" unique_id=1772487714]
-script = ExtResource("9_bond_test_controls")
-
-[node name="HealthDebugControls" type="Node" parent="UI"]
-script = ExtResource("11_health_debug")
-
-[node name="EnemySpawnDebug" type="Node" parent="UI"]
-script = ExtResource("13_enemy_spawn")
-
-[node name="BondTestHelpUI" parent="UI" unique_id=2074700217 instance=ExtResource("10_bond_test_help")]
-
-[node name="EnemyOffscreenIndicators" parent="UI" instance=ExtResource("12_enemy_indicators")]
+[node name="BondDebugUI" parent="LayoutHBox/DebugPanel" instance=ExtResource("3_debug")]
+layout_mode = 2

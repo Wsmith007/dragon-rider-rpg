@@ -1,14 +1,293 @@
 # Relationship Event Framework
 
-**Status:** Design / planning only (Milestone 8 prep)  
-**Source of truth for gameplay:** `docs/project_checkpoint_milestone7.md`  
-**Related:** `docs/bond_system.md`, `docs/dragon_ai.md`
+**Status:** Living design document — distinguishes **implemented**, **planned**, and **future** behavior  
+**Gameplay checkpoints:** `docs/project_checkpoint_milestone7.md`, `docs/project_checkpoint_milestone8.md` (historical), **`docs/project_checkpoint_milestone9A.md` (current live state)**  
+**Related:** `docs/bond_system.md`, `docs/dragon_ai.md`, `docs/game_architecture.md`
 
-This document defines **what relationship events exist**, **which stats they should affect**, and **how updates should be batched and guarded**. It does **not** assign numeric values and does **not** change gameplay in the current prototype.
+This document defines relationship events, stat ownership, encounter evaluation, and long-term progression philosophy. **Code is the source of truth for live behavior**; sections below are labeled by implementation status.
 
 ---
 
-## 1. Relationship Philosophy
+## Document Map
+
+| Section | Status |
+|---------|--------|
+| **Current Implementation** | Live in prototype (Milestone 8 + 9A) |
+| **Planned Revision** | Discussed design direction — **not implemented** |
+| **Future Systems** | Design targets — **not implemented** |
+| **Long-Term Progression Philosophy** | Design targets — guides world and scaling |
+| **Reference sections (§1 onward)** | Event catalog, philosophy, and future modules |
+
+---
+
+# Current Implementation
+
+**Status: IMPLEMENTED** — reflects live prototype behavior as of Milestone 9A. Do not infer future behavior from this section.
+
+## Pipeline (live)
+
+```
+Gameplay hooks → RelationshipSystem (autoload)
+  → RelationshipEventBus
+  → RelationshipEncounterTracker (counters + involved enemies)
+  → EncounterQualityClassifier (outcome/stress → Instability)
+  → CooperationRatingClassifier (teamwork → Sync)
+  → ProposedDeltaGenerator (deltas + Bond preview)
+  → BondSystem.apply_sync_delta / apply_instability_delta (clamped 0–100)
+  → Bond Debug UI (F10)
+```
+
+**Wired from:** `TestWorld` via `RelationshipSystem.setup_from_scene()`
+
+**Safeguards (live):**
+
+- One stat application per resolved `encounter_id` (`_applied_encounter_ids`)
+- Sync and Instability clamped to 0–100 via `BondProfile` setters
+- Minor skirmishes may **abort** without resolve or stat changes
+- Bond Strength is **never written** at encounter resolve
+
+## Encounter Quality (outcome / stress)
+
+**Classifier:** `EncounterQualityClassifier`  
+**Stat effect:** **Instability** (applied live at encounter resolve)
+
+**Primary inputs today:** player damage taken, near-death events, death, resolve outcome (defeated / fled / death). Disengage/re-engage prevents **Excellent**. Assist cancellations do **not** affect Encounter Quality.
+
+| Rating | Instability Δ (live) |
+|--------|----------------------|
+| **Excellent** | −2 |
+| **Good** | −1 |
+| **Neutral** | 0 |
+| **Poor** | +2 |
+| **Disastrous** | +4 |
+
+**Classifier thresholds (live, player harm):**
+
+- Reference max HP: 1000
+- **Excellent:** enemy defeated; zero player damage; zero dragon damage (field ready); no near-death; no disengage/re-engage
+- **Good:** enemy defeated; damage ≤ 30% ref HP; no near-death
+- **Poor:** near-death, or damage ≥ 35% ref HP, or stressful flee with heavy harm
+- **Neutral:** solo kills, minor flee, moderate strain between Good/Poor bands
+- **Disastrous:** player death (dragon death field ready)
+
+## Cooperation Rating (teamwork / execution)
+
+**Classifier:** `CooperationRatingClassifier`  
+**Stat effect:** **Sync** (applied live at encounter resolve)
+
+**Primary inputs today:** successful assists/protections, assist cancellations, assist hesitations, player vs dragon contribution balance.
+
+| Rating | Sync Δ (live) |
+|--------|---------------|
+| **Excellent** | +2 |
+| **Good** | +1 |
+| **Neutral** | 0 |
+| **Poor** | −1 |
+| **Disastrous** | −2 |
+
+**Classifier rules (live summary):**
+
+- **Neutral:** player-only kill or dragon-only kill (Sync unchanged)
+- **Excellent:** both contributed; ≥1 dragon success; 0 cancels; 0 hesitations
+- **Good:** both contributed; ≤1 cancel and ≤1 hesitation
+- **Poor:** repeated cancels/hesitations or weak joint execution (e.g. ≥4 cancels)
+- **Disastrous:** sustained failed cooperation with no successful joint actions (rare)
+
+## Split behavior (live)
+
+Outcome stress and teamwork are evaluated **independently**. Examples:
+
+| Scenario | Encounter Quality | Cooperation | Instability | Sync |
+|----------|-------------------|-------------|-------------|------|
+| Win, 0 damage, 4 cancels | Excellent | Poor | −2 | −1 |
+| Win, heavy damage, strong assists | Poor | Good/Excellent | +2 | +1/+2 |
+| Player-only kill | Good/Neutral | Neutral | −1/0 | 0 |
+| Dragon-only kill | Good/Neutral | Neutral/Poor | −1/0 | 0 |
+| Player death | Disastrous | (varies) | +4 | (varies) |
+
+## Bond Strength (live — protected)
+
+- **Sync changes are live** from Cooperation Rating at resolve.
+- **Instability changes are live** from Encounter Quality at resolve.
+- **Bond Strength is not modified** by encounter resolution.
+- Debug UI may show a **Bond Δ preview** (e.g. −1 on Disastrous death) labeled **NOT APPLIED** — preview for a future pattern pass only.
+
+## Key implementation files
+
+| Component | Path |
+|-----------|------|
+| Orchestrator | `scripts/systems/relationship_system.gd` |
+| Encounter quality | `scripts/relationship/encounter_quality_classifier.gd` |
+| Cooperation rating | `scripts/relationship/cooperation_rating_classifier.gd` |
+| Delta generation | `scripts/relationship/proposed_delta_generator.gd` |
+| Encounter summary | `scripts/relationship/relationship_encounter_summary.gd` |
+| Stat application | `scripts/bond/bond_system.gd` (`apply_sync_delta`, `apply_instability_delta`) |
+
+---
+
+# Planned Revision
+
+**Status: DISCUSSED — NOT IMPLEMENTED** — intended direction for a future refactor of outcome/stress evaluation. Current code still uses **Encounter Quality** (Excellent … Disastrous) as documented in **Current Implementation**.
+
+## Planned Outcome Rating Revision
+
+**Working name:** Outcome Rating (may replace Encounter Quality naming)
+
+Outcome Rating is intended to measure **encounter stress and danger** — not teamwork. Cooperation Rating would remain separate and continue driving Sync.
+
+### Proposed ratings
+
+| Outcome Rating | Meaning |
+|----------------|---------|
+| **Flawless** | No meaningful harm |
+| **Safe** | Light harm |
+| **Rough** | Moderate harm |
+| **Severe** | Heavy harm |
+| **Disastrous** | Extreme harm or near-death |
+
+### Proposed harm bands (combined harm — see Future Systems)
+
+Harm measured as **combined harm percentage** (player + dragon when dragon health exists):
+
+| Band | Combined harm |
+|------|----------------|
+| **Flawless** | 0% |
+| **Safe** | 1–25% |
+| **Rough** | 26–50% |
+| **Severe** | 51–75% |
+| **Disastrous** | 76%+ combined harm **or** near-death |
+
+*Until dragon health exists, design discussions may prototype bands using player harm only.*
+
+### Proposed Instability deltas
+
+| Outcome Rating | Instability Δ |
+|----------------|---------------|
+| Flawless | −2 |
+| Safe | −1 |
+| Rough | 0 |
+| Severe | +2 |
+| Disastrous | +4 |
+
+### Philosophy
+
+Instability measures **stress and strain**, not teamwork quality.
+
+**Design goals:**
+
+- Good experiences **reduce** strain (negative deltas)
+- Average experiences **maintain** strain (zero delta at Rough)
+- Bad experiences **increase** strain (positive deltas)
+- Instability should **not** constantly trend upward or downward across normal play — recovery, neutral bands, and symmetric tuning should keep the stat in healthy operating ranges (see §9)
+
+**Cooperation Rating is unchanged in this revision** — still drives Sync independently.
+
+---
+
+## Death Handling (planned revision)
+
+**Status: DISCUSSED — NOT IMPLEMENTED**
+
+### Current implementation
+
+Death contributes to **Disastrous** Encounter Quality and applies Instability +4 at resolve. Bond preview may show −1 (not applied).
+
+### Planned direction
+
+Death should eventually become a **separate failure state**, not folded only into Outcome Rating tiers.
+
+Potential future states:
+
+- Player dies, dragon survives
+- Dragon dies, player survives
+- Both die
+
+These should be handled with distinct narrative and relationship consequences, evaluated separately from routine Outcome Rating bands. Exact stat effects TBD; no implementation required in current prototype.
+
+---
+
+# Future Systems
+
+**Status: DESIGN ONLY — NOT IMPLEMENTED**
+
+## Future Dragon Health Integration
+
+Outcome / stress evaluation should eventually use **Combined Harm**:
+
+```
+Combined Harm % = Player Harm % + Dragon Harm %
+```
+
+instead of player harm alone.
+
+**Depends on:**
+
+- Dragon health system (damage, near-death, death events)
+- Summary fields already reserved: `dragon_damage_taken`, `dragon_near_death_count`, `dragon_critical`, `dragon_died`
+- Planned events: `combat.enemy_damaged_dragon`, `combat.dragon_critical_hp`, `combat.dragon_death`
+- Resolved outcomes: Dragon Injured, Dragon Death
+
+When dragon health exists, flee/disengage Outcome Rating should also consider dragon harm and failed protection under fire.
+
+## Other future relationship modules (not live)
+
+| System | Purpose |
+|--------|---------|
+| **Bond pattern pass** | Session quality trends → Bond Strength (not per-fight) |
+| **Bond resilience pass** | `BondResilience` scales Instability impact and Sync floor |
+| **Anti-farming caps** | Diminishing returns per encounter (§8) |
+| **Natural Instability decay** | Out-of-combat drift toward Normal band (§12) |
+| **Exploration / story events** | Session-level Bond sources (§3 C/D) |
+| **Immediate event pings** | Optional real-time Instability bumps before resolve (§5) |
+
+---
+
+# Long-Term Progression Philosophy
+
+**Status: DESIGN TARGET** — guides world design and scaling; not fully implemented in the test prototype.
+
+## Parallel progression axes
+
+| Axis | Role |
+|------|------|
+| **Character Level** | Personal power — rider combat capability |
+| **Relationship Stats** | Rider/dragon **effectiveness together** — Bond, Sync, Instability |
+| **World Regions** | Difficulty and content progression |
+| **Enemy Variants** | Strength and behavior progression within regions |
+
+Relationship progression should remain **as important as character progression**. The bond is not a side stat — it shapes cooperation, strain, communication, and resilience.
+
+## Enemy scaling philosophy
+
+Enemy scaling should primarily come from:
+
+- **Region difficulty** — later regions introduce tougher baseline threats
+- **Enemy type** — role and kit differences
+- **Enemy variants** — elite, corrupted, aged, faction-specific versions
+
+**Avoid** full player-level scaling that negates returning to earlier areas.
+
+Returning to earlier regions should **demonstrate growth** — the rider–dragon pair should feel stronger and more coordinated without invalidating prior zones through invisible level scaling.
+
+## Relationship vs combat power
+
+Bond Strength, Sync, and Instability describe **partnership quality and strain**. They are not disguised combat stats. High Bond improves cooperation affordances and (future) resilience — not raw damage spikes. See `docs/bond_system.md` and `docs/game_architecture.md`.
+
+---
+
+## Design Notes — Why Outcome and Cooperation Were Split
+
+**Encounter Quality (Outcome / stress)** measures **danger and harm** → drives **Instability**.
+
+**Cooperation Rating** measures **teamwork and execution** → drives **Sync**.
+
+This separation prevents teamwork failures (cancels, hesitations, solo kills) from automatically being treated as dangerous encounters, and prevents bloody but coordinated fights from being scored as cooperation failures.
+
+**Bond Strength** remains a **long-term resilience / trust** stat fed by patterns over sessions — not by individual encounter Sync/Instability rolls.
+
+---
+
+# Reference: Relationship Philosophy
 
 The core loop (design target):
 
@@ -32,9 +311,9 @@ Relationship stats are **not combat power**. They describe the **quality and str
 4. **Events are signals, not rewards** — the system reacts to meaning, not repetition.
 5. **Encounter summaries prevent farming** — many combat events roll up at encounter end; caps and diminishing returns apply.
 6. **Bond resilience (future)** — high Bond Strength reduces instability impact and improves recovery; it does not block events.
-7. **Combat feeds Sync and Instability; patterns feed Bond** — see §2.1.
+7. **Combat feeds Sync and Instability at encounter resolve; patterns feed Bond** — see **Current Implementation** and §2.1.
 
-Stats are currently debug-adjusted only. This framework prepares automatic updates without implementing them.
+Sync and Instability are **live** from resolved encounters (Milestone 9A). Bond Strength remains pattern-only. Debug keys still allow manual stat adjustment for testing.
 
 ---
 
@@ -52,17 +331,17 @@ Stats are currently debug-adjusted only. This framework prepares automatic updat
 ### Sync (`sync`)
 
 - **Identity:** How effectively rider and dragon cooperate **right now** and **recently**.
-- **Changes when:** Successful coordinated actions, clean command compliance, shared victories.
+- **Changes when:** Cooperation Rating at encounter resolve (live); also successful coordinated actions in design intent.
 - **Should not:** Permanently collapse from a single bad moment (see §10).
-- **Gameplay today:** Cooperative assist cooldown tiers.
+- **Gameplay today:** Cooperative assist cooldown tiers; **Sync Δ applied live** from Cooperation Rating at encounter resolve.
 
 ### Instability (`instability`)
 
 - **Identity:** Current emotional/magical strain on the bond.
-- **Changes when:** Player harm, failed cooperation, hesitation/cancel, near-death, death, chaos.
-- **Should fall:** Over time, after safe periods, at rest (future — not implemented).
+- **Changes when:** Harm, near-death, death, stressful outcomes (via Encounter Quality at resolve).
+- **Should fall:** Over time, after safe periods, at rest (future decay — not implemented).
 - **Target operating bands:** see §9.
-- **Gameplay today:** Assist hesitation and post-hesitation cancel only.
+- **Gameplay today:** Assist hesitation and post-hesitation cancel (gameplay); **Instability Δ applied live** from Encounter Quality at encounter resolve.
 
 ---
 
@@ -206,7 +485,7 @@ Events are grouped for ownership and batching rules. Each event has a stable **`
 | Narrative choice | ● | ○ | ○ | Designer-authored |
 | Faction shift | ○ | — | ○ | Context-dependent |
 
-**Multi-stat rule (combat layer):** **Instability** resolves first (immediate feel), **Sync** second (encounter rollup). **Bond** is evaluated last at **session/pattern** layer via Encounter Quality and exploration/story — not from raw combat event counts.
+**Multi-stat rule (combat layer):** **Instability** is driven by **Encounter Quality** (outcome/stress). **Sync** is driven by **Cooperation Rating** (teamwork/execution). **Bond** is evaluated last at **session/pattern** layer — not from individual encounter stat rolls.
 
 ---
 
@@ -259,7 +538,7 @@ Exploration, Bond growth, and pattern tracking:
 
 ## 6. Encounter Summary Concept
 
-Future type (design sketch — **not implemented**):
+**Status: IMPLEMENTED** — `RelationshipEncounterSummary` in `scripts/relationship/relationship_encounter_summary.gd`
 
 ```gdscript
 # RelationshipEncounterSummary — accumulated during one combat encounter
@@ -281,79 +560,83 @@ var player_died: bool = false
 var commands_obeyed: int = 0
 var commands_delayed: int = 0
 
-# Flags
+# Dragon harm placeholders (future dragon health)
+var dragon_damage_taken: float = 0.0
+var dragon_near_death_count: int = 0
+var dragon_critical: bool = false
+var dragon_died: bool = false
+
+# Disengage tracking
+var was_disengaged: bool = false
+var disengage_count: int = 0
+var reengaged_after_disengage: bool = false
+var excellent_disqualified: bool = false
+
+# Resolve flags
 var encounter_completed: bool = false
 var encounter_failed: bool = false
-
-# Future (Milestone 8+)
-# var encounter_quality: EncounterQuality  # set by evaluator, not counters alone
+var resolved_outcome: ResolvedOutcome
 ```
 
 **Lifecycle:**
 
 1. **Start** — first enemy aggro or player enters combat zone.
-2. **Record** — `RelationshipEventBus` (future) increments counters; no stat writes.
+2. **Record** — `RelationshipEventBus` increments encounter counters; no mid-encounter stat writes.
 3. **End** — last enemy dead, player leaves, death, or flee.
-4. **Classify** — `RelationshipUpdateEvaluator` assigns **Encounter Quality** (§7).
-5. **Evaluate** — quality + summary + anti-farm rules → proposed **Sync/Instability** deltas (Milestone 9+).
-6. **Pattern pass** — session tracker updates encounter-quality history → proposed **Bond** deltas (Milestone 9+).
-7. **Apply** — `BondSystem` applies clamped changes (Milestone 9+).
+4. **Classify** — assign **Encounter Quality** (outcome/stress) and **Cooperation Rating** (teamwork).
+5. **Evaluate** — quality → Instability delta; cooperation → Sync delta; anti-farm rules (future).
+6. **Pattern pass** — session tracker updates encounter-quality history → proposed **Bond** deltas (future).
+7. **Apply** — `BondSystem` applies clamped Sync/Instability changes (Bond unchanged per encounter).
 
-**Encounter completion (conceptual — via Encounter Quality, not raw counts):**
+**Encounter completion (via split ratings — not raw counts):**
 
-- **Excellent / Good** → Sync ↑, Instability ↓; Bond unchanged until session pattern
-- **Neutral** → minor Sync/Instability drift
-- **Poor / Disastrous** → Instability ↑, Sync ↓; Bond may move only if pattern trend worsens
+- **Excellent Quality** → Instability ↓ (stress relief); Sync unchanged unless Cooperation also strong
+- **Excellent Cooperation** → Sync ↑; Instability unchanged unless Quality also clean
+- **Neutral** on either axis → no delta from that axis
+- **Poor Quality** → Instability ↑; **Poor Cooperation** → Sync ↓
+- **Disastrous Quality** (death) → large Instability ↑; Bond preview only until pattern pass
 
----
-
-## 7. Encounter Quality System
-
-### What it is
-
-**Encounter Quality** is a single classification assigned when an encounter ends. It summarizes **how the fight felt for the relationship** — not a sum of raw event counts applied directly to stats.
-
-Future enum (no formulas yet):
-
-| Quality | Meaning |
-|---------|---------|
-| **Excellent** | Strong cooperation, low harm, clean resolution |
-| **Good** | Solid teamwork with minor strain |
-| **Neutral** | Unremarkable; neither bonding nor damaging |
-| **Poor** | Frequent failures, heavy damage, or messy resolution |
-| **Disastrous** | Death, abort, or relationship-breaking chaos |
-
-### Why it exists
-
-1. **Balancing surface** — designers tune Sync/Instability per quality tier, not per assist click.
-2. **Anti-farming** — quality caps how much one encounter can matter regardless of event spam.
-3. **Bond protection** — Bond reads **patterns of quality over sessions**, not individual Excellent rolls.
-4. **Player clarity** — future UI can show “We fought well together” vs opaque stat math.
-
-### Potential inputs (evaluator inputs — not formulas)
-
-- `successful_assists`, `successful_protections`
-- `assist_cancellations`, `assist_hesitations`
-- `player_damage_taken`, `player_near_death_count`, `player_died`
-- `enemies_defeated`, `encounter_completed`, `encounter_failed`
-- `commands_obeyed` vs `commands_delayed`
-
-### How future systems use it
-
-| System | Use |
-|--------|-----|
-| **Sync / Instability update** | Primary delta driver at encounter end |
-| **Bond pattern tracker** | Streak of Good/Excellent → slow Bond ↑; streak of Poor/Disastrous → Bond ↓ |
-| **Communication (future)** | Optional tone modifier after Poor/Disastrous |
-| **Bond resilience (§11)** | High Bond dampens Instability gain from Poor; low Bond amplifies it |
-
-**Goal:** Future balancing operates primarily on **Encounter Quality**, with raw counters feeding the classifier only.
+A fight may be **Excellent Quality** with **Poor Cooperation** or **Poor Quality** with **Excellent Cooperation**. See **Current Implementation** for live deltas and examples.
 
 ---
+
+## 7. Encounter Quality & Cooperation Rating (reference)
+
+> **Live behavior:** See **Current Implementation** at the top of this document.  
+> **Planned rename/refactor:** See **Planned Revision** (Outcome Rating bands).
+
+This section summarizes the **implemented** split for quick reference within the event catalog.
+
+### Encounter Quality → Instability (live)
+
+| Quality | Instability Δ |
+|---------|---------------|
+| Excellent | −2 |
+| Good | −1 |
+| Neutral | 0 |
+| Poor | +2 |
+| Disastrous | +4 |
+
+### Cooperation Rating → Sync (live)
+
+| Rating | Sync Δ |
+|--------|--------|
+| Excellent | +2 |
+| Good | +1 |
+| Neutral | 0 |
+| Poor | −1 |
+| Disastrous | −2 |
+
+### Bond Strength (live — protected)
+
+- Bond **not applied** at encounter resolve; preview only in debug UI.
+- Session/pattern evaluation and Bond resilience remain **future** (§11).
+
+> **Note on §4 event ownership:** Individual events (e.g. assist canceled) describe *design intent* for which stats they relate to. **Live prototype** batches routine combat into encounter resolve: Instability from Encounter Quality, Sync from Cooperation Rating — not per-event stat writes.
 
 ## 8. Anti-Farming Philosophy
 
-Documented rules for future implementation — **not active today**.
+**Status: FUTURE — NOT IMPLEMENTED** — documented rules for a future pass.
 
 ### Diminishing returns
 
@@ -370,7 +653,7 @@ Documented rules for future implementation — **not active today**.
 | `successful_assists` | Max countable assists per encounter (e.g. 5) |
 | `successful_protections` | Max countable protections (e.g. 4) |
 | `enemies_defeated` | Max kill-based Sync events (e.g. 8) |
-| `assist_cancellations` | Max instability events counted (e.g. 6) |
+| `assist_cancellations` | Max cooperation penalty events counted (e.g. 6) |
 | Net Sync gain | Hard ceiling per encounter |
 | Net Instability gain | Hard ceiling per encounter |
 | Encounter Quality | Best achievable quality capped by repeated identical farming |
@@ -396,7 +679,7 @@ Documented rules for future implementation — **not active today**.
 
 ## 9. Instability Target Bands
 
-Design intent for where Instability should **spend most of its time** once the update loop exists. **Not gameplay values today.**
+Design intent for where Instability should **spend most of its time**. Live encounter deltas apply today; passive decay toward these bands is **not implemented**.
 
 | Range | Band | Character |
 |-------|------|-----------|
@@ -432,16 +715,17 @@ Sync represents **learned cooperation** — it should be **easier to gain than t
 | Situation | Intended Sync behavior |
 |-----------|------------------------|
 | Repeated successful cooperation | Builds Sync steadily (with encounter caps) |
-| Single bad encounter (Poor quality) | **Small** Sync reduction |
-| Single failure (one cancel, one death) | Minimal or no Sync loss if encounter otherwise Good |
-| Repeated Poor/Disastrous encounters | **Meaningful** Sync reduction |
+| Single bad encounter (Poor Cooperation) | **Small** Sync reduction (live: −1 Poor, −2 Disastrous cooperation) |
+| Single failure (one cancel, otherwise Good cooperation) | Minimal Sync loss |
+| Repeated Poor/Disastrous cooperation | **Meaningful** Sync reduction |
 | Recovery | Sync restores faster than it falls (asymmetric gain/loss) |
 
 ### Relationship to other stats
 
 - **Instability** absorbs short-term shock; Sync should not mirror every Instability spike.
 - **Bond Strength** (future sync floor) sets how low Sync can fall — high Bond prevents total coordination collapse.
-- **Encounter Quality** is the primary Sync adjustment surface at encounter end.
+- **Encounter Quality** is the primary **Instability** adjustment surface at encounter end.
+- **Cooperation Rating** is the primary **Sync** adjustment surface at encounter end.
 
 ---
 
@@ -467,10 +751,11 @@ Bond Strength = **resilience** — the depth of trust that buffers the relations
 | `get_sync_floor(bond_strength)` | Minimum Sync after losses |
 | `get_bond_tier()` / progress | Gates how fast Bond rises from positive patterns |
 
-### Connection to Encounter Quality
+### Connection to encounter evaluation
 
-- Evaluator produces base Sync/Instability deltas from quality tier.
-- **Resilience pass** multiplies Instability deltas and pattern-based Bond deltas by Bond tier.
+- **Encounter Quality** produces base Instability deltas (live).
+- **Cooperation Rating** produces base Sync deltas (live).
+- **Resilience pass (future)** multiplies Instability deltas and pattern-based Bond deltas by Bond tier.
 - Same Disastrous encounter hurts a fragile bond more than a deep bond — without preventing the event.
 
 ---
@@ -502,17 +787,20 @@ Bond recovery:
 
 ## 13. Future Implementation Notes
 
-### Proposed modules (Milestone 8+)
+### Proposed modules
 
-| Module | Responsibility |
-|--------|----------------|
-| `RelationshipEvent` | Enum / resource: `event_id`, timestamp, payload |
-| `RelationshipEventBus` | Emit and subscribe; no stat writes |
-| `RelationshipEncounterTracker` | Builds `RelationshipEncounterSummary` |
-| `EncounterQualityClassifier` | Summary → Excellent … Disastrous (no stat writes in M8) |
-| `RelationshipSessionTracker` | Encounter quality history; Bond pattern input |
-| `RelationshipUpdateEvaluator` | Quality + resilience + rules → proposed deltas |
-| `BondSystem.apply_relationship_deltas()` | Clamp and write `BondProfile` (Milestone 9+) |
+| Module | Status | Responsibility |
+|--------|--------|----------------|
+| `RelationshipEvent` | **Implemented** | `event_id`, payload |
+| `RelationshipEventBus` | **Implemented** | Emit and subscribe |
+| `RelationshipEncounterTracker` | **Implemented** | Builds `RelationshipEncounterSummary` |
+| `EncounterQualityClassifier` | **Implemented** | Outcome/stress → Instability |
+| `CooperationRatingClassifier` | **Implemented** | Teamwork → Sync |
+| `ProposedDeltaGenerator` | **Implemented** | Deltas + Bond preview |
+| `RelationshipSessionTracker` | **Implemented** | Quality history (Bond input future) |
+| `BondSystem.apply_sync_delta` / `apply_instability_delta` | **Implemented** | Clamp and write `BondProfile` |
+| `RelationshipUpdateEvaluator` | Future | Resilience + anti-farm pass |
+| Bond pattern pass | Future | Session trends → Bond Strength |
 
 ### Hook points (existing prototype)
 
@@ -527,22 +815,15 @@ Bond recovery:
 | `enemy.gd` | defeated |
 | `TestWorld` / future zones | encounter start/end, exploration |
 
-### Milestone 8 scope (recommended)
+### Milestone 8 — encounter resolution (**implemented**)
 
-1. Implement `RelationshipEvent` + `RelationshipEventBus` (emit only, debug log).
-2. Implement `RelationshipEncounterTracker` (counters only).
-3. Implement `EncounterQualityClassifier` stub (label only, debug log).
-4. Implement `RelationshipSessionTracker` stub (quality history only).
-5. Wire combat/command hooks to bus **without changing stats**.
-6. **Milestone 9:** numeric deltas, resilience pass, apply to `BondProfile`, tune bands (§9) and Sync asymmetry (§10).
-
-### Milestone 8 — encounter resolution (implemented, observation only)
+See **Current Implementation** for live pipeline, deltas, and safeguards.
 
 **Tracking vs resolution**
 
 - **Current encounter** begins on meaningful combat engagement (damage, protection triggered, assist attempt/hesitation).
 - **Resolved encounter** is produced only when a meaningful outcome occurs.
-- Minor skirmishes (single hit, single protection, brief chase) may **abort** tracking with no last-resolved snapshot and no proposed deltas.
+- Minor skirmishes may **abort** tracking with no last-resolved snapshot and no stat changes.
 
 **Resolved outcome values**
 
@@ -552,13 +833,13 @@ Bond recovery:
 | **Player Death** | Player dies during encounter |
 | **Fled / Disengaged** | Timeout or flee **after** meaningful combat progress |
 | **Unresolved** | Reserved — minor disengage aborts instead of resolving |
-| **Dragon Injured / Dragon Death** | Future — see §6.1 |
-| **Enemy Escaped** | Future — major combat then successful escape |
+| **Dragon Injured / Dragon Death** | Future — see **Future Systems** |
+| **Enemy Escaped** | Future |
 
-**Proposed deltas (preview only)**
+**Bond preview (live — not applied)**
 
-- Generated only for resolved outcomes with non-neutral quality (or Poor/Disastrous on fled).
-- Bond Strength, Sync, and Instability are **never** written in Milestone 8.
+- Generated for some resolved outcomes (e.g. Disastrous death may show Bond −1 preview).
+- Bond Strength is **never written** at encounter resolve.
 
 **Assist vs protection**
 
@@ -572,32 +853,13 @@ Bond recovery:
 - Counters are preserved; `was_disengaged` and `excellent_disqualified` are set.
 - Re-engaging the same involved enemy within 6s **resumes** the same encounter (`reengaged_after_disengage = true`).
 - After grace expires, resolve as **Fled / Disengaged** (or abort if no meaningful progress).
-- **Excellent is never allowed** after any disengage in the same encounter.
-
-**Excellent quality (rare — flawless)**
-
-Requires **all** of: enemy defeated, player hit landed, dragon assist/protection success, **zero** player damage, **zero** dragon damage (future), zero cancels, zero near-death, no disengage/re-engage, not dragon-only kill. Any player or dragon harm caps the result at **Good** (if other Good rules pass) or lower.
+- **Excellent Quality** is never allowed after any disengage in the same encounter.
 
 Summary fields: `was_disengaged`, `disengage_count`, `reengaged_after_disengage`, `excellent_disqualified`.
 
-### 6.1 Future — dragon as combat target (hooks only)
+### Dragon as combat target (future)
 
-Not implemented in Milestone 8. Reserved summary fields:
-
-- `dragon_damage_taken`, `dragon_near_death_count`, `dragon_critical`, `dragon_died`
-
-Future events (planned):
-
-- `combat.enemy_damaged_dragon`
-- `combat.dragon_critical_hp`
-- `combat.dragon_death`
-
-Future resolved outcomes:
-
-- **Dragon Injured** — critical injury threshold crossed
-- **Dragon Death** — bond/sync/instability consequences for failing to protect the dragon
-
-When dragon health exists, fled/disengage quality should also consider dragon harm and failed protection under fire.
+See **Future Systems → Future Dragon Health Integration**.
 
 ### References
 
@@ -615,4 +877,5 @@ When dragon health exists, fled/disengage quality should also consider dragon ha
 | 1.1 | Bond combat/pattern split, Encounter Quality, Instability bands, Sync philosophy, Bond resilience integration |
 | 1.2 | Milestone 8 outcome-based resolution, assist/protection separation, dragon damage placeholders |
 | 1.3 | Stricter Excellent rules, disengage grace / re-engage same encounter |
-| 1.4 | Excellent requires zero player/dragon damage (flawless cooperation) |
+| 1.5 | Split Encounter Quality (Instability) vs Cooperation Rating (Sync); live stat application |
+| 2.0 | Current Implementation / Planned Revision / Future Systems / Progression Philosophy sections |

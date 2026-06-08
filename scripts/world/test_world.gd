@@ -1,20 +1,25 @@
-extends Node2D
-## Boots the vertical-slice test map and wires references between player, dragon, and camera.
+extends Control
+## Playtest shell: gameplay SubViewport on the left, docked debug panel on the right.
 
 
-@onready var _player: CharacterBody2D = $Entities/Player
-@onready var _dragon: CharacterBody2D = $Entities/Dragon
-@onready var _camera: Camera2D = $Camera2D
-@onready var _dragon_command: Node = $Entities/Player/DragonCommand
-@onready var _player_health_ui: Control = $UI/PlayerHealthUI
-@onready var _bond_debug_ui: Window = $UI/BondDebugUI
-@onready var _health_debug_controls: Node = $UI/HealthDebugControls
-@onready var _enemy_spawn_debug: Node = $UI/EnemySpawnDebug
-@onready var _enemies_container: Node2D = $Entities/Enemies
+const DEBUG_PANEL_WIDTH := 400
+
+@onready var _game_viewport: SubViewport = $LayoutHBox/GameplayViewportContainer/GameplayViewport
+@onready var _game_root: Node2D = _game_viewport.get_node("TestWorldGame")
+@onready var _player: CharacterBody2D = _game_root.get_node("Entities/Player")
+@onready var _dragon: CharacterBody2D = _game_root.get_node("Entities/Dragon")
+@onready var _camera: Camera2D = _game_root.get_node("Camera2D")
+@onready var _dragon_command: Node = _player.get_node("DragonCommand")
+@onready var _player_health_ui: Control = _game_root.get_node("UI/PlayerHealthUI")
+@onready var _bond_debug_ui: Control = $LayoutHBox/DebugPanel/BondDebugUI
+@onready var _debug_panel: PanelContainer = $LayoutHBox/DebugPanel
+@onready var _health_debug_controls: Node = _game_root.get_node("UI/HealthDebugControls")
+@onready var _enemy_spawn_debug: Node = _game_root.get_node("UI/EnemySpawnDebug")
+@onready var _enemies_container: Node2D = _game_root.get_node("Entities/Enemies")
 
 
 func _ready() -> void:
-	RelationshipSystem.setup_from_scene(self)
+	RelationshipSystem.setup_from_scene(_game_root)
 	_dragon.set_follow_target(_player)
 	if _camera.has_method("set_follow_target"):
 		_camera.set_follow_target(_player)
@@ -27,7 +32,7 @@ func _ready() -> void:
 		_health_debug_controls.bind_to_player(_player)
 	if _enemy_spawn_debug.has_method("bind"):
 		_enemy_spawn_debug.bind(_player, _enemies_container)
-	var enemy_indicators := get_node_or_null("UI/EnemyOffscreenIndicators") as Control
+	var enemy_indicators := _game_root.get_node_or_null("UI/EnemyOffscreenIndicators") as Control
 	if enemy_indicators != null and enemy_indicators.has_method("bind_to_player"):
 		enemy_indicators.bind_to_player(_player)
 
@@ -40,6 +45,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.keycode != KEY_F10:
 		return
 
-	if _bond_debug_ui != null:
-		_bond_debug_ui.visible = not _bond_debug_ui.visible
+	if _debug_panel != null:
+		_debug_panel.visible = not _debug_panel.visible
 	get_viewport().set_input_as_handled()

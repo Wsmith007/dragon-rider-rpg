@@ -309,6 +309,8 @@ After the prototype succeeds, future systems may include:
 
 Future expansion should only occur after the core rider-dragon relationship feels successful.
 
+**Post–Milestone 9A:** Sync and Instability apply live from resolved encounters via `RelationshipSystem`. See `docs/project_checkpoint_milestone9A.md`.
+
 ---
 
 # Development Philosophy

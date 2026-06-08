@@ -1,17 +1,12 @@
 extends RefCounted
 class_name EncounterQualityClassifier
-## Prototype encounter quality classifier. Label only — no stat writes.
+## Outcome / stress rating for an encounter. Label only — drives Instability deltas.
 ##
-## EXCELLENT — flawless cooperation: both contributed, zero rider/dragon damage,
-##   zero cancels, no disengage, not previously disqualified.
-##
-## GOOD — enemy defeated with rider-dragon cooperation and manageable strain.
-##
-## NEUTRAL — solo kills, minor flee, or unremarkable resolve.
-##
-## POOR — heavy harm, near-death, messy victory, or bad fled outcome.
-##
-## DISASTROUS — player death (future: dragon death).
+## EXCELLENT — clean outcome: enemy defeated with zero rider/dragon harm.
+## GOOD — enemy defeated with light harm or manageable flee stress.
+## NEUTRAL — unremarkable solo kill, minor flee, or moderate unresolved strain.
+## POOR — heavy harm, near-death, or stressful failed/disengaged outcome.
+## DISASTROUS — player or dragon death.
 
 
 enum Quality {
@@ -52,53 +47,37 @@ static func _classify_fled(summary: RelationshipEncounterSummary) -> Quality:
 	if summary.player_near_death_count >= 1 or damage_ratio >= DAMAGE_POOR_RATIO:
 		return Quality.POOR
 
-	if summary.assist_cancellations >= 3:
-		return Quality.POOR
-
-	if summary.assist_cancellations >= 2 and damage_ratio >= 0.12:
-		return Quality.POOR
+	if damage_ratio >= DAMAGE_GOOD_RATIO:
+		return Quality.NEUTRAL
 
 	return Quality.NEUTRAL
 
 
 static func _classify_enemy_defeated(summary: RelationshipEncounterSummary) -> Quality:
 	var damage_ratio := summary.player_damage_taken / REFERENCE_MAX_HP
-	var player_involved := summary.player_contributed_meaningfully()
-	var dragon_involved := summary.dragon_contributed_meaningfully()
 
-	if _is_messy_victory(summary, damage_ratio):
+	if summary.player_near_death_count >= 1 or damage_ratio >= DAMAGE_POOR_RATIO:
 		return Quality.POOR
 
-	if summary.is_excellent_eligible():
+	if _is_excellent_quality(summary):
 		return Quality.EXCELLENT
 
-	if player_involved and dragon_involved \
-			and damage_ratio <= DAMAGE_GOOD_RATIO \
-			and summary.assist_cancellations <= 1 \
-			and summary.player_near_death_count == 0:
+	if damage_ratio <= DAMAGE_GOOD_RATIO:
 		return Quality.GOOD
-
-	if player_involved and not dragon_involved:
-		return Quality.NEUTRAL
-
-	if dragon_involved and not player_involved:
-		return Quality.NEUTRAL
 
 	return Quality.NEUTRAL
 
 
-static func _is_messy_victory(summary: RelationshipEncounterSummary, damage_ratio: float) -> bool:
-	if summary.player_near_death_count >= 1:
-		return true
-	if damage_ratio >= DAMAGE_POOR_RATIO:
-		return true
-	if summary.assist_cancellations >= 2:
-		return true
-	if summary.assist_cancellations >= 1 and damage_ratio >= 0.12:
-		return true
-	if summary.was_disengaged and damage_ratio >= 0.20:
-		return true
-	return false
+static func _is_excellent_quality(summary: RelationshipEncounterSummary) -> bool:
+	if summary.player_near_death_count > 0 or summary.player_died:
+		return false
+	if not is_zero_approx(summary.player_damage_taken):
+		return false
+	if not is_zero_approx(summary.dragon_damage_taken) or summary.dragon_critical or summary.dragon_died:
+		return false
+	if summary.was_disengaged or summary.reengaged_after_disengage:
+		return false
+	return true
 
 
 static func quality_label(quality: Quality) -> String:
@@ -119,19 +98,16 @@ static func quality_label(quality: Quality) -> String:
 
 static func quality_debug_summary(summary: RelationshipEncounterSummary, quality: Quality) -> String:
 	return (
-		"Outcome=%s | Quality=%s | excellent=%s | disengage=%d | damage=%.0f (%.0f%%) | "
-		+ "assists=%d | prot=%d | cancel=%d | player_hits=%d | near_death=%d | died=%s"
+		"Outcome=%s | Quality=%s | excellent_quality=%s | disengage=%d | damage=%.0f (%.0f%%) | "
+		+ "near_death=%d | died=%s | defeated=%d"
 	) % [
 		RelationshipEncounterSummary.outcome_label(summary.resolved_outcome),
 		quality_label(quality),
-		RelationshipEncounterSummary.yes_no(summary.is_excellent_eligible()),
+		RelationshipEncounterSummary.yes_no(summary.is_excellent_quality_eligible()),
 		summary.disengage_count,
 		summary.player_damage_taken,
 		(summary.player_damage_taken / REFERENCE_MAX_HP) * 100.0,
-		summary.successful_assists,
-		summary.successful_protections,
-		summary.assist_cancellations,
-		summary.player_attacks_landed,
 		summary.player_near_death_count,
 		str(summary.player_died),
+		summary.enemies_defeated,
 	]

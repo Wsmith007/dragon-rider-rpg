@@ -1,12 +1,11 @@
-extends Window
-## Live debug readout for BondProfile, dragon state, and relationship observation.
-## Opens as a separate resizable window with large text.
+extends Control
+## Docked debug readout for BondProfile, dragon state, and relationship observation.
 
 
-const FONT_TITLE := 30
-const FONT_BODY := 22
-const FONT_VALUE := 24
-const FONT_NOTICE := 22
+const FONT_TITLE := 24
+const FONT_BODY := 18
+const FONT_VALUE := 20
+const FONT_NOTICE := 18
 
 @onready var _content_root: VBoxContainer = $Margin/Scroll/Panel/ContentMargin/VBox
 @onready var _protection_radius_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Grid/ProtectionRadiusValue
@@ -35,17 +34,25 @@ const FONT_NOTICE := 22
 @onready var _was_disengaged_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid/WasDisengagedValue
 @onready var _disengage_count_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid/DisengageCountValue
 @onready var _excellent_eligible_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid/ExcellentEligibleValue
+@onready var _cooperation_rating_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid/CooperationRatingValue
+@onready var _current_bond_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid/CurrentBondValue
+@onready var _current_sync_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid/CurrentSyncValue
+@onready var _current_instability_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid/CurrentInstabilityValue
 @onready var _last_encounter_id_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastEncounterIdValue
 @onready var _last_resolved_outcome_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastResolvedOutcomeValue
 @onready var _last_quality_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastQualityValue
+@onready var _last_cooperation_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastCooperationValue
 @onready var _last_involved_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastInvolvedValue
 @onready var _last_summary_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastSummaryValue
 @onready var _last_was_disengaged_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastWasDisengagedValue
 @onready var _last_disengage_count_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastDisengageCountValue
 @onready var _last_excellent_eligible_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastExcellentEligibleValue
-@onready var _proposed_sync_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid/ProposedSyncValue
-@onready var _proposed_instability_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid/ProposedInstabilityValue
-@onready var _proposed_bond_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid/ProposedBondValue
+@onready var _last_applied_sync_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastAppliedSyncValue
+@onready var _last_applied_instability_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid/LastAppliedInstabilityValue
+@onready var _applied_sync_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid/AppliedSyncValue
+@onready var _applied_instability_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid/AppliedInstabilityValue
+@onready var _applied_bond_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid/AppliedBondValue
+@onready var _proposed_bond_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedBondGrid/ProposedBondValue
 @onready var _session_count_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/SessionCountValue
 @onready var _session_history_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/SessionHistoryValue
 @onready var _recent_events_value: Label = $Margin/Scroll/Panel/ContentMargin/VBox/Relationship/RecentEventsValue
@@ -58,35 +65,25 @@ var _communication_behavior: DragonCommunicationBehavior
 
 
 func _ready() -> void:
-	_setup_window()
+	_setup_panel()
 	_apply_large_text(_content_root)
 
 	var bond: BondProfile = BondSystem.get_profile()
 	bond.profile_changed.connect(_on_bond_profile_changed)
 	BondSystem.bond_changed.connect(_on_bond_profile_changed)
 	_refresh_bond(bond)
+	_refresh_current_stats(bond)
 	_refresh_dragon_state(DragonState.State.FOLLOWING)
 	_connect_relationship_signals()
 	_refresh_relationship_ui()
 
 
-func _setup_window() -> void:
-	title = "Bond & Relationship Debug"
-	size = Vector2i(680, 920)
-	min_size = Vector2i(560, 520)
+func _setup_panel() -> void:
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = true
-	exclusive = false
-	close_requested.connect(_on_close_requested)
-	call_deferred("_detach_to_own_window")
-
-
-func _detach_to_own_window() -> void:
-	if get_parent() != get_tree().root:
-		reparent(get_tree().root, false)
-
-
-func _on_close_requested() -> void:
-	visible = false
 
 
 func bind_to_dragon(dragon: CharacterBody2D) -> void:
@@ -126,7 +123,7 @@ func _apply_large_text(node: Node) -> void:
 			label.add_theme_font_size_override("font_size", FONT_TITLE)
 		elif node_name.ends_with("value"):
 			label.add_theme_font_size_override("font_size", FONT_VALUE)
-		elif node_name == "proposednotice":
+		elif node_name == "proposednotice" or node_name == "appliednotice":
 			label.add_theme_font_size_override("font_size", FONT_NOTICE)
 		else:
 			label.add_theme_font_size_override("font_size", FONT_BODY)
@@ -136,7 +133,9 @@ func _apply_large_text(node: Node) -> void:
 
 
 func _on_bond_profile_changed(_unused = null) -> void:
-	_refresh_bond(BondSystem.get_profile())
+	var bond := BondSystem.get_profile()
+	_refresh_bond(bond)
+	_refresh_current_stats(bond)
 
 
 func _on_dragon_state_changed(state: DragonState.State) -> void:
@@ -216,6 +215,12 @@ func _refresh_dragon_thought(message: String) -> void:
 		_dragon_thought_value.text = "\"%s\"" % message
 
 
+func _refresh_current_stats(bond: BondProfile) -> void:
+	_current_bond_value.text = str(int(bond.bond_strength))
+	_current_sync_value.text = str(int(bond.sync))
+	_current_instability_value.text = str(int(bond.instability))
+
+
 func _connect_relationship_signals() -> void:
 	if not RelationshipSystem.encounter_summary_updated.is_connected(_on_relationship_updated):
 		RelationshipSystem.encounter_summary_updated.connect(_on_relationship_updated)
@@ -229,6 +234,17 @@ func _connect_relationship_signals() -> void:
 		RelationshipSystem.encounter_aborted.connect(_on_relationship_aborted)
 	if not RelationshipSystem.event_log_updated.is_connected(_on_relationship_event_log_updated):
 		RelationshipSystem.event_log_updated.connect(_on_relationship_event_log_updated)
+	if not RelationshipSystem.relationship_stats_applied.is_connected(_on_relationship_stats_applied):
+		RelationshipSystem.relationship_stats_applied.connect(_on_relationship_stats_applied)
+
+
+func _on_relationship_stats_applied(
+	_encounter_id: String,
+	_sync_delta: float,
+	_instability_delta: float
+) -> void:
+	_refresh_current_stats(BondSystem.get_profile())
+	_refresh_relationship_ui()
 
 
 func _on_relationship_updated(_summary: RelationshipEncounterSummary) -> void:
@@ -278,6 +294,7 @@ func _refresh_relationship_ui() -> void:
 		_was_disengaged_value.text = "NO"
 		_disengage_count_value.text = "0"
 		_excellent_eligible_value.text = "NO"
+		_cooperation_rating_value.text = "-"
 	else:
 		_assists_value.text = str(active.successful_assists)
 		_protections_value.text = str(active.successful_protections)
@@ -292,10 +309,16 @@ func _refresh_relationship_ui() -> void:
 		_involved_count_value.text = str(active.get_involved_enemy_count())
 		_was_disengaged_value.text = RelationshipEncounterSummary.yes_no(active.was_disengaged)
 		_disengage_count_value.text = str(active.disengage_count)
-		_excellent_eligible_value.text = RelationshipEncounterSummary.yes_no(active.is_excellent_eligible())
+		_excellent_eligible_value.text = RelationshipEncounterSummary.yes_no(
+			active.is_excellent_quality_eligible()
+		)
+		_cooperation_rating_value.text = CooperationRatingClassifier.rating_label(
+			CooperationRatingClassifier.classify(active)
+		)
 
 	_refresh_last_encounter()
-	_refresh_proposed_deltas()
+	_refresh_applied_deltas()
+	_refresh_proposed_bond()
 	_refresh_recent_events()
 
 
@@ -305,40 +328,70 @@ func _refresh_last_encounter() -> void:
 		_last_encounter_id_value.text = "-"
 		_last_resolved_outcome_value.text = "-"
 		_last_quality_value.text = "-"
+		_last_cooperation_value.text = "-"
 		_last_involved_value.text = "-"
 		_last_summary_value.text = "-"
 		_last_was_disengaged_value.text = "-"
 		_last_disengage_count_value.text = "-"
 		_last_excellent_eligible_value.text = "-"
+		_last_applied_sync_value.text = "-"
+		_last_applied_instability_value.text = "-"
 		return
 
 	_last_encounter_id_value.text = last.encounter_id
 	_last_resolved_outcome_value.text = RelationshipSystem.get_last_resolved_outcome_label()
 	_last_quality_value.text = RelationshipSystem.get_last_quality_label()
+	_last_cooperation_value.text = RelationshipSystem.get_last_cooperation_label()
 	_last_involved_value.text = str(last.get_involved_enemy_count())
 	_last_summary_value.text = last.format_counter_summary()
 	_last_was_disengaged_value.text = RelationshipEncounterSummary.yes_no(last.was_disengaged)
 	_last_disengage_count_value.text = str(last.disengage_count)
-	_last_excellent_eligible_value.text = RelationshipEncounterSummary.yes_no(last.is_excellent_eligible())
+	_last_excellent_eligible_value.text = RelationshipEncounterSummary.yes_no(
+		last.is_excellent_quality_eligible()
+	)
+	if RelationshipSystem.has_last_applied_stats():
+		_last_applied_sync_value.text = _format_applied_delta(RelationshipSystem.get_last_applied_sync_delta())
+		_last_applied_instability_value.text = _format_applied_delta(
+			RelationshipSystem.get_last_applied_instability_delta()
+		)
+	else:
+		_last_applied_sync_value.text = "-"
+		_last_applied_instability_value.text = "-"
 
 
-func _refresh_proposed_deltas() -> void:
+func _refresh_applied_deltas() -> void:
+	if not RelationshipSystem.has_last_applied_stats():
+		_applied_sync_value.text = "-"
+		_applied_instability_value.text = "-"
+		_applied_bond_value.text = "NOT APPLIED"
+		return
+
+	_applied_sync_value.text = _format_applied_delta(RelationshipSystem.get_last_applied_sync_delta())
+	_applied_instability_value.text = _format_applied_delta(
+		RelationshipSystem.get_last_applied_instability_delta()
+	)
+	_applied_bond_value.text = "NOT APPLIED"
+
+
+func _refresh_proposed_bond() -> void:
 	if not RelationshipSystem.has_last_proposed_deltas():
-		_proposed_sync_value.text = "-"
-		_proposed_instability_value.text = "-"
 		_proposed_bond_value.text = "-"
 		return
 
 	var proposed := RelationshipSystem.get_last_proposed_deltas()
-	if proposed == null:
-		_proposed_sync_value.text = "-"
-		_proposed_instability_value.text = "-"
-		_proposed_bond_value.text = "-"
+	if proposed == null or is_zero_approx(proposed.bond_delta):
+		_proposed_bond_value.text = "0"
 		return
 
-	_proposed_sync_value.text = proposed.format_sync()
-	_proposed_instability_value.text = proposed.format_instability()
 	_proposed_bond_value.text = proposed.format_bond()
+
+
+func _format_applied_delta(value: float) -> String:
+	if is_zero_approx(value):
+		return "0"
+	if value > 0.0:
+		return "+%s" % str(snapped(value, 0.1))
+	return str(snapped(value, 0.1))
 
 
 func _refresh_session_history() -> void:

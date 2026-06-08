@@ -44,5 +44,17 @@ func adjust_instability(delta: float) -> void:
 	profile.instability = profile.instability + delta
 
 
+func apply_sync_delta(delta: float) -> void:
+	if is_zero_approx(delta):
+		return
+	adjust_sync(delta)
+
+
+func apply_instability_delta(delta: float) -> void:
+	if is_zero_approx(delta):
+		return
+	adjust_instability(delta)
+
+
 func _on_profile_changed() -> void:
 	bond_changed.emit(profile)

@@ -38,13 +38,16 @@ Poor sync or high instability creates hesitation, cancellation, and unpredictabl
 Observe -> Move -> Attack -> Dragon Responds -> Bond State Updates -> Combat Behavior Changes
 
 Combat constantly modifies:
-- bond_strength (relationship depth — protection)
-- sync (coordination — assist frequency)
-- instability (strain — assist reliability)
+- sync (coordination — assist frequency; **Sync Δ at encounter resolve**)
+- instability (strain — assist reliability; **Instability Δ at encounter resolve**)
 - dragon behavior
 - emotional state (future)
 
+`bond_strength` affects protection and commands during combat but is **not modified per encounter resolve** (future session/pattern pass).
+
 Every encounter potentially changes the rider-dragon relationship.
+
+**Milestone 9A (live):** `RelationshipSystem` applies **Sync** from **Cooperation Rating** and **Instability** from **Encounter Quality** when an encounter resolves. **Bond Strength is not modified** per encounter. See `docs/project_checkpoint_milestone9A.md`.
 
 ---
 
@@ -122,17 +125,17 @@ High sync improves (prototype: shorter assist cooldown between cooperative strik
 
 Strong sync creates moments where rider and dragon appear to fight almost instinctively as a unified pair.
 
-Sync may rise through (design target):
-- successful coordinated combat
+Sync may rise through (live at encounter resolve + design target):
+- **Cooperation Rating** on resolved encounters (assists, protections, clean teamwork)
+- successful coordinated combat (cooldown tiers scale with current sync)
 - protecting each other
-- deep bond strength (relationship depth)
 - compatible combat behavior
 
-Sync may fall through (design target):
+Sync may fall through (live at encounter resolve + design target):
+- **Poor / Disastrous Cooperation Rating** (cancels, hesitations, weak joint execution)
 - conflicting actions
 - failed coordination
 - emotional stress
-- repeated instability events
 
 ---
 
@@ -142,13 +145,13 @@ Instability represents **strain** on the bond during combat.
 
 In the prototype, instability affects cooperative assist **reliability** (hesitation, post-hesitation cancel). It does not affect protection (bond strength).
 
-Instability may increase from (design target):
-- heavy damage
+Instability may increase from (live at encounter resolve + design target):
+- **Encounter Quality** on resolved encounters (heavy harm, near-death, death, stressful outcomes)
+- heavy damage (harm totals in encounter summary)
 - emotional panic
 - magical overload
-- sync failures
 - aggressive overextension
-- dragon fear or anger
+- dragon fear or anger (future emotional layer)
 
 High instability may cause (prototype + design target):
 - assist hesitation before striking

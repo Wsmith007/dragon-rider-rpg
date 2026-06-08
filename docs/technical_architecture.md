@@ -117,9 +117,9 @@ The bond system tracks the persistent relationship between rider and dragon.
 
 | Field | Range | Role in prototype |
 |-------|-------|-------------------|
-| `bond_strength` | 0–100 | Relationship resilience — protection, command delay, communication; planned sync floor / instability resistance / recovery |
-| `sync` | 0–100 | Coordination — cooperative assist frequency (cooldown tiers) |
-| `instability` | 0–100 | Strain — assist hesitation and cancellation |
+| `bond_strength` | 0–100 | Relationship resilience — protection, command delay, communication; **not modified at encounter resolve**; planned sync floor / instability resistance / recovery |
+| `sync` | 0–100 | Coordination — assist cooldown tiers; **Sync Δ applied live** from Cooperation Rating at encounter resolve |
+| `instability` | 0–100 | Strain — assist hesitation/cancel (gameplay); **Instability Δ applied live** from Encounter Quality at encounter resolve |
 
 ### Compatibility / future fields (`BondProfile`)
 
@@ -147,11 +147,39 @@ Key helpers: `get_bond_tier()`, `get_bond_tier_progress()`, `get_command_respons
 
 BondSystem should influence:
 - dragon AI
-- combat cooperation (sync, instability, bond strength — see `project_checkpoint_milestone5.md`)
+- combat cooperation (sync, instability gameplay + encounter resolve — see Milestone 9A)
 - communication clarity (future)
 - ability unlocks (future)
-- instability events
+- instability events (hesitation/cancel + encounter Instability deltas)
 - magical awakening (future)
+
+---
+
+# Relationship System Architecture (Milestone 9A — live)
+
+**Autoload:** `RelationshipSystem` (`scripts/systems/relationship_system.gd`)
+
+Modular pipeline — no stat writes inside individual dragon/player combat scripts:
+
+```
+Hooks → RelationshipEventBus → RelationshipEncounterTracker
+  → EncounterQualityClassifier + CooperationRatingClassifier
+  → ProposedDeltaGenerator → BondSystem (Sync/Instability only)
+```
+
+| Module | Role |
+|--------|------|
+| `RelationshipEvent` / `RelationshipEventBus` | Stable event IDs + payloads |
+| `RelationshipEncounterTracker` | Local encounter lifecycle, involved enemies |
+| `RelationshipEncounterSummary` | Counters at resolve |
+| `EncounterQualityClassifier` | Outcome/stress → Instability Δ |
+| `CooperationRatingClassifier` | Teamwork → Sync Δ |
+| `ProposedDeltaGenerator` | Deltas + Bond preview (Bond not applied) |
+| `RelationshipSessionTracker` | Encounter quality history (Bond input future) |
+
+**Bond Strength:** protected at resolve; future **Bond pattern evaluation** across sessions.
+
+**Source of truth:** `docs/relationship_event_framework.md`, `docs/project_checkpoint_milestone9A.md`.
 
 ---
 
@@ -204,6 +232,8 @@ Recommended future autoloads:
 - GameManager
 - EventBus
 - SaveManager
+
+**Active today:** `BondSystem`, **`RelationshipSystem`** (encounter tracking + live Sync/Instability at resolve).
 
 Autoloads should not become dumping grounds for unrelated logic.
 

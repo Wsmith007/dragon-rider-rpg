@@ -2,11 +2,14 @@
 
 [ext_resource type="Script" path="res://scripts/ui/bond_debug_ui.gd" id="1_ui"]
 
-[node name="BondDebugUI" type="Window"]
-title = "Bond & Relationship Debug"
-position = Vector2i(40, 40)
-size = Vector2i(680, 920)
-min_size = Vector2i(560, 520)
+[node name="BondDebugUI" type="Control"]
+layout_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 visible = true
 script = ExtResource("1_ui")
 
@@ -48,12 +51,46 @@ theme_override_constants/separation = 4
 
 [node name="RelationshipTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
-text = "Relationship Debug (Observation)"
+text = "Relationship Debug"
 
-[node name="ProposedNotice" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedNotice" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
-text = "PROPOSED ONLY — NOT APPLIED"
+text = "Sync APPLIED from Cooperation Rating. Instability APPLIED from Encounter Quality. Bond is PROPOSED ONLY — NOT APPLIED."
+
+[node name="CurrentStatsTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+layout_mode = 2
+text = "Current Stats"
+
+[node name="CurrentStatsGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="CurrentBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "Bond Strength"
+
+[node name="CurrentBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "50"
+
+[node name="CurrentSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "Sync"
+
+[node name="CurrentSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "50"
+
+[node name="CurrentInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "Instability"
+
+[node name="CurrentInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+layout_mode = 2
+text = "0"
 
 [node name="CurrentEncounterTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
@@ -62,7 +99,7 @@ text = "Current Encounter (tracking combat)"
 [node name="CurrentEncounterNotice" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Live counters only. Proposed changes appear after a resolved outcome."
+text = "Live counters only. Stat changes apply when an encounter resolves."
 
 [node name="EncounterGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
@@ -152,11 +189,19 @@ text = "0"
 
 [node name="ExcellentEligibleLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
-text = "Excellent Eligible"
+text = "Excellent Quality Eligible"
 
 [node name="ExcellentEligibleValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "NO"
+
+[node name="CooperationRatingLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+layout_mode = 2
+text = "Cooperation (live)"
+
+[node name="CooperationRatingValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+layout_mode = 2
+text = "-"
 
 [node name="LastEncounterTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
@@ -186,9 +231,17 @@ text = "-"
 
 [node name="LastQualityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
-text = "Quality"
+text = "Encounter Quality"
 
 [node name="LastQualityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "-"
+
+[node name="LastCooperationLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "Cooperation Rating"
+
+[node name="LastCooperationValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
@@ -227,9 +280,25 @@ text = "-"
 
 [node name="LastExcellentEligibleLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
-text = "Excellent Eligible"
+text = "Excellent Quality Eligible"
 
 [node name="LastExcellentEligibleValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "-"
+
+[node name="LastAppliedSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "Applied Sync Δ (Cooperation)"
+
+[node name="LastAppliedSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "-"
+
+[node name="LastAppliedInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+layout_mode = 2
+text = "Applied Instability Δ (Quality)"
+
+[node name="LastAppliedInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
@@ -243,37 +312,55 @@ layout_mode = 2
 visible = false
 text = "-"
 
-[node name="ProposedTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
-text = "Proposed Relationship Changes"
+text = "Applied Relationship Changes (Last Encounter)"
 
-[node name="ProposedGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="ProposedSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
+[node name="AppliedSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
-text = "Sync Δ"
+text = "Applied Sync Δ (Cooperation)"
 
-[node name="ProposedSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
-layout_mode = 2
-text = "-"
-
-[node name="ProposedInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
-layout_mode = 2
-text = "Instability Δ"
-
-[node name="ProposedInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
+[node name="AppliedSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="ProposedBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
+[node name="AppliedInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+layout_mode = 2
+text = "Applied Instability Δ (Quality)"
+
+[node name="AppliedInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+layout_mode = 2
+text = "-"
+
+[node name="AppliedBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+layout_mode = 2
+text = "Applied Bond Δ"
+
+[node name="AppliedBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+layout_mode = 2
+text = "NOT APPLIED"
+
+[node name="ProposedBondTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+layout_mode = 2
+text = "Proposed Bond Change (NOT APPLIED)"
+
+[node name="ProposedBondGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="ProposedBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
 layout_mode = 2
 text = "Bond Δ"
 
-[node name="ProposedBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedGrid"]
+[node name="ProposedBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
 layout_mode = 2
 text = "-"
 
@@ -437,4 +524,4 @@ text = "1.20x"
 [node name="WindowHint" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Press F10 to show or hide this window."
+text = "Press F10 to show or hide this panel."

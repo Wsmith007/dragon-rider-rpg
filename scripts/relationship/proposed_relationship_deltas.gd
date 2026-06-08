@@ -1,12 +1,14 @@
 extends RefCounted
 class_name ProposedRelationshipDeltas
-## Debug-only preview of relationship stat changes. NOT APPLIED.
+## Encounter quality → relationship deltas. Sync/Instability are applied (M9A).
+## Bond delta is preview-only until a future Bond pattern pass.
 
 
 var sync_delta: float = 0.0
 var instability_delta: float = 0.0
 var bond_delta: float = 0.0
 var quality: EncounterQualityClassifier.Quality = EncounterQualityClassifier.Quality.NEUTRAL
+var cooperation_rating: CooperationRatingClassifier.Rating = CooperationRatingClassifier.Rating.NEUTRAL
 var notes: String = ""
 
 
@@ -16,6 +18,7 @@ func duplicate_deltas() -> ProposedRelationshipDeltas:
 	copy.instability_delta = instability_delta
 	copy.bond_delta = bond_delta
 	copy.quality = quality
+	copy.cooperation_rating = cooperation_rating
 	copy.notes = notes
 	return copy
 

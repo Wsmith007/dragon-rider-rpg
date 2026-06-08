@@ -276,6 +276,25 @@ Player progression is tied to:
 
 Progression is intended to feel relational rather than purely statistical.
 
+## Long-term progression axes (design target)
+
+| Axis | Role |
+|------|------|
+| **Character Level** | Personal power — rider combat capability |
+| **Relationship Stats** | Rider/dragon effectiveness together (Bond, Sync, Instability) |
+| **World Regions** | Difficulty and content progression |
+| **Enemy Variants** | Strength and behavior progression within regions |
+
+Enemy scaling should come primarily from **region difficulty**, **enemy type**, and **enemy variants** — not full player-level scaling. Returning to earlier areas should demonstrate growth. **Relationship progression should remain as important as character progression.**
+
+See `docs/relationship_event_framework.md` (Long-Term Progression Philosophy).
+
+## Relationship system (Milestone 9A — live)
+
+`RelationshipSystem` (autoload) tracks local encounters and applies **Sync** (Cooperation Rating) and **Instability** (Encounter Quality) at resolve. **Bond Strength is protected** from per-encounter rolls; future Bond changes are session/pattern-based.
+
+See `docs/project_checkpoint_milestone9A.md`.
+
 ---
 
 # Vertical Slice Scope

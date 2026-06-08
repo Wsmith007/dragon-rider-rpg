@@ -74,7 +74,7 @@ func refresh_excellent_disqualification() -> void:
 	if was_disengaged or reengaged_after_disengage:
 		excellent_disqualified = true
 		return
-	if assist_cancellations > 0 or player_near_death_count > 0 or player_died:
+	if player_near_death_count > 0 or player_died:
 		excellent_disqualified = true
 		return
 	if not is_zero_approx(player_damage_taken):
@@ -84,20 +84,20 @@ func refresh_excellent_disqualification() -> void:
 		excellent_disqualified = true
 
 
-func is_excellent_eligible() -> bool:
+func is_excellent_quality_eligible() -> bool:
 	if excellent_disqualified or was_disengaged or reengaged_after_disengage:
 		return false
 	if player_died or player_near_death_count > 0:
-		return false
-	if assist_cancellations > 0:
-		return false
-	if not player_contributed_meaningfully() or not dragon_contributed_meaningfully():
 		return false
 	if not is_zero_approx(player_damage_taken):
 		return false
 	if not is_zero_approx(dragon_damage_taken) or dragon_critical or dragon_died:
 		return false
 	return true
+
+
+func is_excellent_eligible() -> bool:
+	return is_excellent_quality_eligible()
 
 
 func has_meaningful_combat_progress() -> bool:
@@ -187,6 +187,6 @@ func format_counter_summary() -> String:
 		player_damage_taken,
 		enemies_defeated,
 		disengage_count,
-		yes_no(is_excellent_eligible()),
+		yes_no(is_excellent_quality_eligible()),
 		outcome_label(resolved_outcome),
 	]

@@ -1,5 +1,10 @@
 # Dragon Rider RPG — Milestone 8 Checkpoint
 
+> **Historical checkpoint.** Milestone 8 shipped **relationship observation only** — stats were not applied at resolve.  
+> For **current live relationship behavior** after Milestone 9A (live Sync/Instability, split ratings), see  
+> [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md) and  
+> [`docs/relationship_event_framework.md`](relationship_event_framework.md) (v2.0).
+
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn`  
 **Prior checkpoint:** `docs/project_checkpoint_milestone7.md`  

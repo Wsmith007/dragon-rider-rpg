@@ -1,11 +1,16 @@
 # Dragon Rider RPG — Milestone 7 Checkpoint
 
+> **Historical checkpoint (pre–Milestone 9A).** Relationship stats were **debug-adjusted only** at M7.  
+> For current live Sync/Instability from encounter resolve, see  
+> [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md).
+
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Repo:** `Wsmith007/dragon-rider-rpg` on GitHub  
 **Main scene:** `res://scenes/world/TestWorld.tscn`  
 **Branch:** `main`
 
-This document is the **source of truth** for current prototype status. Prefer this over older checkpoint files.
+This document is a **Milestone 7 historical checkpoint**. For **current prototype status** (including Milestone 9A relationship stat application), prefer  
+[`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md).
 
 ---
 
@@ -244,7 +249,9 @@ Bubble scene is swappable for future styles, emotion icons, race themes, or hide
 
 ## Next Recommended Milestone
 
-1. **Bond update loop** — combat outcomes adjust bond_strength / sync / instability
+> **Superseded in part by Milestone 9A** — Sync and Instability now apply live from encounter resolve. Bond pattern pass and resilience wiring remain open. See `docs/project_checkpoint_milestone9A.md`.
+
+1. **Bond pattern pass** — session trends → Bond Strength (Bond still protected per encounter)
 2. **Wire resilience helpers** — sync floor, instability resistance, instability recovery
 3. **Speech bubble polish** — art, optional hide setting, emotion/style variants
 4. **Player dodge** — without breaking engagement tracking

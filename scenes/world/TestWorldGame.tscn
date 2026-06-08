@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://7r05jt5w2abc"]
+
+[ext_resource type="Script" uid="uid://dil8lfxc3noe6" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://bplayer001" path="res://scenes/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://bdragon001" path="res://scenes/dragon/Dragon.tscn" id="4_dragon"]
+[ext_resource type="PackedScene" uid="uid://benemy001" path="res://scenes/enemies/Enemy.tscn" id="5_enemy"]
+[ext_resource type="Script" uid="uid://blbnkkh5l4fbo" path="res://scripts/world/floor_grid_visual.gd" id="6_floor_grid"]
+[ext_resource type="PackedScene" uid="uid://drckc1d62aiqe" path="res://scenes/ui/PlayerHealthUI.tscn" id="7_player_health_ui"]
+[ext_resource type="Script" uid="uid://r18i6xvaiaug" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
+[ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="10_bond_test_help"]
+[ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
+[ext_resource type="Script" path="res://scripts/world/enemy_spawn_debug.gd" id="13_enemy_spawn"]
+[ext_resource type="PackedScene" uid="uid://benemyindicators" path="res://scenes/ui/EnemyOffscreenIndicators.tscn" id="12_enemy_indicators"]
+
+[node name="TestWorldGame" type="Node2D"]
+
+[node name="Ground" type="ColorRect" parent="."]
+z_index = -10
+offset_left = -2400.0
+offset_top = -2400.0
+offset_right = 2400.0
+offset_bottom = 2400.0
+color = Color(0.14, 0.2, 0.11, 1)
+
+[node name="FloorGrid" type="Node2D" parent="."]
+z_index = -9
+script = ExtResource("6_floor_grid")
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(1233, 85)
+
+[node name="Dragon" parent="Entities" instance=ExtResource("4_dragon")]
+position = Vector2(1233, 118)
+
+[node name="Enemies" type="Node2D" parent="Entities"]
+
+[node name="EnemyA" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(680, 420)
+
+[node name="EnemyB" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(560, 580)
+
+[node name="EnemyC" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(380, 80)
+
+[node name="EnemyD" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1680, 320)
+
+[node name="EnemyE" parent="Entities/Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1780, 520)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("2_camera")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="PlayerHealthUI" parent="UI" instance=ExtResource("7_player_health_ui")]
+
+[node name="BondTestControls" type="Node" parent="UI"]
+script = ExtResource("9_bond_test_controls")
+
+[node name="HealthDebugControls" type="Node" parent="UI"]
+script = ExtResource("11_health_debug")
+
+[node name="EnemySpawnDebug" type="Node" parent="UI"]
+script = ExtResource("13_enemy_spawn")
+
+[node name="BondTestHelpUI" parent="UI" instance=ExtResource("10_bond_test_help")]
+
+[node name="EnemyOffscreenIndicators" parent="UI" instance=ExtResource("12_enemy_indicators")]

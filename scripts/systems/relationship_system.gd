@@ -1,6 +1,6 @@
 extends Node
-## Relationship observation infrastructure (Milestone 8). No stat writes.
-## Encounters track local combat engagements via involved enemy IDs only.
+## Relationship infrastructure (Milestone 8–9A).
+## Sync applies from Cooperation Rating; Instability from Encounter Quality. Bond preview-only.
 
 
 signal encounter_active_changed(is_active: bool)
@@ -10,6 +10,11 @@ signal encounter_result_ready(
 	summary: RelationshipEncounterSummary,
 	quality: EncounterQualityClassifier.Quality,
 	proposed: ProposedRelationshipDeltas
+)
+signal relationship_stats_applied(
+	encounter_id: String,
+	sync_delta: float,
+	instability_delta: float
 )
 signal session_history_updated
 signal event_log_updated
@@ -39,8 +44,13 @@ var _strike_behavior: DragonStrikeBehavior
 
 var _last_resolved_summary: RelationshipEncounterSummary
 var _last_quality: EncounterQualityClassifier.Quality = EncounterQualityClassifier.Quality.NEUTRAL
+var _last_cooperation: CooperationRatingClassifier.Rating = CooperationRatingClassifier.Rating.NEUTRAL
 var _last_proposed: ProposedRelationshipDeltas
 var _last_produces_proposed: bool = false
+var _last_applied_sync_delta: float = 0.0
+var _last_applied_instability_delta: float = 0.0
+var _last_stats_applied: bool = false
+var _applied_encounter_ids: Dictionary = {}
 var _pending_end_check: bool = false
 var _disengage_timer: float = 0.0
 var _grace_timer: float = 0.0
@@ -93,12 +103,36 @@ func has_last_proposed_deltas() -> bool:
 	return _last_produces_proposed
 
 
+func get_last_applied_sync_delta() -> float:
+	return _last_applied_sync_delta
+
+
+func get_last_applied_instability_delta() -> float:
+	return _last_applied_instability_delta
+
+
+func has_last_applied_stats() -> bool:
+	return _last_stats_applied
+
+
+func was_encounter_stats_applied(encounter_id: String) -> bool:
+	return _applied_encounter_ids.has(encounter_id)
+
+
 func get_last_quality() -> EncounterQualityClassifier.Quality:
 	return _last_quality
 
 
 func get_last_quality_label() -> String:
 	return EncounterQualityClassifier.quality_label(_last_quality)
+
+
+func get_last_cooperation() -> CooperationRatingClassifier.Rating:
+	return _last_cooperation
+
+
+func get_last_cooperation_label() -> String:
+	return CooperationRatingClassifier.rating_label(_last_cooperation)
 
 
 func get_last_proposed_deltas() -> ProposedRelationshipDeltas:
@@ -173,10 +207,10 @@ func _wire_dragon(dragon: CharacterBody2D) -> void:
 
 	var command := dragon.get_node_or_null("CommandBehavior") as DragonCommandBehavior
 	if command != null:
-		if not command.wait_position_set.is_connected(_on_command_obeyed.bind("WAIT")):
-			command.wait_position_set.connect(_on_command_obeyed.bind("WAIT"))
-		if not command.recalled.is_connected(_on_command_obeyed.bind("RECALL")):
-			command.recalled.connect(_on_command_obeyed.bind("RECALL"))
+		if not command.wait_position_set.is_connected(_on_wait_command_obeyed):
+			command.wait_position_set.connect(_on_wait_command_obeyed)
+		if not command.recalled.is_connected(_on_recall_command_obeyed):
+			command.recalled.connect(_on_recall_command_obeyed)
 
 	var threat := dragon.get_node_or_null("ThreatBehavior") as DragonThreatBehavior
 	if threat != null:
@@ -320,7 +354,7 @@ func _append_recent_event_log(event: RelationshipEvent) -> void:
 		event.event_id,
 		source_behavior,
 		strike_kind,
-		enemy_id if enemy_id != -1 else "-",
+		str(enemy_id) if enemy_id != -1 else "-",
 	]
 	_recent_event_log.append(line)
 	if _recent_event_log.size() > MAX_RECENT_EVENT_LOG:
@@ -351,9 +385,11 @@ func _on_encounter_ended(summary: RelationshipEncounterSummary) -> void:
 	_reset_encounter_lifecycle_timers()
 	_last_resolved_summary = summary.duplicate_summary()
 	_last_quality = EncounterQualityClassifier.classify(summary)
-	_last_produces_proposed = ProposedDeltaGenerator.should_propose_deltas(summary, _last_quality)
-	_last_proposed = ProposedDeltaGenerator.generate(summary, _last_quality)
+	_last_cooperation = CooperationRatingClassifier.classify(summary)
+	_last_produces_proposed = ProposedDeltaGenerator.should_propose_bond_delta(summary, _last_quality)
+	_last_proposed = ProposedDeltaGenerator.generate(summary, _last_quality, _last_cooperation)
 	_session_tracker.record_encounter_quality(_last_quality)
+	_try_apply_encounter_stat_deltas(summary, _last_quality, _last_cooperation)
 
 	if debug_logging_enabled:
 		print(
@@ -361,13 +397,22 @@ func _on_encounter_ended(summary: RelationshipEncounterSummary) -> void:
 			% [summary.encounter_id, summary.get_involved_enemy_count()],
 			EncounterQualityClassifier.quality_debug_summary(summary, _last_quality)
 		)
+		print(
+			"[RelationshipEncounter] COOPERATION | ",
+			CooperationRatingClassifier.rating_debug_summary(summary, _last_cooperation)
+		)
+		if _last_stats_applied:
+			print(
+				"[RelationshipEncounter] APPLIED | Sync=%s (coop) Instability=%s (quality)"
+				% [_format_delta(_last_applied_sync_delta), _format_delta(_last_applied_instability_delta)]
+			)
 		if _last_produces_proposed:
 			print(
-				"[RelationshipEncounter] PROPOSED ONLY — NOT APPLIED | Sync=%s Instability=%s Bond=%s"
-				% [_last_proposed.format_sync(), _last_proposed.format_instability(), _last_proposed.format_bond()]
+				"[RelationshipEncounter] BOND PREVIEW ONLY — NOT APPLIED | Bond=%s"
+				% [_last_proposed.format_bond()]
 			)
-		else:
-			print("[RelationshipEncounter] No proposed deltas for this resolved outcome.")
+		elif is_zero_approx(_last_applied_sync_delta) and is_zero_approx(_last_applied_instability_delta):
+			print("[RelationshipEncounter] No stat changes for this resolved outcome.")
 
 	encounter_result_ready.emit(summary, _last_quality, _last_proposed)
 
@@ -378,6 +423,46 @@ func _on_encounter_aborted() -> void:
 	_reset_encounter_lifecycle_timers()
 	if debug_logging_enabled:
 		print("[RelationshipEncounter] ABORTED | minor interaction — no resolved outcome or proposed deltas.")
+
+
+func _try_apply_encounter_stat_deltas(
+	summary: RelationshipEncounterSummary,
+	quality: EncounterQualityClassifier.Quality,
+	cooperation: CooperationRatingClassifier.Rating
+) -> void:
+	_last_applied_sync_delta = 0.0
+	_last_applied_instability_delta = 0.0
+	_last_stats_applied = false
+
+	if summary == null:
+		return
+
+	var encounter_id := summary.encounter_id
+	if encounter_id.is_empty() or _applied_encounter_ids.has(encounter_id):
+		return
+
+	_applied_encounter_ids[encounter_id] = true
+
+	var stat_deltas := ProposedDeltaGenerator.get_stat_deltas(quality, cooperation)
+	var sync_delta: float = stat_deltas.sync_delta
+	var instability_delta: float = stat_deltas.instability_delta
+
+	_last_applied_sync_delta = sync_delta
+	_last_applied_instability_delta = instability_delta
+	_last_stats_applied = true
+
+	BondSystem.apply_sync_delta(sync_delta)
+	BondSystem.apply_instability_delta(instability_delta)
+
+	relationship_stats_applied.emit(encounter_id, sync_delta, instability_delta)
+
+
+func _format_delta(value: float) -> String:
+	if is_zero_approx(value):
+		return "0"
+	if value > 0.0:
+		return "+%s" % str(snapped(value, 0.1))
+	return str(snapped(value, 0.1))
 
 
 func _on_player_attack_hit(enemy: Node2D) -> void:
@@ -412,6 +497,14 @@ func _on_assist_canceled(reason: String) -> void:
 	var payload := _assist_target_payload()
 	payload["reason"] = reason
 	record_event(RelationshipEvent.COMBAT_ASSIST_CANCELED, payload)
+
+
+func _on_wait_command_obeyed(_position: Vector2) -> void:
+	_on_command_obeyed("WAIT")
+
+
+func _on_recall_command_obeyed() -> void:
+	_on_command_obeyed("RECALL")
 
 
 func _on_command_obeyed(command_name: String) -> void:
