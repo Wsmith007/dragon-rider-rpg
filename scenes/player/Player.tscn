@@ -1,10 +1,13 @@
-[gd_scene load_steps=9 format=3 uid="uid://bplayer001"]
+[gd_scene load_steps=12 format=3 uid="uid://bplayer001"]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/systems/health.gd" id="2_health"]
 [ext_resource type="Script" path="res://scripts/player/player_melee_attack.gd" id="3_melee"]
 [ext_resource type="Script" path="res://scripts/player/player_dragon_command.gd" id="4_command"]
 [ext_resource type="Script" path="res://scripts/player/player_engagement.gd" id="5_engagement"]
+[ext_resource type="Script" path="res://scripts/combat/combat_visual_feedback.gd" id="6_feedback"]
+[ext_resource type="Script" path="res://scripts/combat/combat_attack_telegraph.gd" id="7_telegraph"]
+[ext_resource type="Script" path="res://scripts/combat/combat_focused_target_preview.gd" id="8_preview"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 14.0
@@ -34,6 +37,12 @@ script = ExtResource("2_health")
 [node name="MeleeAttack" type="Node2D" parent="."]
 script = ExtResource("3_melee")
 
+[node name="Telegraph" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("7_telegraph")
+
+[node name="TargetPreview" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("8_preview")
+
 [node name="Hitbox" type="Area2D" parent="MeleeAttack"]
 collision_layer = 8
 collision_mask = 4
@@ -48,3 +57,8 @@ script = ExtResource("4_command")
 
 [node name="Engagement" type="Node" parent="."]
 script = ExtResource("5_engagement")
+
+[node name="CombatVisualFeedback" type="Node" parent="."]
+script = ExtResource("6_feedback")
+hit_flash_color = Color(1.35, 0.55, 0.55, 1)
+nudge_distance = 0.0

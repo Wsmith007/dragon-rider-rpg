@@ -1,15 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://benemy001"]
+[gd_scene load_steps=6 format=3 uid="uid://benemy001"]
 
 [ext_resource type="Script" path="res://scripts/enemies/enemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/systems/health.gd" id="2_health"]
 [ext_resource type="Script" path="res://scripts/ui/health_bar_2d.gd" id="3_healthbar"]
+[ext_resource type="Script" path="res://scripts/combat/combat_visual_feedback.gd" id="4_feedback"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_enemy"]
 radius = 14.0
 
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 4
-collision_mask = 5
+collision_mask = 1
 motion_mode = 1
 script = ExtResource("1_enemy")
 
@@ -25,3 +26,8 @@ script = ExtResource("2_health")
 
 [node name="HealthBar" type="Node2D" parent="."]
 script = ExtResource("3_healthbar")
+
+[node name="CombatVisualFeedback" type="Node" parent="."]
+script = ExtResource("4_feedback")
+nudge_distance = 15.0
+stagger_duration = 0.3

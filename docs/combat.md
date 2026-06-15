@@ -1,5 +1,9 @@
 # Combat Overview
 
+**Current combat prototype (live mechanics):** [`docs/project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)  
+**Relationship / bond at encounter resolve:** [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
+**Combat feel journal (passes 1–7):** [`docs/combat_feel_notes.md`](combat_feel_notes.md)
+
 Combat is a fast-paced real-time action system centered around cooperative combat between rider and dragon.
 
 The player and dragon fight as intelligent partners rather than as a controllable character and pet.
@@ -58,13 +62,30 @@ The player is responsible for:
 - dodging
 - positioning
 - melee combat
-- magic usage
+- magic usage (future)
 - timing attacks
 - creating synchronization opportunities
 
 The player does not directly command every dragon action.
 
 Instead, player behavior influences dragon responses through intent and synchronization.
+
+## Rider melee (live prototype — Combat Feel v1)
+
+After Combat Feel Passes 1–7, rider melee uses **two attacks** (no weapon equipment yet — one global profile):
+
+| Input | Attack | Role |
+|-------|--------|------|
+| **Space** (also LMB / J) | **Focused** directional cone | Primary damage — precision, facing-based |
+| **Shift + Space** | **360° crowd-control** | Repositioning — create space when surrounded |
+
+**Focused attack:** ~70° frontal cone (wider at close range), soft aim forgiveness, wind-up → impact → recovery, likely-target preview ring.
+
+**CC attack:** 28 px radius circle, lower damage than focused, stronger knockback/stagger, longer wind-up and cooldown.
+
+Full values, timing, enemy reactions, and limitations: [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md).
+
+**Historical:** Passes 1–2 used a single **360° AoE on Space**; Pass 3 split focused vs CC inputs.
 
 ---
 
@@ -171,13 +192,15 @@ Combat emphasizes:
 - mobility
 - rapid repositioning
 - reaction timing
-- directional awareness
+- directional awareness (focused attacks reward facing and position)
 
 The player should remain highly active during combat encounters.
 
 Standing still for long periods should generally be dangerous.
 
 Movement synchronization between rider and dragon is intended to feel increasingly natural as bonds deepen.
+
+During attacks, the live prototype uses **reduced move speed** during wind-up and recovery rather than full animation locks — see Combat Feel v1.
 
 ---
 
@@ -188,6 +211,8 @@ Enemies are designed to pressure:
 - synchronization
 - emotional stability
 - threat prioritization
+
+**Live prototype:** slot-based surround, separation, chase/engage states, stagger on player hits — see [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) Section 3.
 
 Enemies should create situations where:
 - dragon instinct conflicts with rider intent
@@ -296,24 +321,29 @@ Strong synchronization improves cooperation but never removes dragon individuali
 
 # Early Vertical Slice Combat
 
-The first playable combat prototype focuses on:
-- player movement
-- dodging
-- basic attacks
-- enemy pursuit
+The playable combat prototype (Combat Feel v1) includes:
+
+**Rider & enemies**
+- player movement and directional facing
+- focused melee (Space) + CC melee (Shift+Space)
+- enemy pursuit, slot spread, and surround pressure
+- knockback, stagger, attack telegraphs, and target preview
+
+**Dragon co-op (Milestone 9A)**
 - dragon follow behavior
 - cooperative assist (sync + instability)
 - defensive protection (bond strength)
 - sync-tiered assist cooldown
 - instability hesitation and cancel
+- encounter resolve → Sync / Instability (not Bond Strength per encounter)
 
 The first goal is proving:
 - dragon cooperation feels alive
-- combat feels fast and responsive
+- combat feels fast and responsive with **readable** directional melee
 - sync and instability change assist behavior meaningfully
 - bond strength changes protection behavior meaningfully
 
-Large-scale systems are intentionally postponed.
+Weapon systems, equipment, enemy variants, magic, and progression remain intentionally postponed. See [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md).
 
 ---
 

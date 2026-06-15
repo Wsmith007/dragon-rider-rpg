@@ -87,8 +87,11 @@ func _find_facing_target() -> Node2D:
 
 
 func _get_facing_direction() -> Vector2:
-	if _player.velocity.length_squared() > 16.0:
-		return _player.velocity.normalized()
+	var player := get_parent() as CharacterBody2D
+	if player != null and player.has_method("get_facing_direction"):
+		return player.get_facing_direction()
+	if player != null and player.velocity.length_squared() > 16.0:
+		return player.velocity.normalized()
 	if _visual != null:
 		return Vector2.from_angle(_visual.rotation - PI * 0.5)
 	return Vector2.DOWN

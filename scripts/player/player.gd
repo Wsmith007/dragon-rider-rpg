@@ -13,6 +13,8 @@ signal player_died
 @onready var _visual: Polygon2D = $Visual
 
 var _is_dead: bool = false
+var _facing_direction: Vector2 = Vector2.DOWN
+var _move_speed_multiplier: float = 1.0
 var _relationship_last_health: float = 0.0
 var _relationship_was_critical: bool = false
 
@@ -34,12 +36,29 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = direction * move_speed
+	velocity = direction * move_speed * _move_speed_multiplier
 	move_and_slide()
 
 	if velocity.length_squared() > 0.0:
+		_facing_direction = velocity.normalized()
 		moved.emit(velocity)
-		_visual.rotation = velocity.angle() + PI * 0.5
+		_visual.rotation = _facing_direction.angle() + PI * 0.5
+
+
+func get_facing_direction() -> Vector2:
+	if velocity.length_squared() > 16.0:
+		return velocity.normalized()
+	if _facing_direction.length_squared() > 0.01:
+		return _facing_direction.normalized()
+	return Vector2.from_angle(_visual.rotation - PI * 0.5).normalized()
+
+
+func set_attack_move_speed_multiplier(multiplier: float) -> void:
+	_move_speed_multiplier = clampf(multiplier, 0.0, 1.0)
+
+
+func reset_attack_move_speed_multiplier() -> void:
+	_move_speed_multiplier = 1.0
 
 
 func _on_health_changed(current: float, maximum: float) -> void:

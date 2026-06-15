@@ -1,76 +1,364 @@
 extends Node2D
-## Simple melee hitbox. Enabled briefly on attack input.
+## Pass 7 prototype: focused primary (Space) + reposition CC (Shift+Space).
+## Wind-up → impact → recovery. See docs/combat_feel_notes.md.
 
 signal attack_started
 signal attack_hit(enemy: Node2D)
 
 
-@export var damage: float = 25.0
-@export var attack_duration: float = 0.12
-@export var attack_cooldown: float = 0.35
+@export_group("Focused Attack")
+@export var focused_damage: float = 25.0
+@export var focused_knockback: float = 15.0
+@export var focused_stagger: float = 0.3
+@export var focused_cooldown: float = 0.35
+@export var focused_range: float = 44.0
+@export var focused_half_angle_deg: float = 35.0
+@export var focused_close_range: float = 28.0
+@export var focused_close_half_angle_deg: float = 50.0
+@export var focused_windup: float = 0.10
+@export var focused_recovery: float = 0.12
+@export var focused_windup_move_speed: float = 0.55
+@export var focused_recovery_move_speed: float = 0.70
+
+@export_group("Focused Aim Forgiveness")
+@export var soft_assist_range: float = 40.0
+@export var soft_assist_half_angle_deg: float = 45.0
+@export var soft_assist_strength: float = 0.2
+
+@export_group("Crowd Control Attack")
+@export var crowd_control_damage: float = 12.0
+@export var crowd_control_knockback: float = 22.0
+@export var crowd_control_stagger: float = 0.6
+@export var crowd_control_cooldown: float = 0.9
+@export var crowd_control_radius: float = 28.0
+@export var crowd_control_windup: float = 0.17
+@export var crowd_control_recovery: float = 0.20
+@export var crowd_control_impact_duration: float = 0.10
+@export var crowd_control_windup_move_speed: float = 0.40
+@export var crowd_control_recovery_move_speed: float = 0.50
+
+@export_group("Hit Feel")
+@export var hit_stop_time_scale: float = 0.75
+@export var hit_stop_real_duration: float = 0.028
 
 @onready var _hitbox: Area2D = $Hitbox
+@onready var _telegraph: CombatAttackTelegraph = $Telegraph
+@onready var _player: CharacterBody2D = get_parent() as CharacterBody2D
 
-var _cooldown_remaining: float = 0.0
+var _focused_cooldown_remaining: float = 0.0
+var _crowd_control_cooldown_remaining: float = 0.0
 var _attack_active: bool = false
 var _hit_targets: Array[Node2D] = []
+var _hit_stop_active: bool = false
 
 
 func _ready() -> void:
 	_hitbox.monitoring = false
-	_hitbox.body_entered.connect(_on_body_entered)
-	_hitbox.area_entered.connect(_on_area_entered)
+	_hitbox.body_entered.connect(_on_hitbox_body_entered)
+	_hitbox.area_entered.connect(_on_hitbox_area_entered)
 
 
 func _physics_process(delta: float) -> void:
-	_cooldown_remaining = maxf(_cooldown_remaining - delta, 0.0)
+	_focused_cooldown_remaining = maxf(_focused_cooldown_remaining - delta, 0.0)
+	_crowd_control_cooldown_remaining = maxf(_crowd_control_cooldown_remaining - delta, 0.0)
 
 	if _attack_active:
 		return
 
-	if _cooldown_remaining > 0.0:
+	if Input.is_action_just_pressed("crowd_control_attack"):
+		if _crowd_control_cooldown_remaining <= 0.0:
+			_perform_crowd_control_attack()
 		return
 
-	if not Input.is_action_just_pressed("attack"):
-		return
+	if Input.is_action_just_pressed("attack"):
+		if _focused_cooldown_remaining <= 0.0:
+			_perform_focused_attack()
 
-	_perform_attack()
+
+func get_likely_focused_target() -> Node2D:
+	if _attack_active or _player == null:
+		return null
+
+	var origin := _player.global_position
+	var base_facing := _get_facing_direction()
+	if base_facing.length_squared() < 0.01:
+		return null
+
+	var candidates := _gather_focused_candidates(origin, base_facing)
+	if candidates.is_empty():
+		return null
+
+	return candidates[0]["enemy"] as Node2D
 
 
-func _perform_attack() -> void:
+func _perform_focused_attack() -> void:
 	_attack_active = true
-	_cooldown_remaining = attack_cooldown
+	_focused_cooldown_remaining = focused_cooldown
 	_hit_targets.clear()
-	_hitbox.monitoring = true
 	attack_started.emit()
 
-	await get_tree().create_timer(attack_duration).timeout
-	_hitbox.monitoring = false
+	var windup_facing := _get_facing_direction()
+	if _telegraph != null and windup_facing.length_squared() > 0.01:
+		_telegraph.begin_focused_windup(
+			windup_facing,
+			focused_range,
+			focused_half_angle_deg,
+			focused_close_range,
+			focused_close_half_angle_deg
+		)
+
+	_set_player_move_multiplier(focused_windup_move_speed)
+	await get_tree().create_timer(focused_windup).timeout
+
+	var impact_facing := _get_facing_direction()
+	var hit_positions := _apply_focused_hits()
+	_show_focused_impact_telegraph(impact_facing, hit_positions)
+
+	if not hit_positions.is_empty():
+		await _apply_hit_stop()
+
+	_set_player_move_multiplier(focused_recovery_move_speed)
+	await get_tree().create_timer(focused_recovery).timeout
+
+	_reset_player_move_multiplier()
 	_attack_active = false
 
 
-func _on_body_entered(body: Node2D) -> void:
-	_try_damage(body)
+func _perform_crowd_control_attack() -> void:
+	_attack_active = true
+	_crowd_control_cooldown_remaining = crowd_control_cooldown
+	_hit_targets.clear()
+	attack_started.emit()
+
+	if _telegraph != null:
+		_telegraph.begin_cc_windup(crowd_control_radius)
+
+	_set_player_move_multiplier(crowd_control_windup_move_speed)
+	await get_tree().create_timer(crowd_control_windup).timeout
+
+	if _telegraph != null:
+		_telegraph.show_crowd_control_impact(crowd_control_radius)
+
+	_hitbox.monitoring = true
+	await get_tree().create_timer(crowd_control_impact_duration).timeout
+	_hitbox.monitoring = false
+
+	if not _hit_targets.is_empty():
+		await _apply_hit_stop()
+
+	_set_player_move_multiplier(crowd_control_recovery_move_speed)
+	await get_tree().create_timer(crowd_control_recovery).timeout
+
+	_reset_player_move_multiplier()
+	_attack_active = false
 
 
-func _on_area_entered(area: Area2D) -> void:
+func _show_focused_impact_telegraph(base_facing: Vector2, hit_positions: Array[Vector2]) -> void:
+	if _telegraph == null or base_facing.length_squared() < 0.01:
+		return
+
+	_telegraph.show_focused_impact(
+		base_facing,
+		focused_range,
+		focused_half_angle_deg,
+		focused_close_range,
+		focused_close_half_angle_deg,
+		not hit_positions.is_empty()
+	)
+	for position in hit_positions:
+		_telegraph.show_hit_spark(position)
+
+
+func _apply_focused_hits() -> Array[Vector2]:
+	var hit_positions: Array[Vector2] = []
+	if _player == null:
+		return hit_positions
+
+	var origin := _player.global_position
+	var base_facing := _get_facing_direction()
+	if base_facing.length_squared() < 0.01:
+		return hit_positions
+
+	var strict_half_angle := deg_to_rad(focused_half_angle_deg)
+	var candidates := _gather_focused_candidates(origin, base_facing)
+	if candidates.is_empty():
+		return hit_positions
+
+	var primary: Dictionary = candidates[0]
+	if _try_damage(
+		primary["enemy"],
+		focused_damage,
+		focused_knockback,
+		focused_stagger
+	):
+		hit_positions.append((primary["enemy"] as Node2D).global_position)
+
+	for i in range(1, candidates.size()):
+		var extra: Dictionary = candidates[i]
+		if extra["strict_angle"] > strict_half_angle:
+			continue
+		if _try_damage(
+			extra["enemy"],
+			focused_damage,
+			focused_knockback,
+			focused_stagger
+		):
+			hit_positions.append((extra["enemy"] as Node2D).global_position)
+
+	return hit_positions
+
+
+func _gather_focused_candidates(origin: Vector2, base_facing: Vector2) -> Array[Dictionary]:
+	var facing := _get_soft_assisted_facing(origin, base_facing)
+	var candidates: Array[Dictionary] = []
+
+	for node in get_tree().get_nodes_in_group("enemy"):
+		if not node is Node2D:
+			continue
+		var enemy := node as Node2D
+		if not _is_valid_enemy(enemy):
+			continue
+
+		var offset := enemy.global_position - origin
+		var distance := offset.length()
+		if distance > focused_range or distance < 0.001:
+			continue
+
+		var angle := absf(facing.angle_to(offset))
+		var strict_angle := absf(base_facing.angle_to(offset))
+		var allowed_half_angle := _get_allowed_half_angle(distance)
+		if angle > allowed_half_angle:
+			continue
+
+		candidates.append({
+			"enemy": enemy,
+			"angle": angle,
+			"strict_angle": strict_angle,
+			"distance": distance,
+		})
+
+	if candidates.is_empty():
+		return candidates
+
+	candidates.sort_custom(_compare_focus_candidates)
+	return candidates
+
+
+func _get_allowed_half_angle(distance: float) -> float:
+	if distance <= focused_close_range:
+		return deg_to_rad(focused_close_half_angle_deg)
+	return deg_to_rad(focused_half_angle_deg)
+
+
+func _get_soft_assisted_facing(origin: Vector2, base_facing: Vector2) -> Vector2:
+	var assist_half_angle := deg_to_rad(soft_assist_half_angle_deg)
+	var best_enemy: Node2D = null
+	var best_angle := INF
+
+	for node in get_tree().get_nodes_in_group("enemy"):
+		if not node is Node2D:
+			continue
+		var enemy := node as Node2D
+		if not _is_valid_enemy(enemy):
+			continue
+
+		var offset := enemy.global_position - origin
+		var distance := offset.length()
+		if distance > soft_assist_range or distance < 0.001:
+			continue
+
+		var angle := absf(base_facing.angle_to(offset))
+		if angle > assist_half_angle:
+			continue
+		if angle < best_angle:
+			best_angle = angle
+			best_enemy = enemy
+
+	if best_enemy == null:
+		return base_facing
+
+	var to_enemy := (best_enemy.global_position - origin).normalized()
+	return base_facing.lerp(to_enemy, soft_assist_strength).normalized()
+
+
+func _compare_focus_candidates(a: Dictionary, b: Dictionary) -> bool:
+	if not is_equal_approx(a["angle"], b["angle"]):
+		return a["angle"] < b["angle"]
+	return a["distance"] < b["distance"]
+
+
+func _on_hitbox_body_entered(body: Node2D) -> void:
+	if _try_damage(body, crowd_control_damage, crowd_control_knockback, crowd_control_stagger):
+		_show_cc_hit_spark(body.global_position)
+
+
+func _on_hitbox_area_entered(area: Area2D) -> void:
 	var parent := area.get_parent()
 	if parent is Node2D:
-		_try_damage(parent as Node2D)
+		if _try_damage(parent as Node2D, crowd_control_damage, crowd_control_knockback, crowd_control_stagger):
+			_show_cc_hit_spark((parent as Node2D).global_position)
 
 
-func _try_damage(target: Node2D) -> void:
+func _show_cc_hit_spark(world_position: Vector2) -> void:
+	if _telegraph != null:
+		_telegraph.show_hit_spark(world_position)
+
+
+func _try_damage(
+	target: Node2D,
+	damage_amount: float,
+	knockback_distance: float,
+	stagger_duration: float
+) -> bool:
 	if target in _hit_targets:
-		return
-	if not is_instance_valid(target) or target.is_queued_for_deletion():
-		return
-	if not target.is_in_group("enemy"):
-		return
+		return false
+	if not _is_valid_enemy(target):
+		return false
 
 	var health := target.get_node_or_null("Health") as Health
 	if health == null or not health.is_alive():
-		return
+		return false
+
+	var feedback := target.get_node_or_null("CombatVisualFeedback") as CombatVisualFeedback
+	if feedback != null:
+		feedback.override_next_hit_reaction(knockback_distance, stagger_duration)
+		feedback.queue_player_hit_confirm()
 
 	_hit_targets.append(target)
-	health.take_damage(damage)
+	health.take_damage(damage_amount)
 	attack_hit.emit(target)
+	return true
+
+
+func _apply_hit_stop() -> void:
+	if hit_stop_real_duration <= 0.0 or _hit_stop_active:
+		return
+
+	_hit_stop_active = true
+	var previous_scale := Engine.time_scale
+	Engine.time_scale = hit_stop_time_scale
+	await get_tree().create_timer(hit_stop_real_duration, true, false, true).timeout
+	Engine.time_scale = previous_scale
+	_hit_stop_active = false
+
+
+func _set_player_move_multiplier(multiplier: float) -> void:
+	if _player != null and _player.has_method("set_attack_move_speed_multiplier"):
+		_player.set_attack_move_speed_multiplier(multiplier)
+
+
+func _reset_player_move_multiplier() -> void:
+	if _player != null and _player.has_method("reset_attack_move_speed_multiplier"):
+		_player.reset_attack_move_speed_multiplier()
+
+
+func _is_valid_enemy(target: Node2D) -> bool:
+	if not is_instance_valid(target) or target.is_queued_for_deletion():
+		return false
+	return target.is_in_group("enemy")
+
+
+func _get_facing_direction() -> Vector2:
+	if _player != null and _player.has_method("get_facing_direction"):
+		return _player.get_facing_direction()
+	return Vector2.DOWN
