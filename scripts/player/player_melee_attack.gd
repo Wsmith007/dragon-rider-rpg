@@ -1,9 +1,13 @@
 extends Node2D
-## Pass 7 prototype: focused primary (Space) + reposition CC (Shift+Space).
-## Wind-up → impact → recovery. See docs/combat_feel_notes.md.
+## Pass 7 prototype + weapon profile debug (1/2/3). See docs/combat_feel_notes.md.
 
 signal attack_started
 signal attack_hit(enemy: Node2D)
+signal weapon_profile_changed(profile_name: String)
+
+
+@export_group("Weapon Profile (debug)")
+@export var weapon_profile: WeaponProfilePrototype.Id = WeaponProfilePrototype.Id.DAGGER
 
 
 @export_group("Focused Attack")
@@ -56,6 +60,99 @@ func _ready() -> void:
 	_hitbox.monitoring = false
 	_hitbox.body_entered.connect(_on_hitbox_body_entered)
 	_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	apply_weapon_profile(weapon_profile)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _attack_active or not event is InputEventKey:
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo or key_event.ctrl_pressed:
+		return
+
+	match key_event.keycode:
+		KEY_1:
+			_set_weapon_profile(WeaponProfilePrototype.Id.DAGGER)
+			get_viewport().set_input_as_handled()
+		KEY_2:
+			_set_weapon_profile(WeaponProfilePrototype.Id.SWORD)
+			get_viewport().set_input_as_handled()
+		KEY_3:
+			_set_weapon_profile(WeaponProfilePrototype.Id.POLEARM)
+			get_viewport().set_input_as_handled()
+
+
+func get_weapon_profile_name() -> String:
+	return WeaponProfilePrototype.get_display_name(weapon_profile)
+
+
+func get_weapon_profile_summary() -> String:
+	return "%s  F %.2fs / CC %.2fs" % [
+		get_weapon_profile_name(),
+		focused_cooldown,
+		crowd_control_cooldown,
+	]
+
+
+func get_weapon_profile_detail() -> String:
+	return "F: %d dmg · %.0f° · %.0fpx  |  CC: %.0fpx · %d kb" % [
+		int(focused_damage),
+		focused_half_angle_deg * 2.0,
+		focused_range,
+		crowd_control_radius,
+		int(crowd_control_knockback),
+	]
+
+
+func apply_weapon_profile(profile_id: WeaponProfilePrototype.Id) -> void:
+	weapon_profile = profile_id
+	var data := WeaponProfilePrototype.get_profile(profile_id)
+
+	focused_damage = data["focused_damage"]
+	focused_knockback = data["focused_knockback"]
+	focused_stagger = data["focused_stagger"]
+	focused_cooldown = data["focused_cooldown"]
+	focused_range = data["focused_range"]
+	focused_half_angle_deg = data["focused_half_angle_deg"]
+	focused_close_range = data["focused_close_range"]
+	focused_close_half_angle_deg = data["focused_close_half_angle_deg"]
+	focused_windup = data["focused_windup"]
+	focused_recovery = data["focused_recovery"]
+	focused_windup_move_speed = data["focused_windup_move_speed"]
+	focused_recovery_move_speed = data["focused_recovery_move_speed"]
+	soft_assist_range = data["soft_assist_range"]
+	soft_assist_half_angle_deg = data["soft_assist_half_angle_deg"]
+	soft_assist_strength = data["soft_assist_strength"]
+
+	crowd_control_damage = data["crowd_control_damage"]
+	crowd_control_knockback = data["crowd_control_knockback"]
+	crowd_control_stagger = data["crowd_control_stagger"]
+	crowd_control_cooldown = data["crowd_control_cooldown"]
+	crowd_control_radius = data["crowd_control_radius"]
+	crowd_control_windup = data["crowd_control_windup"]
+	crowd_control_recovery = data["crowd_control_recovery"]
+	crowd_control_windup_move_speed = data["crowd_control_windup_move_speed"]
+	crowd_control_recovery_move_speed = data["crowd_control_recovery_move_speed"]
+	_apply_cc_hitbox_radius()
+
+	var summary := get_weapon_profile_summary()
+	print("Weapon Profile: %s" % summary)
+	weapon_profile_changed.emit(summary)
+
+
+func _apply_cc_hitbox_radius() -> void:
+	var shape_node := _hitbox.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if shape_node == null:
+		return
+	var circle := shape_node.shape as CircleShape2D
+	if circle != null:
+		circle.radius = crowd_control_radius
+
+
+func _set_weapon_profile(profile_id: WeaponProfilePrototype.Id) -> void:
+	if weapon_profile == profile_id:
+		return
+	apply_weapon_profile(profile_id)
 
 
 func _physics_process(delta: float) -> void:

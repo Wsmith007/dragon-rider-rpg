@@ -1,5 +1,7 @@
 # Vertical Slice Goal
 
+> **Design direction:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) is now the **primary design reference** for the first playable version. This document is retained as **early prototype planning history** — some items below (dodge, Human/Elf races, milestone numbering) predate Combat Feel v1 and Milestone 9A.
+
 The goal of the first playable prototype is to prove that:
 - the dragon feels emotionally alive
 - synchronization changes gameplay meaningfully

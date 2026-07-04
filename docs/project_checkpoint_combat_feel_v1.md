@@ -3,12 +3,15 @@
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn` (playtest shell with split layout)  
 **Prior relationship checkpoint:** `docs/project_checkpoint_milestone9A.md` (relationship / bond — **not** combat prototype SoT)  
+**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (player experience, scope, success criteria — **not** mechanical SoT)  
 **Combat design journal:** `docs/combat_feel_notes.md` (pass-by-pass history + future ideas)  
 **High-level combat vision:** `docs/combat.md` (co-op philosophy, bond/sync/instability — partially ahead of prototype)
 
 **Status:** Stable reference for the **current combat prototype** after Combat Feel Passes **1–7**.  
 **Scope:** Rider melee, default enemy behavior, combat feedback, and playtest-tuned feel.  
-**Not in scope:** Weapons, equipment, enemy variants, leveling, progression, dragon combat expansion, magic.
+**Not in scope:** Full weapons, equipment, enemy variants, leveling, progression, dragon combat expansion, magic.
+
+**Post-v1 tuning (live):** Weapon Profile **Tuning Pass 1** refines Pass 1–2 debug profiles — sword highest DPS, weapon-scaled CC, polearm control focus. See `docs/combat_feel_notes.md` → Weapon Profile Prototype Tuning Pass 1.
 
 ---
 
@@ -23,6 +26,7 @@
 | Attack telegraphs + hit confirmation (Pass 5) | **Live** |
 | Attack commitment / wind-up / recovery (Pass 6) | **Live** |
 | Likely-target preview (Pass 7) | **Live** |
+| Weapon profile prototype (debug 1/2/3) | **Live** — Tuning Pass 1: focused + weapon-scaled CC |
 | Weapon / equipment systems | **Not implemented** |
 | Enemy archetype variants | **Not implemented** |
 | Combat audio | **Not implemented** |
@@ -403,7 +407,8 @@ Summarized from `combat_feel_notes.md` → Weapon Identity Direction. Do not tre
 
 ## Section 7 — Next Logical Milestones
 
-Listed for planning only — **not implemented**.
+Listed for planning only — **not implemented**.  
+**Vertical Slice build order** (level → archetypes → polish): [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12. Slice enemy roles: Scout / Raider / Brute (Section 3).
 
 ### 1. Weapon Profile Prototype
 
@@ -411,7 +416,7 @@ Split focused/CC parameters by weapon class (dagger / sword / polearm) **without
 
 ### 2. Enemy Variant Prototype
 
-Heavy / scout / beast archetypes using existing `chase_speed`, `engage_reposition_speed`, and `knockback_resistance` overrides. Validate surround pressure and knockback feel per type.
+Scout / Raider / Brute **archetypes** (slice design) — gameplay roles using `chase_speed`, `engage_reposition_speed`, and `knockback_resistance` overrides. See [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3. *(Checkpoint label "Heavy / scout / beast" predates Raider/Brute naming.)*
 
 ### 3. Combat Audio Pass
 
@@ -456,7 +461,8 @@ Link character level / stats to combat capabilities without breaking the directi
 
 | File | Responsibility |
 |------|----------------|
-| `scripts/player/player_melee_attack.gd` | Focused + CC attacks, timing, aim forgiveness, target query |
+| `scripts/combat/weapon_profile_prototype.gd` | Debug weapon profile data (Dagger / Sword / Polearm) |
+| `scripts/player/player_melee_attack.gd` | Focused + CC attacks, timing, profiles, aim forgiveness |
 | `scripts/player/player.gd` | Movement, facing, attack move-speed multiplier |
 | `scripts/combat/combat_attack_telegraph.gd` | Wind-up/impact telegraphs, sparks, F11 overlay |
 | `scripts/combat/combat_focused_target_preview.gd` | Likely-target ring |

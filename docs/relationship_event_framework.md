@@ -2,6 +2,7 @@
 
 **Status:** Living design document — distinguishes **implemented**, **planned**, and **future** behavior  
 **Gameplay checkpoints:** `docs/project_checkpoint_milestone7.md`, `docs/project_checkpoint_milestone8.md` (historical), **`docs/project_checkpoint_milestone9A.md` (current live state)**  
+**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (experience goals and slice scope)  
 **Related:** `docs/bond_system.md`, `docs/dragon_ai.md`, `docs/game_architecture.md`
 
 This document defines relationship events, stat ownership, encounter evaluation, and long-term progression philosophy. **Code is the source of truth for live behavior**; sections below are labeled by implementation status.

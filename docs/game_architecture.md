@@ -1,5 +1,7 @@
 # Game Overview
 
+**Vertical Slice design:** [`docs/vertical_slice_design_v1.md`](vertical_slice_design_v1.md) — scope, experience goals, slice pillars, and **enemy archetypes** (Scout / Raider / Brute). This document describes the **full game** vision; the slice intentionally defers politics, races, magic, and large-world systems until the core rider–dragon loop is proven.
+
 The game is a 2D action adventure RPG focused on dragon rider relationships, political tension between races, and semi-independent dragon companions.
 
 The player chooses one of four races:

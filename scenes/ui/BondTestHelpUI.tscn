@@ -18,20 +18,20 @@ content_margin_top = 6.0
 content_margin_right = 8.0
 content_margin_bottom = 6.0
 
-[node name="BondTestHelpUI" type="Control" unique_id=1638809239]
+[node name="BondTestHelpUI" type="Control"]
 layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 12.0
-offset_top = -296.0
-offset_right = 340.0
+offset_top = -560.0
+offset_right = 380.0
 offset_bottom = -12.0
 grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("1_help")
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=1625512638]
+[node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,7 +41,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_help_panel")
 
-[node name="Margin" type="MarginContainer" parent="Panel" unique_id=2146976644]
+[node name="Margin" type="MarginContainer" parent="Panel"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 4
@@ -49,134 +49,235 @@ theme_override_constants/margin_top = 2
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 2
 
-[node name="VBox" type="VBoxContainer" parent="Panel/Margin" unique_id=1090832448]
+[node name="Scroll" type="ScrollContainer" parent="Panel/Margin"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 4
+horizontal_scroll_mode = 0
 
-[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox" unique_id=1217401217]
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
 theme_override_font_sizes/font_size = 16
-text = "Bond test keys (hold Ctrl)"
+text = "Controls"
 
-[node name="Ctrl1Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Ctrl1Label" type="Label" parent="Panel/Margin/VBox/Ctrl1Row"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+1  Bond Strength +5"
-
-[node name="BondStrengthValue" type="Label" parent="Panel/Margin/VBox/Ctrl1Row"]
+[node name="MoveTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
 theme_override_font_sizes/font_size = 14
+text = "Movement"
+
+[node name="MoveLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "WASD / Arrow keys — Move"
+
+[node name="CombatTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Combat"
+
+[node name="FocusedLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Space / LMB / J — Focused attack"
+
+[node name="CCLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Shift+Space — Crowd control"
+
+[node name="DragonTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Dragon"
+
+[node name="DragonLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Q — Wait / Recall dragon"
+
+[node name="WeaponTitleLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Weapon profiles (debug)"
+
+[node name="Weapon1Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "1 Dagger  |  2 Sword  |  3 Polearm"
+
+[node name="WeaponProfileRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WeaponProfileCaption" type="Label" parent="Panel/Margin/Scroll/VBox/WeaponProfileRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Active"
+
+[node name="WeaponProfileValue" type="Label" parent="Panel/Margin/Scroll/VBox/WeaponProfileRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Sword"
+horizontal_alignment = 2
+
+[node name="WeaponProfileDetail" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.28, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+text = "F: 29 dmg · 100° · 52px  |  CC: 28px · 24 kb"
+
+[node name="SliceTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Vertical slice"
+
+[node name="SoftRestartLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Shift+R — Soft restart"
+
+[node name="FullReloadLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ctrl+Shift+R — Full reload"
+
+[node name="DebugTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Debug overlays"
+
+[node name="F10Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "F10 — Bond debug panel"
+
+[node name="F11Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "F11 — Combat range overlay"
+
+[node name="SpawnTitleLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Enemy spawn (debug)"
+
+[node name="F1Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "F1 — Spawn enemy nearby"
+
+[node name="ShiftF1Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Shift+F1 — Spawn 3 enemies"
+
+[node name="BondTitleLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Bond test (hold Ctrl)"
+
+[node name="Ctrl1Row" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Ctrl1Label" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl1Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ctrl+1 / Ctrl+2 — Bond Strength ±5"
+
+[node name="BondStrengthValue" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl1Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
 text = "50"
 horizontal_alignment = 2
 
-[node name="Ctrl2Label" type="Label" parent="Panel/Margin/VBox" unique_id=674035082]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+2  Bond Strength -5"
-
-[node name="Ctrl3Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
+[node name="Ctrl3Row" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Ctrl3Label" type="Label" parent="Panel/Margin/VBox/Ctrl3Row"]
+[node name="Ctrl3Label" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl3Row"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+3  Sync +5"
+theme_override_font_sizes/font_size = 13
+text = "Ctrl+3 / Ctrl+4 — Sync ±5"
 
-[node name="SyncValue" type="Label" parent="Panel/Margin/VBox/Ctrl3Row"]
+[node name="SyncValue" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl3Row"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "50"
 horizontal_alignment = 2
 
-[node name="Ctrl4Label" type="Label" parent="Panel/Margin/VBox" unique_id=2094137343]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+4  Sync -5"
-
-[node name="Ctrl5Row" type="HBoxContainer" parent="Panel/Margin/VBox"]
+[node name="Ctrl5Row" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Ctrl5Label" type="Label" parent="Panel/Margin/VBox/Ctrl5Row"]
+[node name="Ctrl5Label" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl5Row"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+5  Instability +5"
+theme_override_font_sizes/font_size = 13
+text = "Ctrl+5 / Ctrl+6 — Instability ±5"
 
-[node name="InstabilityValue" type="Label" parent="Panel/Margin/VBox/Ctrl5Row"]
+[node name="InstabilityValue" type="Label" parent="Panel/Margin/Scroll/VBox/Ctrl5Row"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "0"
 horizontal_alignment = 2
 
-[node name="Ctrl6Label" type="Label" parent="Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Ctrl+6  Instability -5"
-
-[node name="HealthTitleLabel" type="Label" parent="Panel/Margin/VBox"]
+[node name="HealthTitleLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Health test keys"
-mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+text = "Health test"
 
-[node name="F5Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="F5Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "F5  Current HP +10"
-mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "F5 — Current HP +10"
 
-[node name="F6Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="F6Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "F6  Max HP +10 (and current)"
-mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "F6 — Max HP +10 (and heal)"
 
-[node name="F7Label" type="Label" parent="Panel/Margin/VBox"]
+[node name="F7Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "F7  Max HP -10"
-mouse_filter = 2
-
-[node name="SpawnTitleLabel" type="Label" parent="Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Enemy spawn keys"
-mouse_filter = 2
-
-[node name="F8Label" type="Label" parent="Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "F1  Spawn enemy nearby"
-mouse_filter = 2
-
-[node name="ShiftF8Label" type="Label" parent="Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
-theme_override_font_sizes/font_size = 14
-text = "Shift+F1  Spawn 3 enemies"
-mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "F7 — Max HP -10"

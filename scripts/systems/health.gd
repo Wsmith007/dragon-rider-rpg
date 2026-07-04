@@ -37,6 +37,14 @@ func heal(amount: float) -> void:
 	health_changed.emit(current_health, max_health)
 
 
+func restore_full() -> void:
+	if _death_handled:
+		return
+
+	current_health = max_health
+	health_changed.emit(current_health, max_health)
+
+
 func increase_max_health(amount: float, also_heal: bool = false) -> void:
 	if _death_handled:
 		return

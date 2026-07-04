@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://cex78sj2ajnwq"]
+
+[ext_resource type="Script" path="res://scripts/world/vertical_slice_world_shell.gd" id="1_shell"]
+[ext_resource type="PackedScene" uid="uid://cverticalslicegame01" path="res://scenes/world/VerticalSliceLevelP1Game.tscn" id="2_game"]
+[ext_resource type="PackedScene" uid="uid://bbonddebugui" path="res://scenes/ui/BondDebugUI.tscn" id="3_debug"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_debug_panel"]
+bg_color = Color(0.12, 0.14, 0.16, 1)
+border_width_left = 2
+border_color = Color(0.28, 0.32, 0.36, 1)
+
+[node name="VerticalSlice_Level_P1" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_shell")
+
+[node name="LayoutHBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="GameplayViewportContainer" type="SubViewportContainer" parent="LayoutHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+
+[node name="GameplayViewport" type="SubViewport" parent="LayoutHBox/GameplayViewportContainer"]
+handle_input_locally = true
+size = Vector2i(1200, 900)
+render_target_update_mode = 4
+
+[node name="VerticalSliceLevelP1Game" parent="LayoutHBox/GameplayViewportContainer/GameplayViewport" instance=ExtResource("2_game")]
+
+[node name="DebugPanel" type="PanelContainer" parent="LayoutHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_debug_panel")
+
+[node name="BondDebugUI" parent="LayoutHBox/DebugPanel" instance=ExtResource("3_debug")]
+layout_mode = 2

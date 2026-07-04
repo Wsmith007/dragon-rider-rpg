@@ -9,6 +9,509 @@ This document is the **pass-by-pass journal** and design notebook. For a single 
 
 **Live prototype (Passes 1–7):** Directional focused attack + Shift+Space CC, aim forgiveness, telegraphs, attack commitment, and likely-target preview — see checkpoint and pass sections below.
 
+**Weapon Profile Prototype Tuning Pass 1 (live):** Refined identities — sword highest DPS, dagger fastest/lowest DPS, polearm control — see [Weapon Profile Prototype Tuning Pass 1](#weapon-profile-prototype-tuning-pass-1).
+
+**Vertical Slice Level P1 Fix Pass (2026-05-29):** Corridor layout fix, archetype readability, enemy attack telegraph/lunge, brute player knockback/stagger — see [Vertical Slice Level P1 Fix Pass](#vertical-slice-level-p1-fix-pass).
+
+**Vertical Slice Level Pass 2 (2026-05-29):** Connected route — **complete.** See [Vertical Slice Level Pass 2](#vertical-slice-level-pass-2).
+
+**Enemy Archetype Prototype Pass 1 (2026-05-29):** Scout / Raider / Brute behavioral roles — see [Enemy Archetype Prototype Pass 1](#enemy-archetype-prototype-pass-1). **Implemented — playtest pending.**
+
+**Combat Depth Pass 1 (2026-05-29):** Documented only — see [Combat Depth Pass 1](#combat-depth-pass-1). **Not implemented.**
+
+---
+
+## Enemy Archetype Prototype Pass 1
+
+**Status: IMPLEMENTED — playtest validation pending**
+
+Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3.
+
+**Principle:** Behavior defines the archetype. Statistics support behavior — not the other way around.
+
+Each archetype answers:
+
+1. **What lesson does this enemy teach?**
+2. **What gameplay problem does it create?**
+3. **What weakness can the player eventually exploit?**
+
+### Scout — Skirmisher
+
+| | |
+|--|--|
+| **Personality** | Impatient · opportunistic · evasive |
+| **Lesson** | Positioning |
+| **Problem** | Constant angular pressure |
+| **Player decision** | *"Can I keep up?"* |
+
+**Implemented behavior:**
+
+- **Orbit chase** — tangential steering (`circle_bias` 0.58) instead of beeline rush  
+- **Strafe engage** — circles in melee range; does not stand still trading hits  
+- **DISENGAGE state** — after each attack, bursts away (0.72 s at 255 px/s) then re-engages  
+- **Quick strike** — 0.28 s wind-up, 0.95 s cooldown (long reposition between hits)  
+- **Low HP / low damage** — threat from movement, not stats  
+
+**Visual:** small orange silhouette, gold accent.
+
+**Future evolution:** punish during retreat window; precision hit vulnerability — not fully implemented.
+
+### Raider — Baseline Fighter
+
+| | |
+|--|--|
+| **Personality** | Disciplined · committed · confident |
+| **Lesson** | Core melee combat loop |
+| **Problem** | Direct sustained pressure |
+| **Player decision** | *"Can I fight well?"* |
+
+**Implemented behavior:**
+
+- Unchanged prototype AI — IDLE → CHASE → ENGAGE with slot spread and engage reposition  
+- Reference cadence for balancing Scout and Brute  
+- No DISENGAGE / RECOVER states  
+
+**Visual:** default red silhouette — neutral baseline.
+
+### Brute — Control Check
+
+| | |
+|--|--|
+| **Personality** | Relentless · intimidating · patient |
+| **Lesson** | Space management |
+| **Problem** | Cannot simply knock back and ignore |
+| **Player decision** | *"Can I control space?"* |
+
+**Implemented behavior:**
+
+- **Slow approach** — 68 px/s chase, 30 px/s engage reposition  
+- **Long wind-up** — 0.72 s telegraphed strike  
+- **RECOVER state** — 0.58 s stillness after attack + 0.42 s bonus cooldown  
+- **Knockback resistance** — focused hits (≤26 px) apply **zero** knockback; CC reduced to 35% before resistance (4.5×)  
+- **Player impact** — 32 px knockback + 0.32 s stagger on hit  
+
+**Visual:** large dark maroon silhouette.
+
+**Deferred to next iteration:** full immunity to all knockback; heavy attacks; dragon combo interactions.
+
+### Attack windows by archetype (Tuning Pass 1)
+
+| Archetype | Wind-up | Strike | Recovery / reposition |
+|-----------|---------|--------|------------------------|
+| **Scout** | 0.24 s (quick) | 0.09 s lunge | 0.28 s sidestep + probe bursts + 0.62 s cooldown |
+| **Raider** | 0.45 s | 0.11 s lunge | 1.0 s cooldown (baseline) |
+| **Brute** | 0.72 s (committed) | 0.15 s lunge, **50 px** reach | No post-attack freeze — resumes advance immediately |
+
+**Design philosophy:** Scout controls **tempo** · Raider controls **combat** · Brute controls **space**.
+
+### Archetype Tuning Pass (playtest response)
+
+**Scout — persistent skirmisher (probe model)**
+
+- Replaced orbit steering with **probe bursts** — short directional feints near attack range  
+- Stays within ~0.58–1.05× attack range; closes aggressively if too far  
+- Abrupt direction changes every ~0.14–0.24 s; faster steering blend  
+- **Probe pressure:** after 1.4 s without attacking, relaxed cooldown; after 2.2 s, forces commit  
+- Loop: approach → probe → commit → attack → brief sidestep → probe again  
+
+**Brute — relentless space control**
+
+- Removed RECOVER state and bonus cooldown — advances during attack cooldown  
+- **50 px attack range** + 28 px lunge — still threatens after moderate CC knockback  
+- Wind-up (0.72 s) remains the primary player reaction window  
+- Loop: slow advance → committed strike → resume advance  
+
+### Implementation files
+
+| File | Role |
+|------|------|
+| `scripts/enemies/enemy.gd` | DISENGAGE / RECOVER states, archetype movement routing, brute knockback filter |
+| `scripts/combat/enemy_combat_steering.gd` | Scout orbit chase, disengage, strafe engage |
+| `scripts/world/vertical_slice_archetype_presets.gd` | Per-archetype stats + behavior exports |
+| `scripts/world/vertical_slice_encounter.gd` | Spawns enemies with preset applied |
+
+### Playtest questions (before Combat Depth Pass 1)
+
+1. Does the Scout feel like it is **looking for openings** rather than slugging?  
+2. Does the Scout teach **prioritization** in mixed fights (Crossroads, Fork, Last Stand)?  
+3. Does the Raider still feel like the **fair baseline** reference?  
+4. Does the Brute punish **panic focused spam** without feeling like a HP sponge?  
+5. Does CC on the Brute create **some** space but less than on Raiders?  
+6. Do players describe the three roles **differently** unprompted?  
+7. Does difficulty feel behavioral — not primarily HP/damage inflation?
+
+### Intentionally not modified
+
+Bond · Sync · Instability · relationship · encounter tracking · dragon relationship logic · weapons · combat stance · player controls.
+
+---
+
+## Combat Depth Pass 1
+
+**Status: DOCUMENTED ONLY — NOT IMPLEMENTED**
+
+**Purpose:** Increase player **decision-making**. Combat should become less about repeatedly attacking and more about choosing the correct action — positioning, timing, spacing, and attack choice over attack spam.
+
+Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
+
+### Combat Stance
+
+A **general rider control mode** — not shield-specific. Holding a **stance button**:
+
+| Behavior | Detail |
+|----------|--------|
+| **Lock facing** | Current facing direction fixed while stance is held |
+| **Strafe** | Move perpendicular to locked facing without turning |
+| **Backpedal** | Move backward relative to locked facing |
+| **Attack direction preserved** | Focused attacks use locked facing, not velocity-based facing |
+
+**Why:** Creates a foundation for future **shield gameplay** without tying stance to a shield item. Stance is the baseline “committed facing” mode for tactical movement.
+
+**Not in scope yet:** shield block, parry, stamina drain, animation poses.
+
+### Weapon movement identity
+
+Player **move speed** becomes part of weapon identity — noticeable but **not extreme**. Aligns with weapon profile tuning (dagger fast / sword baseline / polearm slow):
+
+| Weapon | Move speed | Combat identity |
+|--------|------------|-----------------|
+| **Dagger** | Fastest | Precision, fastest attacks, lowest sustained DPS |
+| **Sword** | Baseline | Highest sustained DPS, general default |
+| **Polearm** | Slowest | Strongest control, longest reach, medium DPS |
+
+Movement differences reinforce weapon choice beyond arc/reach/cooldown. **Not wired in code** — documented direction for Combat Depth Pass 1 implementation.
+
+### Attack commitment philosophy
+
+Pass 6 established wind-up / impact / recovery. Combat Depth Pass 1 extends the **design philosophy** (future tuning, not current scope):
+
+Combat should reward:
+
+- **Positioning** — where you stand relative to threats  
+- **Timing** — when to swing vs when to reposition  
+- **Spacing** — polearm/CC vs dagger close range  
+- **Correct attack choice** — focused vs CC, weapon-appropriate target  
+
+Attack spam should **not** be the dominant strategy.
+
+**Future systems may include** (documented direction only):
+
+- Longer recovery windows after whiffs or heavy swings  
+- Enemy **punish windows** during player recovery  
+- Stronger commitment on CC and polearm swings  
+- CC remains repositioning — not spammable DPS  
+
+Current prototype already slows movement during wind-up/recovery (Pass 6). Combat Depth adds **stance + weapon move speed** as additional decision layers.
+
+### Enemy archetype direction (Scout / Brute)
+
+Updates planned archetype **behavior goals** for Enemy Archetype Pass 1 — export presets exist; AI behaviors do not yet match these roles.
+
+#### Scout — Skirmisher / Guerrilla
+
+| | |
+|--|--|
+| **Role** | Skirmisher / guerrilla |
+| **Behavior goals** | Hit-and-run attacks; reposition frequently; circle and flank; pressure from **multiple angles**; avoid prolonged toe-to-toe combat |
+| **Player lesson** | Prioritize fast threats; use movement and dragon assist; dagger/sword precision |
+
+Creates **urgency** and positioning pressure — not raw damage.
+
+#### Brute — Control Check
+
+| | |
+|--|--|
+| **Role** | Control check |
+| **Behavior goals** | High knockback resistance → eventually **immune to normal knockback**; dangerous close-range attacks; future heavy attacks; future rider/dragon combo interactions; punish **poor positioning** rather than chase speed |
+| **Player lesson** | Spacing, CC, dragon protection, timing over aggression |
+
+Does not win by outrunning the player — wins when allowed to close.
+
+**Raider** remains the baseline reference (current default tuning).
+
+### Intentionally not implemented (Combat Depth Pass 1)
+
+- Combat Stance input / movement code  
+- Per-weapon move speed multipliers  
+- Extended recovery or enemy punish windows beyond current prototype  
+- Shield block / parry  
+- New Scout/Brute AI states (→ Enemy Archetype Pass 1)
+
+### Recommended implementation order
+
+1. **Enemy Archetype Prototype Pass 1** — validate level + enemy roles in playtest  
+2. **Combat Depth Pass 1** — stance + weapon movement identity  
+3. **Player Polish Pass** — audio, animation, HUD  
+
+---
+
+## Vertical Slice Level Pass 2
+
+**Status: COMPLETE (P2.1 grove fix) — Phase 1 layout signed off**
+
+Documentation: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
+
+- Variable-width spine (wide → choke → junction → choke → destination)
+- Wall segments drawn == collision; grove sealed with **full east wall** and **two south exits only**
+- Route polylines: Crossroads → grove → SW exit back to Crossroads or SE exit to Hold
+- Encounter trigger positions updated on spine
+
+**Not changed:** combat, enemy AI, relationship, dragon, weapons.
+
+---
+
+## Vertical Slice Level P1 Fix Pass
+
+**Status: IMPLEMENTED — slice level + global enemy attack readability**
+
+Documentation: [`docs/vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
+
+### Level boundary / flow fix
+
+**Problem:** Zone tints drew ten disconnected boxes, but collision used one short outer rectangle (y ±300). Quiet Grove (y ≈ −520) was **outside** north collision — nearly inaccessible.
+
+**Fix:** `vertical_slice_graybox_geometry.gd` builds a **connected east–west corridor** (y −108…108) plus **north grove wing** with a gap in the north corridor wall. Walls match playable space. Route line + START/END markers added.
+
+### Archetype readability (slice presets)
+
+| Archetype | Chase | Visual |
+|-----------|-------|--------|
+| **Scout** | **225** px/s (~player 220, dagger-feel pursuit) | 0.62× scale, orange, narrow polygon, gold accent |
+| **Raider** | **108** px/s (sword-match baseline) | Default size, standard red |
+| **Brute** | **68** px/s (slow, polearm-feel spacing) | 1.55× scale, dark maroon, wide polygon, dark accent |
+
+Applied via `VerticalSliceArchetypePresets` — does not change AI state machine.
+
+### Enemy attack telegraph + lunge (all enemies)
+
+`enemy.gd` — same state machine, new attack **phase** inside ENGAGE:
+
+1. **Wind-up** — `engage_windup` duration, pulsing warm flash, zero velocity  
+2. **Lunge** — short forward burst (`attack_lunge_distance` / `attack_lunge_duration`)  
+3. **Hit** — damage if still in range; red flash on connect  
+
+Exports: `attack_lunge_distance`, `attack_lunge_duration`, `player_hit_knockback`, `player_hit_stagger`.
+
+### Brute player hit prototype
+
+`player.gd` — `apply_combat_hit_reaction(from_position, knockback, stagger)`:
+
+- **Brute preset:** 32 px knockback, **0.32 s** stagger (movement/attack lock)  
+- **Raider / Scout / default:** 0 knockback, 0 stagger  
+
+Relationship systems untouched — only player movement interrupt.
+
+### Help UI
+
+`BondTestHelpUI.tscn` — scrollable full controls: movement, combat, dragon Q, weapons 1–3, Shift+R / Ctrl+Shift+R, F10/F11, F1/Shift+F1, Ctrl+1–6 bond, F5–F7 health.
+
+---
+
+## Weapon Profile Prototype Tuning Pass 1 (implemented — debug only)
+
+**Status: PROTOTYPE · IDENTITY REFINEMENT · NOT EQUIPMENT**
+
+Refines Pass 2 values from playtest feedback. **Sword = highest DPS**, **dagger = fastest / lowest sustained DPS**, **polearm = control / medium DPS**.
+
+### Active weapon identities
+
+| Weapon | Role | Identity |
+|--------|------|----------|
+| **Dagger** | Precision | Fastest cycle, smallest arc/reach, **lowest DPS**, weakest CC |
+| **Sword** | Damage / balanced | **Highest DPS**, moderate arc/reach/CC — general-purpose default |
+| **Polearm** | Control | Longest reach, strongest spacing/CC, **medium DPS**, slowest cycle — choose for control, not damage |
+
+### Focused values (Tuning Pass 1)
+
+| Stat | Dagger | Sword | Polearm |
+|------|--------|-------|---------|
+| Damage | **18** | **29** | **19** |
+| Arc | **45°** | **100°** | **140°** (was 150°) |
+| Range | **40 px** | **52 px** | **72 px** |
+| Cooldown | **0.24 s** | **0.38 s** | **0.68 s** |
+| Wind-up | **0.06 s** | **0.11 s** | **0.15 s** |
+| Recovery | **0.08 s** | **0.13 s** | **0.21 s** |
+| ~DPS (dmg/cd) | **~75** (lowest) | **~76** (highest) | **~28** (medium) |
+
+### CC values (Tuning Pass 1)
+
+| Stat | Dagger | Sword | Polearm |
+|------|--------|-------|---------|
+| Damage | **8** | **12** | **10** |
+| Radius | **22 px** | **28 px** | **36 px** |
+| Knockback | **14 px** | **24 px** | **35 px** |
+| Stagger | **0.5 s** | **0.6 s** | **0.7 s** |
+| Cooldown | **0.75 s** | **0.95 s** | **1.35 s** |
+
+CC remains repositioning — not primary damage. Polearm creates the most space; dagger the least.
+
+### CC scaling philosophy
+
+- **Reach** scales with weapon length (22 → 28 → 36 px)
+- **Knockback/stagger** strongest on polearm
+- **Cooldown** longest on polearm — deliberate space tool
+- **Damage** stays low on all profiles
+
+### Debug UI
+
+BondTestHelpUI shows cooldown summary + one-line stats:  
+`F: 18 dmg · 45° · 40px  |  CC: 22px · 14 kb`
+
+### Playtest goals
+
+1. Does **sword** feel like the natural damage default?
+2. Does **dagger** feel fast but **weak in sustained fights**?
+3. Is **polearm 140°** arc right for control without feeling too wide?
+4. Does **polearm 0.68 s** cadence feel deliberate, not spammy?
+5. Does **weapon CC** reinforce reach/control identity?
+6. Is polearm chosen for **spacing**, not DPS?
+
+### Intentionally not implemented
+
+Inventory, equipment, loot, leveling, magic, enemy variants, relationship/dragon/enemy AI changes.
+
+---
+
+## Weapon Profile Prototype Pass 2 (implemented — debug only)
+
+**Status: PROTOTYPE · NOT EQUIPMENT · FOCUSED + CC PER WEAPON**
+
+Pass 2 tunes Pass 1 profiles from playtest feedback and adds **weapon-scaled CC** (range, knockback, damage, cooldown).
+
+### Changes from Pass 1
+
+| Weapon | Focused changes | CC changes |
+|--------|-----------------|------------|
+| **Dagger** | Lower damage (**21**), faster cadence (**0.24** cd), faster wind-up/recovery | Smallest radius (**24**), lowest damage (**9**), fastest CC cd (**0.85**) |
+| **Sword** | Unchanged baseline | Medium profile (~Pass 4 global values) |
+| **Polearm** | Narrower arc (**150°**), slower cadence (**0.58** cd), slower recovery | Largest radius (**34**), strongest knockback (**32**), slowest CC cd (**1.2**) |
+
+### Hotkeys (unchanged)
+
+| Key | Profile |
+|-----|---------|
+| **1** | Dagger |
+| **2** | Sword |
+| **3** | Polearm |
+
+Help UI shows: `Dagger  F 0.24s / CC 0.85s` (focused / CC cooldowns).
+
+### Focused attack values (Pass 2)
+
+| Stat | Dagger | Sword | Polearm |
+|------|--------|-------|---------|
+| Arc | **45°** | **100°** | **150°** (was 165°) |
+| Range | **40 px** | **52 px** | **72 px** |
+| Damage | **21** (was 24) | **25** | **20** |
+| Knockback | 15 px | 25 px | 35 px |
+| Cooldown | **0.24 s** (was 0.30) | 0.35 s | **0.58 s** (was 0.48) |
+| Wind-up | **0.07 s** | 0.10 s | 0.14 s |
+| Recovery | **0.09 s** | 0.12 s | **0.18 s** |
+
+### CC values per weapon (Pass 2)
+
+| Stat | Dagger | Sword | Polearm |
+|------|--------|-------|---------|
+| Damage | **9** | **12** | **11** |
+| Radius | **24 px** | **28 px** | **34 px** |
+| Knockback | **16 px** | **24 px** | **32 px** |
+| Stagger | **0.55 s** | **0.6 s** | **0.65 s** |
+| Cooldown | **0.85 s** | **0.95 s** | **1.2 s** |
+| Wind-up | **0.14 s** | 0.17 s | **0.19 s** |
+| Recovery | **0.16 s** | 0.20 s | **0.23 s** |
+
+### CC philosophy (weapon-scaled)
+
+- CC remains **repositioning**, not primary DPS
+- **Reach scales with weapon length** — polearm pushes farthest, dagger shortest
+- **Dagger:** quick emergency space, weakest push
+- **Sword:** balanced CC baseline
+- **Polearm:** best space creation, slowest commitment
+
+All values live in `WeaponProfilePrototype.PROFILES` for easy tuning.
+
+### Playtest questions (Pass 2)
+
+1. Does dagger **spam** feel better at 0.24 s cooldown?
+2. Is dagger damage (**21**) still satisfying on single targets?
+3. Is polearm arc (**150°**) still wide enough for control?
+4. Does polearm **0.58 s** focused cadence feel appropriately slow?
+5. Does **weapon-scaled CC** read clearly (short vs long reach)?
+6. Is polearm CC the best **space tool** without dominating damage?
+7. Should sword CC stay the **baseline** for future weapons?
+
+### Intentionally not implemented
+
+- Inventory, equipment, persistence
+- CC stamina/charges
+- Enemy variants, relationship/dragon changes
+
+---
+
+## Weapon Profile Prototype Pass 1 (implemented — superseded by Pass 2 for values)
+
+**Status: IMPLEMENTED · Pass 2 updated tuning + weapon CC**
+
+Pass 1 introduced debug profiles (focused only). **Pass 2** adds CC scaling and cadence/arc tuning below is **historical Pass 1**.
+
+### Hotkeys
+
+| Key | Profile |
+|-----|---------|
+| **1** | Dagger |
+| **2** | Sword |
+| **3** | Polearm |
+
+Prints `Weapon Profile: <name>` to console. **BondTestHelpUI** shows current profile.
+
+### Profile values (focused attack)
+
+| Stat | Dagger | Sword | Polearm |
+|------|--------|-------|---------|
+| Arc (total) | **45°** | **100°** | **165°** |
+| Range | **40 px** | **52 px** | **72 px** |
+| Damage | **24** | **25** | **20** |
+| Knockback | **15 px** | **25 px** | **35 px** |
+| Stagger | 0.3 s | 0.3 s | 0.3 s |
+| Cooldown | **0.30 s** | **0.35 s** | **0.48 s** |
+| Wind-up | **0.08 s** | **0.10 s** | **0.14 s** |
+| Recovery | **0.10 s** | **0.12 s** | **0.16 s** |
+
+Close-range forgiveness and soft-assist scale per profile. Telegraphs use live `focused_range` / arc exports.
+
+### Design intent
+
+| Profile | Role | Expected feel |
+|---------|------|----------------|
+| **Dagger** | Precision | Fast, short, single-target; weak in groups |
+| **Sword** | Balanced | 1–3 enemies in front; general purpose |
+| **Polearm** | Control | Long reach, wide arc, strong knockback; lowest DPS |
+
+### Implemented
+
+- `WeaponProfilePrototype` data + `PlayerMeleeAttack.apply_weapon_profile()`
+- Keys **1 / 2 / 3** (`_unhandled_input`, ignored while attacking)
+- Help UI readout + console log
+- Telegraph / preview / hit query use applied exports
+
+### Intentionally not implemented
+
+- Inventory, equipment slots, pickups, persistence
+- Weapon-specific CC
+- Stat scaling, leveling, crafting, durability
+- Enemy variants, dragon combat changes
+
+### Playtest questions
+
+1. Does dagger feel **precise and fast**?
+2. Does sword feel **balanced**?
+3. Does polearm feel like a **control** weapon?
+4. Does polearm feel **too safe**?
+5. Does dagger feel **too weak against groups**?
+6. Does sword feel like a useful **middle ground**?
+7. Does weapon identity emerge **without inventory/equipment**?
+8. Should CC eventually become **weapon-specific**?
+
 ---
 
 ## Combat Feel Pass 7 (implemented)
@@ -614,14 +1117,16 @@ Lightweight prototype changes for playtest readability and group threat:
 
 ## Enemy speed by type (future)
 
-Default prototype values live on `Enemy` exports (`chase_speed`, `engage_reposition_speed`). Future archetypes override per scene/type — **not implemented as variants yet**.
+**Vertical Slice archetypes:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3 defines **Scout**, **Raider**, **Brute** as gameplay roles. See [Combat Depth Pass 1 — Enemy archetype direction](#enemy-archetype-direction-scout--brute) for updated Scout/Brute behavior goals.
 
-| Archetype | Speed feel | Notes |
-|-----------|------------|-------|
-| **Heavy** | Slow | Strong; high `knockback_resistance` |
-| **Scout** | Fast | Fragile |
-| **Standard** | Medium | Current default tuning |
-| **Beast** | Fast bursts | Lower steering control; short engage reposition |
+Default prototype values live on `Enemy` exports (`chase_speed`, `engage_reposition_speed`). Slice presets in `vertical_slice_archetype_presets.gd` — **AI behaviors not yet archetype-specific**.
+
+| Archetype | Role | Speed feel (presets) | Behavior direction |
+|-----------|------|----------------------|-------------------|
+| **Scout** | Skirmisher / guerrilla | Fast (225 px/s) | Hit-and-run, flank, reposition — avoid toe-to-toe |
+| **Raider** | Baseline | Medium (108 px/s) | Standard combat loop reference |
+| **Brute** | Control check | Slow (68 px/s) | KB-resistant, close-range threat, punish positioning |
+| **Beast** | — | Fast bursts | Post-slice |
 
 ---
 
@@ -818,12 +1323,13 @@ These informed Pass 3 — **directional arc is now live** as the default rider m
 
 1. CC resource limit beyond cooldown (charges/stamina) once Pass 4/6 questions answered
 2. Tune soft-assist strength from playtest (or remove if it feels like auto-aim)
-3. Sword / polearm arc prototypes (still no equipment system)
-4. Enemy attack wind-up visual
-5. Sprite animation synced to Pass 6 wind-up / impact / recovery
-6. Audio pass for hit / hurt / miss / wind-up feedback
-7. Color-blind safe telegraph + preview variants if readability issues found
-8. Preview-at-impact hint during focused wind-up (optional)
+3. ~~Sword / polearm arc prototypes~~ → **Weapon Profile P1** debug profiles (1/2/3) — playtest and tune
+4. Weapon-specific CC prototype (after profile playtest)
+5. Enemy attack wind-up visual
+6. Sprite animation synced to Pass 6 wind-up / impact / recovery
+7. Audio pass for hit / hurt / miss / wind-up feedback
+8. Color-blind safe telegraph + preview variants if readability issues found
+9. Preview-at-impact hint during focused wind-up (optional)
 
 ---
 
@@ -844,5 +1350,11 @@ Leveling, equipment, magic systems, dragon health, Outcome Rating revision, enem
 | Pass 5 | Attack telegraphs, hit sparks, confirm flash, F11 debug overlay — **prototype visuals** |
 | Pass 6 | Wind-up / impact / recovery, move slowdown, hit-stop, telegraph alignment — **prototype timing** |
 | Pass 7 | Likely-target preview ring + shared selection logic — **prototype readability** |
+| Weapon P1 | Debug weapon profiles (1/2/3) — focused attack only — **prototype** |
+| Weapon P2 | Profile tuning + weapon-scaled CC — **prototype** |
+| Weapon T1 | Identity refinement (sword DPS, polearm control) — **prototype** |
 | Pass 3 dir. | Weapon Identity Direction (dagger/sword/polearm) — design only |
 | **v1 checkpoint** | [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) — combat prototype SoT |
+| **Combat Depth P1** | Stance, movement identity, commitment philosophy, Scout/Brute — **documented only** |
+| **Archetype P1** | Scout DISENGAGE/orbit, Raider baseline, Brute RECOVER/knockback filter — **implemented** |
+| **Level P2.1** | Quiet Grove east wall + two south exits — layout complete |

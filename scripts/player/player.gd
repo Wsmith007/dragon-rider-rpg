@@ -15,6 +15,8 @@ signal player_died
 var _is_dead: bool = false
 var _facing_direction: Vector2 = Vector2.DOWN
 var _move_speed_multiplier: float = 1.0
+var _combat_stagger_remaining: float = 0.0
+var _combat_safe_zone: bool = false
 var _relationship_last_health: float = 0.0
 var _relationship_was_critical: bool = false
 
@@ -30,9 +32,18 @@ func _ready() -> void:
 	_health.died.connect(_on_died)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _is_dead:
 		velocity = Vector2.ZERO
+		return
+
+	if _combat_stagger_remaining > 0.0:
+		_combat_stagger_remaining = maxf(_combat_stagger_remaining - delta, 0.0)
+		velocity = Vector2.ZERO
+		move_and_slide()
+		if _combat_stagger_remaining <= 0.0:
+			reset_attack_move_speed_multiplier()
+			_visual.modulate = Color.WHITE
 		return
 
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -59,6 +70,45 @@ func set_attack_move_speed_multiplier(multiplier: float) -> void:
 
 func reset_attack_move_speed_multiplier() -> void:
 	_move_speed_multiplier = 1.0
+
+
+func set_combat_safe_zone(active: bool) -> void:
+	_combat_safe_zone = active
+
+
+func is_in_combat_safe_zone() -> bool:
+	return _combat_safe_zone
+
+
+func apply_combat_hit_reaction(
+	from_world_position: Vector2,
+	knockback_distance: float,
+	stagger_duration: float,
+) -> void:
+	if _is_dead:
+		return
+
+	var direction := global_position - from_world_position
+	if direction.length_squared() < 0.01:
+		direction = Vector2.RIGHT
+	direction = direction.normalized()
+
+	if knockback_distance > 0.0:
+		_apply_collision_aware_knockback(direction, knockback_distance)
+
+	if stagger_duration > 0.0:
+		_combat_stagger_remaining = maxf(_combat_stagger_remaining, stagger_duration)
+		set_attack_move_speed_multiplier(0.0)
+		_visual.modulate = Color(0.85, 0.75, 0.75, 1.0)
+
+
+func _apply_collision_aware_knockback(direction: Vector2, distance: float) -> void:
+	var motion := direction.normalized() * distance
+	var collision := move_and_collide(motion)
+	if collision:
+		var slide := motion.slide(collision.get_normal())
+		if slide.length_squared() > 1.0:
+			move_and_collide(slide)
 
 
 func _on_health_changed(current: float, maximum: float) -> void:

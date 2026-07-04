@@ -2,6 +2,7 @@
 
 **Current combat prototype (live mechanics):** [`docs/project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)  
 **Relationship / bond at encounter resolve:** [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
+**Vertical Slice design:** [`docs/vertical_slice_design_v1.md`](vertical_slice_design_v1.md) — slice enemy **roles**: Scout, Raider, Brute (gameplay teaching, not HP variants).  
 **Combat feel journal (passes 1–7):** [`docs/combat_feel_notes.md`](combat_feel_notes.md)
 
 Combat is a fast-paced real-time action system centered around cooperative combat between rider and dragon.

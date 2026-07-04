@@ -3,7 +3,8 @@
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn` (playtest shell with split layout)  
 **Prior checkpoint:** `docs/project_checkpoint_milestone8.md` (historical — observation only at M8)  
-**Design reference:** `docs/relationship_event_framework.md` (v2.0 — **source of truth** for relationship behavior)
+**Design reference:** `docs/relationship_event_framework.md` (v2.0 — **source of truth** for relationship behavior)  
+**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (experience goals and slice scope — **not** mechanical SoT)
 
 Milestone 9A adds **live Sync and Instability changes** from resolved encounters using a **split rating model**. Bond Strength remains **protected** from per-encounter resolution.
 
