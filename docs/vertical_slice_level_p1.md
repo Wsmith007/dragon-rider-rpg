@@ -153,6 +153,7 @@ Script: `scripts/world/vertical_slice_graybox_geometry.gd`
 - **Zone HUD** — `SliceZoneLabel` updates from layout-driven zone notifiers  
 - **No invisible blockers** — if you see a wall, it collides  
 - **Quiet Grove rest** — entering restores full HP; enemies stop chasing while the player is inside  
+- **Dragon companion passages** — keep routes wide enough for dragon follow (~32 px body); tight corners may require rare catch-up/teleport (see [`dragon_ai.md`](dragon_ai.md))  
 
 ---
 
@@ -225,3 +226,4 @@ Pass 2 + P2.1 + P2.2 satisfy Phase 1 level layout goals:
 | **P2.1** | 2026-05-29 | Quiet Grove — full east wall, two south exits |
 | **P2.2** | 2026-05-29 | SE exit → Hold gap, Crossroads → Hold gate, dual-route |
 | **Archetype P1** | 2026-05-29 | Scout/Raider/Brute behavioral AI — encounters use true roles |
+| **Dragon Nav** | 2026-07-04 | v4 — breadcrumbs disabled; direct follow + rare catch-up/teleport |

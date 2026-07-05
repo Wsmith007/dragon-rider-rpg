@@ -7,16 +7,16 @@ class_name DragonFollowBehavior
 enum Mode { FOLLOW, REPOSITION, ALERT, WAIT }
 
 
-@export var ideal_distance: float = 110.0
-@export var min_distance: float = 75.0
-@export var max_distance: float = 155.0
-@export var max_lag_distance: float = 195.0
+@export var ideal_distance: float = 65.0
+@export var min_distance: float = 44.0
+@export var max_distance: float = 92.0
+@export var max_lag_distance: float = 118.0
 @export var follow_speed: float = 180.0
 @export var catch_up_speed: float = 260.0
 @export var reposition_speed: float = 120.0
 @export var reposition_arrive_distance: float = 14.0
-@export var reposition_min_distance_from_body: float = 45.0
-@export var alert_distance: float = 55.0
+@export var reposition_min_distance_from_body: float = 28.0
+@export var alert_distance: float = 34.0
 @export var alert_speed: float = 200.0
 @export var wait_hold_speed: float = 140.0
 @export var wait_arrive_distance: float = 10.0
@@ -149,6 +149,35 @@ func get_mode_name() -> String:
 			return "wait"
 		_:
 			return "follow"
+
+
+func get_movement_goal() -> Vector2:
+	if _body == null:
+		return Vector2.ZERO
+
+	match mode:
+		Mode.REPOSITION:
+			if _has_reposition_target:
+				return _reposition_point
+			return _follow_anchor_global()
+		Mode.WAIT:
+			return _wait_position
+		Mode.ALERT, Mode.FOLLOW:
+			return _follow_anchor_global()
+		_:
+			return _follow_anchor_global()
+
+
+func get_follow_max_speed() -> float:
+	match mode:
+		Mode.REPOSITION:
+			return reposition_speed
+		Mode.ALERT:
+			return alert_speed
+		Mode.WAIT:
+			return wait_hold_speed
+		_:
+			return maxf(follow_speed, catch_up_speed)
 
 
 func get_desired_velocity() -> Vector2:

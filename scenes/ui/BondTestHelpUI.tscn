@@ -78,6 +78,132 @@ theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
 theme_override_font_sizes/font_size = 13
 text = "WASD / Arrow keys — Move"
 
+[node name="StanceLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Hold Ctrl — Combat stance (locked facing)"
+
+[node name="TargetFocusLabel" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Caps Lock — Target focus on/off  |  Tab / Shift+Tab — cycle"
+
+[node name="MovementDebugTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Movement (live)"
+
+[node name="MovementStateRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MovementStateCaption" type="Label" parent="Panel/Margin/Scroll/VBox/MovementStateRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "State"
+
+[node name="MovementStateValue" type="Label" parent="Panel/Margin/Scroll/VBox/MovementStateRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Running"
+horizontal_alignment = 2
+
+[node name="FacingRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FacingCaption" type="Label" parent="Panel/Margin/Scroll/VBox/FacingRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Facing"
+
+[node name="FacingValue" type="Label" parent="Panel/Margin/Scroll/VBox/FacingRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "S"
+horizontal_alignment = 2
+
+[node name="StanceRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StanceCaption" type="Label" parent="Panel/Margin/Scroll/VBox/StanceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Combat stance"
+
+[node name="StanceValue" type="Label" parent="Panel/Margin/Scroll/VBox/StanceRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Off"
+horizontal_alignment = 2
+
+[node name="MoveSpeedRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MoveSpeedCaption" type="Label" parent="Panel/Margin/Scroll/VBox/MoveSpeedRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Move speed mod"
+
+[node name="MoveSpeedValue" type="Label" parent="Panel/Margin/Scroll/VBox/MoveSpeedRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "×1.00"
+horizontal_alignment = 2
+
+[node name="TargetFocusActiveRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetFocusActiveCaption" type="Label" parent="Panel/Margin/Scroll/VBox/TargetFocusActiveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Target focus"
+
+[node name="TargetFocusActiveValue" type="Label" parent="Panel/Margin/Scroll/VBox/TargetFocusActiveRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "No"
+horizontal_alignment = 2
+
+[node name="FocusedTargetRow" type="HBoxContainer" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FocusedTargetCaption" type="Label" parent="Panel/Margin/Scroll/VBox/FocusedTargetRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.18, 0.22, 0.15, 1)
+theme_override_font_sizes/font_size = 13
+text = "Focused target"
+
+[node name="FocusedTargetValue" type="Label" parent="Panel/Margin/Scroll/VBox/FocusedTargetRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+text = "None"
+horizontal_alignment = 2
+
 [node name="CombatTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)

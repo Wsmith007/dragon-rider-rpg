@@ -43,6 +43,8 @@ const PRESETS: Dictionary = {
 		"circle_bias": 0.0,
 		"post_attack_recovery": 0.0,
 		"post_attack_cooldown_bonus": 0.0,
+		"attack_commit_ratio": 1.0,
+		"hit_stagger_multiplier": 1.35,
 		"visual_color": Color(1.0, 0.58, 0.18, 1.0),
 		"visual_scale": Vector2(0.62, 0.62),
 		"accent_color": Color(1.0, 0.92, 0.35, 0.7),
@@ -66,6 +68,8 @@ const PRESETS: Dictionary = {
 		"circle_bias": 0.0,
 		"post_attack_recovery": 0.0,
 		"post_attack_cooldown_bonus": 0.0,
+		"attack_commit_ratio": 0.4,
+		"hit_stagger_multiplier": 1.0,
 		"visual_color": Color(0.78, 0.14, 0.2, 1.0),
 		"visual_scale": Vector2.ONE,
 		"accent_color": Color(0.95, 0.25, 0.3, 0.35),
@@ -83,12 +87,15 @@ const PRESETS: Dictionary = {
 		"attack_lunge_duration": 0.15,
 		"knockback_resistance": 4.5,
 		"player_hit_knockback": 32.0,
-		"player_hit_stagger": 0.32,
+		"player_hit_stagger": 0.47,
 		"disengage_duration": 0.0,
 		"disengage_speed": 0.0,
 		"circle_bias": 0.0,
 		"post_attack_recovery": 0.0,
 		"post_attack_cooldown_bonus": 0.0,
+		"attack_commit_ratio": 0.28,
+		"hit_stagger_multiplier": 0.55,
+		"body_collision_radius": 22.0,
 		"visual_color": Color(0.32, 0.04, 0.08, 1.0),
 		"visual_scale": Vector2(1.55, 1.55),
 		"accent_color": Color(0.12, 0.02, 0.04, 0.75),
@@ -117,6 +124,8 @@ static func apply_to_enemy(enemy: CharacterBody2D, archetype: Archetype) -> void
 		"circle_bias",
 		"post_attack_recovery",
 		"post_attack_cooldown_bonus",
+		"attack_commit_ratio",
+		"hit_stagger_multiplier",
 	]
 	for key in stat_keys:
 		if preset.has(key):
@@ -133,6 +142,10 @@ static func apply_to_enemy(enemy: CharacterBody2D, archetype: Archetype) -> void
 		_apply_silhouette(visual, archetype)
 
 	_apply_accent(enemy, visual, preset, archetype)
+
+	var collision := enemy.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if collision != null and collision.shape is CircleShape2D and preset.has("body_collision_radius"):
+		(collision.shape as CircleShape2D).radius = preset["body_collision_radius"]
 
 
 static func _apply_silhouette(visual: Polygon2D, archetype: Archetype) -> void:

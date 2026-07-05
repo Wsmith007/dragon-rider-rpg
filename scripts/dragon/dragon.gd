@@ -1,6 +1,8 @@
 extends CharacterBody2D
 ## Dragon actor: follow, wait, alert, defensive protection, and cooperative assist.
 
+const CharacterWallRecovery = preload("res://scripts/combat/character_wall_recovery.gd")
+const DragonNavigationRecovery = preload("res://scripts/dragon/dragon_navigation_recovery.gd")
 
 signal behavior_changed(mode_name: String)
 signal state_changed(state: DragonState.State)
@@ -26,16 +28,20 @@ enum MovementOwner { NORMAL, HESITATION, STRIKE }
 
 var state: DragonState.State = DragonState.State.FOLLOWING
 var _movement_owner: MovementOwner = MovementOwner.NORMAL
+var _navigation := DragonNavigationRecovery.new()
 
 var _follow_target: Node2D
 var _player_engagement: PlayerEngagement
 var _reposition_cooldown: float = 0.0
 var _last_reported_state: DragonState.State = DragonState.State.FOLLOWING
 var _base_modulate: Color = Color.WHITE
+var _nav_debug_enabled: bool = false
+var _nav_debug_timer: float = 0.0
 
 
 func _ready() -> void:
 	add_to_group("dragon")
+	collision_mask = 1
 	_base_modulate = _visual.modulate
 	follow_behavior.setup(self)
 	_schedule_next_reposition_check()
@@ -92,9 +98,23 @@ func handle_command_toggle() -> void:
 	command_behavior.request_toggle(global_position)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode == KEY_F12:
+		_nav_debug_enabled = not _nav_debug_enabled
+		print("[DEBUG] Dragon navigation: %s (F12)" % ("ON" if _nav_debug_enabled else "OFF"))
+		get_viewport().set_input_as_handled()
+
+
 func _on_command_wait_applied(_wait_pos: Vector2) -> void:
 	state = DragonState.State.WAITING
 	follow_behavior.enter_waiting(command_behavior.wait_position)
+	_navigation.reset()
+	_navigation.set_recovery_enabled(false)
 	_emit_state_if_changed()
 
 
@@ -103,6 +123,8 @@ func _on_command_recall_applied() -> void:
 	cooperation_behavior.cancel_cooperative_assist("command_recall")
 	follow_behavior.exit_waiting()
 	follow_behavior.exit_alert()
+	_navigation.reset()
+	_navigation.set_recovery_enabled(true)
 	threat_behavior.evaluate()
 	_set_following_state()
 	_emit_state_if_changed()
@@ -128,10 +150,26 @@ func _physics_process(delta: float) -> void:
 			_process_normal_frame(delta)
 
 	_reset_hesitation_visuals_if_idle()
+
+	var nav_goal := _get_navigation_goal()
+	var nav_max_speed := _get_navigation_max_speed()
+	_navigation.set_recovery_enabled(_is_navigation_recovery_enabled())
+	velocity = _navigation.adjust_velocity(self, velocity, nav_goal, nav_max_speed, delta)
+
+	var pre_move := global_position
 	move_and_slide()
+	_navigation.after_move(
+		self, pre_move, global_position, velocity, nav_goal, _get_rider_position(), nav_max_speed, delta
+	)
 
 	if _movement_owner == MovementOwner.NORMAL:
 		_apply_post_move_separation()
+
+	if _nav_debug_enabled:
+		_nav_debug_timer += delta
+		if _nav_debug_timer >= 0.5:
+			_nav_debug_timer = 0.0
+			print("[DRAGON NAV] ", _navigation.get_debug_summary(self, _get_navigation_goal()))
 
 	_update_facing()
 	_update_visual_modulate()
@@ -380,6 +418,33 @@ func _get_rider_position() -> Vector2:
 	return global_position
 
 
+func _get_navigation_goal() -> Vector2:
+	if _movement_owner == MovementOwner.STRIKE:
+		if strike_behavior.is_returning():
+			return strike_behavior.get_return_point()
+		var strike_target := strike_behavior.get_target()
+		if strike_target != null and is_instance_valid(strike_target):
+			return strike_target.global_position
+		return follow_behavior.get_movement_goal()
+	return follow_behavior.get_movement_goal()
+
+
+func _get_navigation_max_speed() -> float:
+	if _movement_owner == MovementOwner.STRIKE:
+		return maxf(strike_behavior.return_speed, strike_behavior.approach_speed)
+	return follow_behavior.get_follow_max_speed()
+
+
+func _is_navigation_recovery_enabled() -> bool:
+	if command_behavior.is_waiting:
+		return false
+	if follow_behavior.mode == DragonFollowBehavior.Mode.WAIT:
+		return false
+	if _movement_owner == MovementOwner.STRIKE:
+		return false
+	return _movement_owner == MovementOwner.NORMAL
+
+
 func _update_facing() -> void:
 	var look_target: Vector2
 
@@ -544,4 +609,4 @@ func _apply_post_move_separation() -> void:
 		var offset := global_position - enemy.global_position
 		var distance := offset.length()
 		if distance < SEPARATION_RADIUS and distance > 0.001:
-			global_position += offset.normalized() * NUDGE
+			CharacterWallRecovery.nudge_with_collision(self, offset.normalized(), NUDGE)

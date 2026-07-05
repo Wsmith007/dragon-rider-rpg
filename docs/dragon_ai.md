@@ -378,6 +378,54 @@ Advanced systems should be postponed until the core relationship works successfu
 
 ---
 
+# Navigation Stability (Vertical Slice)
+
+**Status: IMPLEMENTED (v4 direct follow + rare catch-up) — playtest validation pending**
+
+## Why direct follow failed in the graybox
+
+The layout uses walls, pinch gates, and grove wings. The dragon steers at **`FollowAnchor`**. With a wall between dragon and rider, it pushes into geometry — there is no obstacle navigation.
+
+## Breadcrumb follow — disabled
+
+**v3 breadcrumb following was reverted.** It caused worse behavior when the dragon was already close:
+
+| Problem | Cause |
+|---------|--------|
+| **Back-and-forth near corners** | Line-of-sight blocked → lock old trail point → player turns corner → dragon routes to stale crumb while player is nearby |
+| **Premature path mode** | ~0.30 s LOS block triggered breadcrumbs even at **close range** |
+| **Still stuck** | Trail points did not guarantee valid detours in tight geometry |
+
+`PlayerPathBreadcrumbs` recording is **off**; follow goal override removed.
+
+## Current behavior (v4)
+
+**Default:** direct follow + `move_and_slide` (Godot wall slide). **No** breadcrumbs, side-step, or per-frame detour steering.
+
+| Condition | Behavior |
+|-----------|----------|
+| **Within 140 px of anchor** | Recovery **never** runs — pure direct follow |
+| **≥155 px + stuck ~1.25 s** | Faster direct catch-up velocity (~265 px/s) |
+| **Still stuck ~2.75 s + far** | **Rare teleport** to clear spot near anchor (6 s cooldown) |
+| **Q wait** | All recovery **off** — hold position |
+| **Assist / protection** | Strike movement only; no catch-up during strike |
+
+Debug: **F12** — `mode`, distance, stuck timer.
+
+## Level design (vertical slice)
+
+Until proper pathfinding exists:
+
+- Keep passages **wide enough** for the dragon body (~32 px radius)
+- Avoid tight companion traps behind single-tile corners
+- Catch-up / teleport is a **safety net**, not primary navigation
+
+## Future work
+
+Proper navigation / navmesh when level complexity increases beyond graybox companion following.
+
+---
+
 # Long-Term AI Goals
 
 Future AI systems may include:

@@ -123,6 +123,8 @@ func apply_weapon_profile(profile_id: WeaponProfilePrototype.Id) -> void:
 	soft_assist_range = data["soft_assist_range"]
 	soft_assist_half_angle_deg = data["soft_assist_half_angle_deg"]
 	soft_assist_strength = data["soft_assist_strength"]
+	if _player != null and _player.has_method("set_weapon_move_multiplier"):
+		_player.set_weapon_move_multiplier(float(data.get("move_speed_multiplier", 1.0)))
 
 	crowd_control_damage = data["crowd_control_damage"]
 	crowd_control_knockback = data["crowd_control_knockback"]
@@ -190,9 +192,9 @@ func get_likely_focused_target() -> Node2D:
 
 func _perform_focused_attack() -> void:
 	_attack_active = true
-	_focused_cooldown_remaining = focused_cooldown
 	_hit_targets.clear()
 	attack_started.emit()
+	_lock_attack_facing()
 
 	var windup_facing := _get_facing_direction()
 	if _telegraph != null and windup_facing.length_squared() > 0.01:
@@ -218,7 +220,9 @@ func _perform_focused_attack() -> void:
 	await get_tree().create_timer(focused_recovery).timeout
 
 	_reset_player_move_multiplier()
+	_focused_cooldown_remaining = focused_cooldown
 	_attack_active = false
+	_unlock_attack_facing()
 
 
 func _perform_crowd_control_attack() -> void:
@@ -226,6 +230,7 @@ func _perform_crowd_control_attack() -> void:
 	_crowd_control_cooldown_remaining = crowd_control_cooldown
 	_hit_targets.clear()
 	attack_started.emit()
+	_lock_attack_facing()
 
 	if _telegraph != null:
 		_telegraph.begin_cc_windup(crowd_control_radius)
@@ -248,6 +253,7 @@ func _perform_crowd_control_attack() -> void:
 
 	_reset_player_move_multiplier()
 	_attack_active = false
+	_unlock_attack_facing()
 
 
 func _show_focused_impact_telegraph(base_facing: Vector2, hit_positions: Array[Vector2]) -> void:
@@ -318,7 +324,16 @@ func _gather_focused_candidates(origin: Vector2, base_facing: Vector2) -> Array[
 
 		var offset := enemy.global_position - origin
 		var distance := offset.length()
-		if distance > focused_range or distance < 0.001:
+		if distance > focused_range:
+			continue
+
+		if distance < 0.001:
+			candidates.append({
+				"enemy": enemy,
+				"angle": 0.0,
+				"strict_angle": 0.0,
+				"distance": 0.0,
+			})
 			continue
 
 		var angle := absf(facing.angle_to(offset))
@@ -361,7 +376,11 @@ func _get_soft_assisted_facing(origin: Vector2, base_facing: Vector2) -> Vector2
 
 		var offset := enemy.global_position - origin
 		var distance := offset.length()
-		if distance > soft_assist_range or distance < 0.001:
+		if distance > soft_assist_range:
+			continue
+		if distance < 0.001:
+			best_angle = 0.0
+			best_enemy = enemy
 			continue
 
 		var angle := absf(base_facing.angle_to(offset))
@@ -417,8 +436,14 @@ func _try_damage(
 		return false
 
 	var feedback := target.get_node_or_null("CombatVisualFeedback") as CombatVisualFeedback
+	var hit_knockback := knockback_distance
+	var hit_stagger := stagger_duration
+	if target.has_method("scale_incoming_player_hit"):
+		var scaled: Vector2 = target.scale_incoming_player_hit(knockback_distance, stagger_duration)
+		hit_knockback = scaled.x
+		hit_stagger = scaled.y
 	if feedback != null:
-		feedback.override_next_hit_reaction(knockback_distance, stagger_duration)
+		feedback.override_next_hit_reaction(hit_knockback, hit_stagger)
 		feedback.queue_player_hit_confirm()
 
 	_hit_targets.append(target)
@@ -447,6 +472,16 @@ func _set_player_move_multiplier(multiplier: float) -> void:
 func _reset_player_move_multiplier() -> void:
 	if _player != null and _player.has_method("reset_attack_move_speed_multiplier"):
 		_player.reset_attack_move_speed_multiplier()
+
+
+func _lock_attack_facing() -> void:
+	if _player != null and _player.has_method("lock_attack_facing"):
+		_player.lock_attack_facing(_get_facing_direction())
+
+
+func _unlock_attack_facing() -> void:
+	if _player != null and _player.has_method("unlock_attack_facing"):
+		_player.unlock_attack_facing()
 
 
 func _is_valid_enemy(target: Node2D) -> bool:

@@ -15,9 +15,11 @@ This document is the **pass-by-pass journal** and design notebook. For a single 
 
 **Vertical Slice Level Pass 2 (2026-05-29):** Connected route — **complete.** See [Vertical Slice Level Pass 2](#vertical-slice-level-pass-2).
 
-**Enemy Archetype Prototype Pass 1 (2026-05-29):** Scout / Raider / Brute behavioral roles — see [Enemy Archetype Prototype Pass 1](#enemy-archetype-prototype-pass-1). **Implemented — playtest pending.**
+**Enemy Archetype Prototype Pass 1 (2026-05-29):** Scout / Raider / Brute behavioral roles — see [Enemy Archetype Prototype Pass 1](#enemy-archetype-prototype-pass-1). **Pass 1B complete** — see [Pass 1B](#enemy-archetype-prototype-pass-1b).
 
-**Combat Depth Pass 1 (2026-05-29):** Documented only — see [Combat Depth Pass 1](#combat-depth-pass-1). **Not implemented.**
+**Combat Depth Pass 1 Phase A (2026-05-29):** Movement foundation — **IMPLEMENTED** — see [Combat Depth Pass 1 Phase A](#combat-depth-pass-1-phase-a).
+
+**Combat Depth Pass 1 Phase B (2026-05-29):** Target Focus System — **IMPLEMENTED** — see [Combat Depth Pass 1 Phase B](#combat-depth-pass-1-phase-b).
 
 ---
 
@@ -146,104 +148,482 @@ Bond · Sync · Instability · relationship · encounter tracking · dragon rela
 
 ---
 
-## Combat Depth Pass 1
+## Enemy Archetype Prototype Pass 1B
 
-**Status: DOCUMENTED ONLY — NOT IMPLEMENTED**
+**Status: IMPLEMENTED — playtest validation pending**
+
+**Purpose:** Improve combat readability and reduce attack-spam dominance. Combat should feel like two opponents **committing to actions**, not repeatedly cancelling each other. Pass 1B adds **player-side timing** and **point-blank Brute fixes** on top of enemy commitment tuning from Pass 1.
+
+**Design philosophy:** Scout controls **tempo** · Raider controls **combat** · Brute controls **space**.
+
+### Player attack wind-up (Pass 1B)
+
+Focused attacks already used a wind-up → impact → recovery pipeline (`player_melee_attack.gd` awaits `focused_windup` before `_apply_focused_hits()`). Pass 1B **slightly lengthens** per-weapon wind-ups so damage/knockback still land **after** the telegraph, not on button press:
+
+| Weapon | Wind-up (was → now) | Notes |
+|--------|---------------------|-------|
+| **Dagger** | 0.06 s → **0.09 s** | Still fastest; minimal commit |
+| **Sword** | 0.11 s → **0.14 s** | Default slice weapon; knockback 25 → **21** |
+| **Polearm** | 0.15 s → **0.18 s** | Longest reach, longest commit |
+
+Wind-up still slows movement via `focused_windup_move_speed`; recovery unchanged in feel. Goal: responsive but not instant repeated control.
+
+### Normal attack control tuning (Pass 1B)
+
+Repeated focused hits no longer **always** fully suppress Raiders:
+
+| Rule | Behavior |
+|------|----------|
+| **`scale_incoming_player_hit()`** | Archetype-aware knockback scaling before hit reaction |
+| **Raider pre-commit** | Focused knockback × **0.78** |
+| **Raider knockback immunity** | **0.20 s** window after a knockback; further hits × **0.38** knockback |
+| **Raider committed** | Knockback × **0.12** — swing finishes |
+| **Brute** | Normal focused knockback largely ignored (`≤26 px → 0`; else × **0.35**); committed × **0.08** |
+| **Scout** | Unchanged — easy to interrupt (no commit) |
+
+Stagger/interrupt logic remains in `apply_hit_reaction()` (Pass 1B enemy-side). Knockback stacking reduced via state, not RNG.
+
+### Attack commitment (enemy-side)
+
+Once an enemy passes **`attack_commit_ratio`** through its wind-up (or enters **LUNGE**), the swing is **committed** — it plays to completion unless the enemy dies.
+
+| Phase | Meaning |
+|-------|---------|
+| **Pre-commit wind-up** | Vulnerable to full interrupt + stagger |
+| **Post-commit wind-up / lunge** | Swing finishes; stagger freeze skipped |
+
+No random chance — commitment is purely timing/state based.
+
+### Interruption by archetype
+
+| Archetype | When struck | Commit threshold | Stagger on hit |
+|-----------|-------------|------------------|----------------|
+| **Scout** | Always interruptible | Never commits (always cancellable) | **1.35×** — fragile, frequently staggered |
+| **Raider** | Interruptible **before** 40% wind-up | 40% of 0.45 s (~0.18 s) | **1.0×** baseline; **0.18×** during committed swing |
+| **Brute** | Interruptible **before** 28% wind-up | 28% of 0.72 s (~0.20 s) | **0.55×** pre-commit; **immune** during committed swing |
+
+**Raider player read:** *"I interrupted him before he committed."* — not luck.
+
+**Brute player read:** Point-blank spam no longer permacancels — committed swings finish; **0.47 s** player stagger (knockback unchanged at 32 px).
+
+### Brute point-blank overlap / freeze fix (Pass 1B)
+
+| Issue | Root cause | Fix |
+|-------|------------|-----|
+| **Player embeds in Brute** | Both bodies used **14 px** radius; Brute visual is 1.55× but collision was not | Brute **`body_collision_radius` 22 px** via preset |
+| **Brute lunge away from player** | Zero-distance `direction_to` failed → lunge defaulted to `Vector2.RIGHT` | **`_direction_to_player()`** falls back to facing when positions overlap |
+| **Brute stops attacking** | Pre-commit cancels + stagger blocked wind-up; overlap broke range checks | Commitment + overlap-aware **`_is_player_in_attack_range()`** / **`_is_in_attack_range()`** |
+| **Player spam hits miss at overlap** | `_gather_focused_candidates` skipped `distance < 0.001` | Point-blank enemies always valid focused targets |
+| **Bodies slide together** | Knockback used raw `global_position +=` | **Collision-aware knockback** (`move_and_collide`) on enemy + player separation pass |
+| **Lunge at overlap** | Forward lunge pushed bodies apart unpredictably | Skip lunge translation when already overlapping; still resolve hit |
+
+**Separation:** Player `_resolve_enemy_body_overlap()` after `move_and_slide()`; enemy `_resolve_player_body_overlap()` when not attacking (Brute nudges less — holds ground).
+
+### Root cause fixes (playtest — earlier Pass 1B)
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| **Raider stun-lock** | Every player hit applied 0.3 s stagger + `_cancel_attack()` — faster than Raider wind-up | Commitment window; committed swings ignore stagger freeze; reduced knockback stacking |
+| **Brute stops at point-blank** | Same cancel + stagger blocked `_process_attack_phase` every frame | Brute commits early; committed phase ignores stagger freeze and cancel; overlap/range fixes above |
+
+### Implementation
+
+- `weapon_profile_prototype.gd` — focused wind-up bumps; sword knockback 21  
+- `player_melee_attack.gd` — calls `scale_incoming_player_hit()`; point-blank hit detection  
+- `player.gd` — `_resolve_enemy_body_overlap()`  
+- `enemy.gd` — `_is_attack_committed()`, archetype-aware `apply_hit_reaction()`, `scale_incoming_player_hit()`, overlap/range helpers, collision-aware knockback  
+- `vertical_slice_archetype_presets.gd` — `attack_commit_ratio`, `hit_stagger_multiplier`, Brute `player_hit_stagger` 0.47, `body_collision_radius` 22  
+
+### Playtest questions (Pass 1B → Combat Depth Pass 1)
+
+1. Can Raiders ** reliably attack** in 1v1 without feeling stun-locked?  
+2. Does interrupting a Raider **before** commit feel intentional and fair?  
+3. Does the Brute **finish swings** at point-blank while still being punishable pre-commit?  
+4. Does Brute stagger feel **dangerous** but not unfair (~0.47 s)?  
+5. Does the Scout still feel **agile and precision-rewarding** when staggered more easily?  
+6. Does combat feel like **timing and commitment** — not attack-button suppression?  
+7. Does **slight player wind-up** feel responsive but stop spam dominance?  
+8. Can the player **not** clip inside the Brute while holding forward + attacking?
+
+### Remaining combat-depth concerns (post Pass 1B)
+
+- No poise meter UI — commitment is inferred from telegraph timing  
+- CC still strong vs Scouts/Raiders — intentional but may need tiering later  
+- Multi-enemy slot steering untested with new knockback immunity  
+- Weapon stance / shield / dragon systems still out of scope  
+- Brute may need a dedicated point-blank attack anim (currently same lunge, translation skipped at overlap)
+
+### Future work (not Pass 1B)
+
+- Full poise / stats system  
+- Brute heavy attacks and dragon combo counters  
+- Weapon-specific interrupt tiers  
+
+---
+
+## Combat / Navigation Stability Pass
+
+**Status: IMPLEMENTED — playtest validation pending**
+
+**Purpose:** Fix three playtest blockers — attack spam still too fast, dragon/enemies stuck on walls, Brute point-blank embed/freeze.
+
+### 1. Player attack spam tuning
+
+**Pipeline unchanged:** wind-up → impact (`_apply_focused_hits`) → optional hit-stop → recovery → **then** cooldown starts. Cooldown no longer begins at button press, so mashing Space during recovery does not queue early hits.
+
+**Timing per weapon (Stability Pass):**
+
+| Weapon | Wind-up | Recovery | Post-recovery cooldown | ~Min cycle* | Identity |
+|--------|---------|----------|------------------------|-------------|----------|
+| **Dagger** | 0.10 s | 0.14 s | 0.36 s | **~0.60 s** | Fastest |
+| **Sword** | 0.15 s | 0.20 s | 0.52 s | **~0.87 s** | Medium |
+| **Polearm** | 0.20 s | 0.28 s | 0.82 s | **~1.30 s** | Slowest / strongest control |
+
+\*Excludes hit-stop (~0.028 s). Damage/knockback still only at impact after wind-up. `_attack_active` blocks overlapping attack coroutines.
+
+**Previous (Pass 1B) → Stability:** dagger cycle ~0.24 s → ~0.60 s; sword ~0.38 s → ~0.87 s; polearm ~0.68 s → ~1.30 s.
+
+### 2. Wall stuck / navigation
+
+**Root causes:**
+
+| Actor | Cause |
+|-------|--------|
+| **Enemies** | Velocity steered straight into wall corners; `move_and_slide` returned near-zero displacement with no fallback |
+| **Dragon** | Follow/alert velocity into geometry; post-move enemy separation used `global_position +=` (could push into walls) |
+| **Dragon assist/protection** | Strike approach reused blocked paths; no recovery after slide failure |
+
+**Fixes (lightweight — no pathfinding):**
+
+- New `CharacterWallRecovery` — wall slide from last collision normal, stuck timer (~0.34 s), tangent unstick fallback  
+- **Enemies** — all chase/engage movement via `move_with_recovery()`  
+- **Dragon** — single collision-aware move pass + stuck timer; separation nudges use `move_and_collide`  
+- **Dragon follow** — `DragonEnemyAvoidance` reads prior-frame slide collision to bias velocity along walls toward goal  
+- Explicit `collision_mask = 1` (walls) on dragon `_ready()`
+
+### 3. Brute point-blank overlap / freeze (Stability Pass)
+
+**Root cause (embed):** When player/enemy centers overlapped, `_resolve_enemy_body_overlap()` used **`get_facing_direction()`** as push vector — i.e. **toward** the Brute while the player held forward. `global_position +=` bypassed collision and caused embedding past the silhouette border.
+
+**Fixes:**
+
+| Fix | Detail |
+|-----|--------|
+| **Push direction** | Always push **away** from enemy center; if overlap, use **`-facing`** (backward from movement intent) |
+| **Collision-aware separation** | Player + enemy overlap uses `CharacterWallRecovery.nudge_with_collision()` — no raw teleports |
+| **Brute holds ground** | Brute nudges self less during attacks; player receives full separation push |
+| **Attack during overlap** | Brute pre-commit hits at point-blank apply micro-stagger only — **do not cancel** wind-up (committed logic unchanged) |
+| **Range / LOS** | Overlap bypasses strict LOS block; `_is_in_attack_range()` used for engage state transitions |
+
+### Implementation
+
+- `weapon_profile_prototype.gd` — cooldown/recovery/wind-up bumps  
+- `player_melee_attack.gd` — cooldown starts after recovery  
+- `character_wall_recovery.gd` — shared wall slide + stuck recovery  
+- `enemy.gd`, `dragon.gd`, `dragon_enemy_avoidance.gd`, `player.gd` — navigation + overlap fixes  
+
+### Remaining limitations
+
+- No full navmesh — extreme concave corners may still slow actors briefly  
+- Brute uses same attack anim at overlap (translation skipped, hit still resolves)  
+- Dragon strike approach does not yet run full wall-recovery (follow/return paths do)  
+
+### Playtest checklist
+
+1. Dagger still feels fastest; polearm clearly slowest  
+2. Raider 1v1 at The Crossing — enemy gets attack windows  
+3. Dragon follows through Quiet Grove / Hold gate passages without permanent stick  
+4. Brute at The Gate — hold forward + spam attack: no embed, Brute keeps swinging  
+5. Narrow wall corners — enemies slide around within ~0.35 s  
+
+---
+
+## Dragon Navigation Stability Pass
+
+**Status: v4 DIRECT FOLLOW — breadcrumbs disabled**
+
+See [`dragon_ai.md`](dragon_ai.md). Breadcrumb follow reverted (unstable near corners). Direct follow + rare catch-up/teleport when **far** and stuck. **F12** debug.
+
+---
+
+## Combat Depth Pass 1 Phase A
+
+**Status: IMPLEMENTED — playtest validation pending**
+
+**Purpose:** Improve player **control** during combat. Movement becomes another combat decision — where to stand, where to face, when to attack — without constantly turning to maintain pressure.
+
+Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
+
+**Scope:** Combat Stance · weapon movement identity · attack facing commitment · movement state polish · debug readouts.
+
+**Not in scope:** shields · blocking · stamina · dodge rolls · enemy rebalance.
+
+---
+
+### Combat Stance philosophy
+
+Combat Stance is a **general rider control mode** — not shield-specific. It is the long-term foundation for shields, bows, magic, spear bracing, and dragon combo abilities (future milestones).
+
+| Behavior | Detail |
+|----------|--------|
+| **Input** | **Hold Ctrl** (`combat_stance` action) — left or right Ctrl |
+| **Lock facing** | Current facing captured on press; held while Ctrl held |
+| **Strafe / backpedal** | World-space WASD (W north, S south, A west, D east); facing stays locked |
+| **Attack direction** | Focused/CC use locked stance facing or attack-locked facing |
+| **Release** | Returns to normal world-space movement; visual facing lerps smoothly |
+
+**Why Ctrl:** LMB/Space/J attack; Shift+Space is CC; Q is dragon command. Ctrl alone is unused — bond debug uses **Ctrl+number** combos only, so hold-Ctrl does not conflict.
+
+**Transitions:** Visual rotation uses angle lerp (`visual_facing_lerp_speed` ≈ 14) — no snap on enter/exit.
+
+---
+
+### Weapon movement identity (Phase A — live)
+
+Player **move speed** is now part of weapon identity on top of existing attack profiles:
+
+| Weapon | `move_speed_multiplier` | Effective speed (220 base) | Identity |
+|--------|-------------------------|----------------------------|----------|
+| **Dagger** | **1.14** | ~251 px/s | Fastest — precision, reposition |
+| **Sword** | **1.00** | 220 px/s | Baseline — sustained DPS default |
+| **Polearm** | **0.84** | ~185 px/s | Slowest — control, reach tradeoff |
+
+Applied via `WeaponProfilePrototype` → `Player.set_weapon_move_multiplier()`. Attack wind-up/recovery slowdowns stack multiplicatively.
+
+---
+
+### Movement state design
+
+Explicit states in `player.gd`:
+
+| State | When | Facing source |
+|-------|------|---------------|
+| **Running** | Default locomotion | Velocity direction when moving; last facing when idle |
+| **Combat Stance** | Ctrl held | Locked stance facing |
+| **Attacking** | Focused/CC wind-up → recovery | Locked at attack start |
+| **Staggered** | Enemy hit reaction | Frozen — no move |
+| **Dead** | HP depleted | Frozen |
+
+Priority: Dead → Staggered → Attacking → Combat Stance → Running.
+
+---
+
+### Attack commitment (Phase A)
+
+Pass 6 established wind-up / impact / recovery. Phase A adds **facing commitment**:
+
+- On attack start, `lock_attack_facing()` captures current combat facing
+- Facing **does not** follow velocity during the full attack sequence
+- Prevents instant 180° rotation mid-swing while keeping attacks responsive
+- Unlock on attack completion or knockback stagger
+- Works with Combat Stance — stance facing feeds attack lock if attacking from stance
+
+Wind-up/recovery move slowdowns unchanged per weapon profile.
+
+---
+
+### Future shield foundation
+
+Combat Stance is intentionally **not** named or tied to shield equipment. Future Phase B+ can add:
+
+- Shield raise/block while stance held
+- Stamina or poise costs
+- Stance-specific animations
+
+Phase A proves the movement/facing layer first.
+
+---
+
+### Debug UI (Phase A)
+
+`BondTestHelpUI` — **Movement (live)** section:
+
+- Current movement state
+- Facing (compass label)
+- Combat stance on/off
+- Total move speed modifier (weapon × attack phase)
+
+Help text: `Hold Ctrl — Combat stance (locked facing)`.
+
+---
+
+### Implementation files
+
+| File | Role |
+|------|------|
+| `scripts/player/player.gd` | Movement states, stance, facing lock, weapon speed, visual lerp |
+| `scripts/player/player_melee_attack.gd` | Attack facing lock/unlock; weapon speed on profile apply |
+| `scripts/combat/weapon_profile_prototype.gd` | `move_speed_multiplier` per weapon |
+| `project.godot` | `combat_stance` → Ctrl (left + right) |
+| `scripts/ui/bond_test_help_ui.gd` | Live movement debug readouts |
+| `scenes/ui/BondTestHelpUI.tscn` | Movement section layout |
+
+---
+
+### Playtest questions (Phase A → Phase B)
+
+1. Does Combat Stance feel **natural** for maintaining pressure without orbit-spinning?
+2. Can you **strafe and backpedal** while keeping attacks aimed correctly?
+3. Do weapon move speeds feel **noticeably different** without frustration?
+4. Does attack facing lock stop **mid-swing 180° snaps** without sluggishness?
+5. Are stance enter/exit transitions **smooth** (no jitter)?
+6. Does polearm slowness reinforce **control/reach** identity?
+7. Does dagger speed reinforce **precision/reposition** identity?
+8. Is Ctrl comfortable alongside movement and attacks?
+
+### Intentionally not modified
+
+Bond · Sync · Instability · relationship · encounter tracking · dragon AI · enemy tuning · shields · blocking · stamina · dodge · weapon profiles · damage values.
+
+---
+
+## Combat Depth Pass 1 Phase B
+
+**Status: IMPLEMENTED — playtest validation pending**
+
+**Purpose:** Ocarina-of-Time-style **Target Focus** — maintain player intent to face a chosen enemy while moving. **Not** Souls-style lock-on or auto-combat.
+
+> *"I want to keep facing this enemy while I move."*
+
+---
+
+### Target Focus philosophy
+
+| Concept | Detail |
+|---------|--------|
+| **What it is** | Facing lock toward a **player-chosen** enemy |
+| **What it is not** | Camera lock, auto-attack, hit guarantee, movement assist |
+| **Zelda / OoT model** | You orbit and approach/retreat naturally because facing tracks the target |
+| **Souls lock-on** | **Not implemented** — no camera orbit, no attack snap-through |
+
+Target Focus controls **facing only**. Attacks remain **physical** — cone, range, weapon profile, enemy positions determine hits.
+
+---
+
+### Keyboard controls
+
+| Input | Action |
+|-------|--------|
+| **Caps Lock** | Toggle focus — acquire best target if none; clear if focused |
+| **Tab** | Next valid target (while focus active) |
+| **Shift + Tab** | Previous valid target (while focus active) |
+
+No mouse buttons. Input actions: `target_focus_toggle`, `target_focus_next`, `target_focus_prev`.
+
+---
+
+### Target acquisition
+
+On Caps Lock with **no** current focus:
+
+1. Gather alive enemies within **320 px**
+2. Score by: in-front preference (±75°), centered angle, distance
+3. Lock best candidate
+
+If none valid: no-op (optional debug log).
+
+---
+
+### Target cycling
+
+While focus active:
+
+- Valid enemies sorted by **world angle** around player (stable order)
+- Tab / Shift+Tab wrap forward/back
+- Single enemy: Tab keeps same target
+
+---
+
+### Auto-unlock and auto-retarget
+
+Focus **clears** when:
+
+- Player toggles **Caps Lock** off (manual — no auto-acquire afterward)
+- No valid enemies remain within range after a retarget attempt
+- Player **dies**
+
+Focus **auto-retargets** to the **nearest valid enemy** within range when:
+
+- Focused enemy **dies**
+- Focused enemy **despawns** or becomes invalid
+- Focused enemy moves **beyond 320 px** (nearest replacement if any)
+
+Manual Caps Lock off sets `_focus_enabled = false` — death handlers will not re-acquire until the player toggles focus on again.
+
+Initial Caps Lock acquire still prefers enemies **in front**; auto-retarget on kill uses **nearest distance** only.
+
+Focus does **not** clear when: blocker in the way, miss, dragon hits elsewhere, player takes damage.
+
+---
+
+### Combat Stance interaction
+
+| System | Role |
+|--------|------|
+| **Combat Stance (Ctrl)** | Lock facing to a **direction** |
+| **Target Focus** | Lock facing to an **enemy** |
+
+**When both active:** Target Focus **wins** for facing (tracks enemy continuously). Combat Stance still applies for movement input semantics; no jitter — single facing authority with priority: **Attack lock > Target Focus > Combat Stance > velocity**.
+
+---
+
+### Target preview vs Target Focus
+
+| Visual | Meaning |
+|--------|---------|
+| **Cyan ring** (Pass 7 preview) | Likely hit if you attack **now** (cone logic) |
+| **Bright blue ring** (Phase B) | Enemy **you chose** to face |
+
+F11 debug: **yellow** line = likely preview target; **blue** line = focused target.
+
+Telegraphs face locked target while focus active; hit query unchanged.
+
+---
+
+### Future integrations (not implemented)
+
+- Shield facing toward focused enemy
+- Dragon command target
+- Magic / bow aiming reticle
+
+---
+
+### Implementation files
+
+| File | Role |
+|------|------|
+| `scripts/player/player_target_focus.gd` | Acquisition, cycling, validation, input |
+| `scripts/combat/combat_target_focus_indicator.gd` | Blue ring + marker |
+| `scripts/player/player.gd` | Facing priority, movement state |
+| `scenes/player/Player.tscn` | TargetFocus + indicator nodes |
+| `project.godot` | Input actions |
+| `scripts/combat/combat_attack_telegraph.gd` | F11 focus line |
+| `scripts/ui/bond_test_help_ui.gd` | Live focus readouts |
+
+---
+
+### Playtest questions (Phase B)
+
+1. Does Target Focus make it easier to keep attention on one enemy?
+2. Does movement around a focused enemy feel natural?
+3. Does it feel like help without becoming auto-combat?
+4. Do weapon arcs and positioning still matter?
+5. Does target cycling behave predictably?
+6. Does Combat Stance still have a separate useful role?
+7. Does Target Focus help against Brutes and Scouts?
+
+---
+
+## Combat Depth Pass 1 (overview)
+
+**Status: Phase A IMPLEMENTED · Phase B+ PLANNED**
 
 **Purpose:** Increase player **decision-making**. Combat should become less about repeatedly attacking and more about choosing the correct action — positioning, timing, spacing, and attack choice over attack spam.
 
 Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
 
-### Combat Stance
+Phase A (movement foundation) is documented above. Remaining Pass 1 scope (future phases):
 
-A **general rider control mode** — not shield-specific. Holding a **stance button**:
-
-| Behavior | Detail |
-|----------|--------|
-| **Lock facing** | Current facing direction fixed while stance is held |
-| **Strafe** | Move perpendicular to locked facing without turning |
-| **Backpedal** | Move backward relative to locked facing |
-| **Attack direction preserved** | Focused attacks use locked facing, not velocity-based facing |
-
-**Why:** Creates a foundation for future **shield gameplay** without tying stance to a shield item. Stance is the baseline “committed facing” mode for tactical movement.
-
-**Not in scope yet:** shield block, parry, stamina drain, animation poses.
-
-### Weapon movement identity
-
-Player **move speed** becomes part of weapon identity — noticeable but **not extreme**. Aligns with weapon profile tuning (dagger fast / sword baseline / polearm slow):
-
-| Weapon | Move speed | Combat identity |
-|--------|------------|-----------------|
-| **Dagger** | Fastest | Precision, fastest attacks, lowest sustained DPS |
-| **Sword** | Baseline | Highest sustained DPS, general default |
-| **Polearm** | Slowest | Strongest control, longest reach, medium DPS |
-
-Movement differences reinforce weapon choice beyond arc/reach/cooldown. **Not wired in code** — documented direction for Combat Depth Pass 1 implementation.
-
-### Attack commitment philosophy
-
-Pass 6 established wind-up / impact / recovery. Combat Depth Pass 1 extends the **design philosophy** (future tuning, not current scope):
-
-Combat should reward:
-
-- **Positioning** — where you stand relative to threats  
-- **Timing** — when to swing vs when to reposition  
-- **Spacing** — polearm/CC vs dagger close range  
-- **Correct attack choice** — focused vs CC, weapon-appropriate target  
-
-Attack spam should **not** be the dominant strategy.
-
-**Future systems may include** (documented direction only):
-
-- Longer recovery windows after whiffs or heavy swings  
-- Enemy **punish windows** during player recovery  
-- Stronger commitment on CC and polearm swings  
-- CC remains repositioning — not spammable DPS  
-
-Current prototype already slows movement during wind-up/recovery (Pass 6). Combat Depth adds **stance + weapon move speed** as additional decision layers.
-
-### Enemy archetype direction (Scout / Brute)
-
-Updates planned archetype **behavior goals** for Enemy Archetype Pass 1 — export presets exist; AI behaviors do not yet match these roles.
-
-#### Scout — Skirmisher / Guerrilla
-
-| | |
-|--|--|
-| **Role** | Skirmisher / guerrilla |
-| **Behavior goals** | Hit-and-run attacks; reposition frequently; circle and flank; pressure from **multiple angles**; avoid prolonged toe-to-toe combat |
-| **Player lesson** | Prioritize fast threats; use movement and dragon assist; dagger/sword precision |
-
-Creates **urgency** and positioning pressure — not raw damage.
-
-#### Brute — Control Check
-
-| | |
-|--|--|
-| **Role** | Control check |
-| **Behavior goals** | High knockback resistance → eventually **immune to normal knockback**; dangerous close-range attacks; future heavy attacks; future rider/dragon combo interactions; punish **poor positioning** rather than chase speed |
-| **Player lesson** | Spacing, CC, dragon protection, timing over aggression |
-
-Does not win by outrunning the player — wins when allowed to close.
-
-**Raider** remains the baseline reference (current default tuning).
-
-### Intentionally not implemented (Combat Depth Pass 1)
-
-- Combat Stance input / movement code  
-- Per-weapon move speed multipliers  
-- Extended recovery or enemy punish windows beyond current prototype  
-- Shield block / parry  
-- New Scout/Brute AI states (→ Enemy Archetype Pass 1)
-
-### Recommended implementation order
-
-1. **Enemy Archetype Prototype Pass 1** — validate level + enemy roles in playtest  
-2. **Combat Depth Pass 1** — stance + weapon movement identity  
-3. **Player Polish Pass** — audio, animation, HUD  
-
----
 
 ## Vertical Slice Level Pass 2
 
@@ -1355,6 +1735,8 @@ Leveling, equipment, magic systems, dragon health, Outcome Rating revision, enem
 | Weapon T1 | Identity refinement (sword DPS, polearm control) — **prototype** |
 | Pass 3 dir. | Weapon Identity Direction (dagger/sword/polearm) — design only |
 | **v1 checkpoint** | [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) — combat prototype SoT |
-| **Combat Depth P1** | Stance, movement identity, commitment philosophy, Scout/Brute — **documented only** |
-| **Archetype P1** | Scout DISENGAGE/orbit, Raider baseline, Brute RECOVER/knockback filter — **implemented** |
+| **Combat Depth P1A** | Combat Stance, weapon move speed, attack facing lock — **implemented** |
+| **Combat Depth P1B** | Target Focus System — **implemented** |
+| **Archetype P1** | Scout DISENGAGE/probe, Raider baseline, Brute RECOVER/knockback filter — **implemented** |
+| **Archetype P1B** | Attack commitment, interruption tuning, Brute stagger 0.47 s — **implemented** |
 | **Level P2.1** | Quiet Grove east wall + two south exits — layout complete |

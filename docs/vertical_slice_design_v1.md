@@ -543,9 +543,11 @@ Exact layout is implementation — beats are design requirements.
 ```
 1. Vertical Slice Level Prototype — Pass 2  ← COMPLETE (P2.1 grove fix)
            ↓
-2. Enemy Archetype Prototype — Pass 1     ← IN PROGRESS (implemented, playtest)
+2. Enemy Archetype Prototype — Pass 1     ← IMPLEMENTED (playtest)
            ↓
-3. Combat Depth — Pass 1                  ← documented, not implemented
+3. Combat Depth — Pass 1 Phase A          ← IMPLEMENTED (movement foundation)
+           ↓
+3b. Combat Depth — Pass 1 Phase B         ← IMPLEMENTED (target focus)
            ↓
    (then) Player Polish Pass — audio, animation, HUD
 ```
@@ -566,70 +568,74 @@ Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
 
 ---
 
-### Milestone 2 — Enemy Archetype Prototype Pass 1
+### Milestone 2 — Enemy Archetype Prototype Pass 1 + 1B
 
-**Status: IMPLEMENTED — playtest validation pending**
+**Status: IMPLEMENTED (Pass 1 + 1B) — playtest validation pending**
 
 **Purpose:** Create **gameplay roles**, not stronger reskins. Behavior defines the archetype; stats support behavior.
 
-| Archetype | Role | Pass 1 behavior |
-|-----------|------|-----------------|
-| **Scout** | Skirmisher | Orbit chase, strafe engage, hit-and-run **DISENGAGE** after each attack |
-| **Raider** | Baseline | Unchanged prototype loop — reference for balance |
-| **Brute** | Control check | Slow approach, long wind-up, **RECOVER** after strike, knockback-resistant |
+| Archetype | Role | Pass 1 behavior | Pass 1B (commitment) |
+|-----------|------|-----------------|----------------------|
+| **Scout** | Skirmisher | Probe bursts, hit-and-run disengage | Always interruptible; 1.35× stagger |
+| **Raider** | Baseline | Standard engage loop | Commits at 40% wind-up; no stun-lock |
+| **Brute** | Control check | Slow advance, long reach, KB-resistant | Commits at 28% wind-up; 0.47 s player stagger |
 
-Detail: [`combat_feel_notes.md`](combat_feel_notes.md) → Enemy Archetype Prototype Pass 1.
+**Pass 1B goals accomplished:** attack commitment windows, archetype interruption tuning, Raider 1v1 fairness, Brute point-blank reliability, improved Brute hit impact.
 
-**Not in scope:** full knockback immunity, heavy attacks, dragon combo attacks, species art.
+Detail: [`combat_feel_notes.md`](combat_feel_notes.md) → Pass 1 + Pass 1B.
+
+**Not in scope:** full poise system, heavy attacks, dragon combo attacks, species art.
 
 ---
 
 ### Milestone 3 — Combat Depth Pass 1
 
-**Status: PLANNED — DOCUMENTED ONLY · NOT IMPLEMENTED**
+**Status: PHASE A + B IMPLEMENTED — playtest validation pending · Phase C+ planned**
 
 **Purpose:** Increase player **decision-making** — combat becomes less about attack spam and more about choosing the correct action.
 
-Full design: [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1. Summary:
+Full design: [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1 Phase A.
 
-#### Combat Stance
+#### Phase A — Movement Foundation (live)
 
-Holding a **stance button** (not shield-specific):
+| Feature | Status |
+|---------|--------|
+| **Combat Stance** (hold Ctrl) | **Live** — lock facing, strafe, backpedal |
+| **Weapon movement identity** | **Live** — dagger 1.14× / sword 1.0× / polearm 0.84× |
+| **Attack facing commitment** | **Live** — facing locked for full attack sequence |
+| **Target Focus** (Caps Lock / Tab) | **Live** — OoT-style facing lock toward chosen enemy |
+| **Movement states** | **Live** — Running, Combat Stance, Target Focus, Attacking, Staggered, Dead |
+| **Debug readouts** | **Live** — BondTestHelpUI movement section |
+
+#### Combat Stance (Phase A)
+
+Holding **Ctrl** (`combat_stance`):
 
 | Behavior | Detail |
 |----------|--------|
 | **Lock facing** | Facing direction fixed while stance held |
-| **Strafe / backpedal** | Move perpendicular or backward without turning |
-| **Attack direction preserved** | Focused attacks use locked facing, not velocity facing |
+| **Strafe / backpedal** | World-space WASD; facing locked while Ctrl held |
+| **Attack direction preserved** | Focused/CC use locked facing |
 
 Foundation for future **shield gameplay** — stance is general-purpose rider control, not a shield-only mode.
 
-#### Weapon movement identity
+#### Weapon movement identity (Phase A — live)
 
-Player **move speed** becomes part of weapon identity (noticeable, not extreme):
-
-| Weapon | Movement | Combat identity |
-|--------|----------|-----------------|
-| **Dagger** | Fastest | Precision, fastest attacks |
-| **Sword** | Baseline | Highest sustained DPS, general default |
-| **Polearm** | Slowest | Strongest control, longest reach |
-
-Aligns with [`combat_feel_notes.md`](combat_feel_notes.md) Weapon Profile Tuning Pass 1 values — movement layer not yet wired.
+| Weapon | Move multiplier | Combat identity |
+|--------|-----------------|-----------------|
+| **Dagger** | **1.14×** | Fastest movement, precision |
+| **Sword** | **1.00×** | Baseline, highest sustained DPS |
+| **Polearm** | **0.84×** | Slowest, strongest control |
 
 #### Attack commitment philosophy
 
-Combat should reward **positioning, timing, spacing, and correct attack choice** — not repeated attack presses.
+Combat rewards **positioning, timing, spacing, and correct attack choice**. Phase A adds facing lock during attacks; Phase B+ may add extended recovery punish windows.
 
-Documented direction (future tuning, not Pass 2 scope):
+**Phase B — Target Focus (live):** Caps Lock toggles facing toward a chosen enemy; Tab cycles targets. Facing-only — not lock-on combat. See [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1 Phase B.
 
-- Longer recovery windows after whiffs or heavy swings  
-- Enemy **punish windows** during player recovery  
-- Stronger **commitment** on CC and polearm swings  
-- CC remains repositioning — not spammable DPS  
+**Phase C+ (not yet):** shield block · enemy punish windows · extended recovery tuning.
 
-Current Combat Feel v1 already has wind-up/recovery (Pass 6); Combat Depth Pass 1 extends **movement + stance + weapon speed** as decision layers.
-
-**Does not ship** until after Enemy Archetype Pass 1 validates level + enemy roles.
+**Does not ship** full Pass 1 until playtest validates control + focus feel.
 
 ---
 
@@ -755,7 +761,7 @@ Story, factions, races, politics
 
 ### Slice readiness
 
-**Level Pass 2 complete** — **Enemy Archetype Pass 1 implemented**; playtest before Combat Depth Pass 1.
+**Level Pass 2 complete** — **Enemy Archetype Pass 1 + 1B implemented** — **Combat Depth Pass 1 Phase A + B live**; playtest before Phase C.
 
 ---
 
@@ -769,3 +775,6 @@ Story, factions, races, politics
 | **v1.3** | 2026-05-29 | Roadmap: Level Pass 2, Enemy Archetype Pass 1, Combat Depth Pass 1 |
 | **v1.4** | 2026-05-29 | Level P2.1 complete; Combat Depth Pass 1 expanded; Scout/Brute behavior goals |
 | **v1.5** | 2026-05-29 | Enemy Archetype Pass 1 implemented — Scout/Raider/Brute behaviors |
+| **v1.6** | 2026-05-29 | Enemy Archetype Pass 1B — attack commitment & interruption tuning |
+| **v1.7** | 2026-05-29 | Combat Depth Pass 1 Phase A — movement foundation |
+| **v1.8** | 2026-05-29 | Combat Depth Pass 1 Phase B — Target Focus System |

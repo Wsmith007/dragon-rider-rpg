@@ -1,6 +1,8 @@
 extends CharacterBody2D
 ## Enemy AI with slice archetype behaviors: Scout (skirmish), Raider (baseline), Brute (control check).
 
+const CharacterWallRecovery = preload("res://scripts/combat/character_wall_recovery.gd")
+
 signal player_detected
 signal player_lost
 signal attacked_player
@@ -38,6 +40,11 @@ enum AttackPhase { NONE, WINDUP, LUNGE }
 @export var post_attack_recovery: float = 0.0
 @export var post_attack_cooldown_bonus: float = 0.0
 
+## Pass 1B — wind-up progress (0–1) after which the current swing cannot be cancelled.
+@export var attack_commit_ratio: float = 0.45
+## Pass 1B — multiplier applied to incoming hit stagger (Scout > 1, Brute < 1).
+@export var hit_stagger_multiplier: float = 1.0
+
 @onready var _health: Health = $Health
 @onready var _visual: Polygon2D = $Visual
 
@@ -60,6 +67,12 @@ var is_dead: bool = false
 var _scout_probe_burst_remaining: float = 0.0
 var _scout_probe_burst_dir: Vector2 = Vector2.RIGHT
 var _scout_time_since_attack: float = 0.0
+var _knockback_immunity_remaining: float = 0.0
+var _wall_stuck_timer: float = 0.0
+
+const BODY_RADIUS := 14.0
+const PLAYER_BODY_RADIUS := 14.0
+const KNOCKBACK_IMMUNITY_DURATION := 0.20
 
 
 func _ready() -> void:
@@ -79,19 +92,23 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_disengage_remaining = maxf(_disengage_remaining - delta, 0.0)
 	_recover_remaining = maxf(_recover_remaining - delta, 0.0)
+	_knockback_immunity_remaining = maxf(_knockback_immunity_remaining - delta, 0.0)
 
 	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
 		if _attack_phase == AttackPhase.NONE and _state != State.DISENGAGE:
 			_scout_time_since_attack += delta
 		_scout_probe_burst_remaining = maxf(_scout_probe_burst_remaining - delta, 0.0)
 
-	if _stagger_remaining > 0.0:
+	if _stagger_remaining > 0.0 and not _is_attack_committed():
 		_stagger_remaining = maxf(_stagger_remaining - delta, 0.0)
 		_smoothed_velocity = Vector2.ZERO
 		velocity = Vector2.ZERO
-		move_and_slide()
+		_wall_stuck_timer = CharacterWallRecovery.move_with_recovery(self, Vector2.ZERO, _wall_stuck_timer, delta)
 		_update_facing(delta)
 		return
+
+	if _stagger_remaining > 0.0:
+		_stagger_remaining = maxf(_stagger_remaining - delta, 0.0)
 
 	if _attack_phase != AttackPhase.NONE:
 		_process_attack_phase(delta)
@@ -106,36 +123,159 @@ func _physics_process(delta: float) -> void:
 	_update_facing(delta)
 
 
+func scale_incoming_player_hit(knockback: float, stagger: float) -> Vector2:
+	var kb := knockback
+	var archetype := _get_archetype()
+	var committed := _is_attack_committed()
+
+	match archetype:
+		VerticalSliceArchetypePresets.Archetype.RAIDER:
+			if committed:
+				kb *= 0.12
+			else:
+				kb *= 0.78
+				if _knockback_immunity_remaining > 0.0:
+					kb *= 0.38
+		VerticalSliceArchetypePresets.Archetype.BRUTE:
+			kb = _compute_brute_knockback(kb)
+			if committed:
+				kb *= 0.08
+
+	return Vector2(kb, stagger)
+
+
 func apply_hit_reaction(direction: Vector2, knockback_distance: float, stagger_duration: float) -> void:
-	if is_dead or stagger_duration <= 0.0:
+	if is_dead:
+		return
+	if knockback_distance <= 0.0 and stagger_duration <= 0.0:
 		return
 
 	if direction.length_squared() < 0.01:
 		direction = Vector2.RIGHT
 
-	var effective_knockback := knockback_distance
-	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.BRUTE:
-		effective_knockback = _compute_brute_knockback(knockback_distance)
+	var archetype := _get_archetype()
+	var committed := _is_attack_committed()
+	var applied_stagger := stagger_duration * hit_stagger_multiplier
 
-	var applied_knockback := effective_knockback / maxf(knockback_resistance, 0.01)
-	global_position += direction.normalized() * applied_knockback
-	_stagger_remaining = maxf(_stagger_remaining, stagger_duration)
+	var effective_knockback := knockback_distance
+	if archetype == VerticalSliceArchetypePresets.Archetype.BRUTE:
+		effective_knockback = _compute_brute_knockback(knockback_distance)
+		if committed:
+			effective_knockback *= 0.12
+
+	if not committed or archetype == VerticalSliceArchetypePresets.Archetype.SCOUT:
+		var applied_knockback := effective_knockback / maxf(knockback_resistance, 0.01)
+		if applied_knockback > 0.0:
+			_apply_collision_aware_knockback(direction, applied_knockback)
+			if (
+				not committed
+				and archetype == VerticalSliceArchetypePresets.Archetype.RAIDER
+				and applied_knockback > 2.0
+			):
+				_knockback_immunity_remaining = KNOCKBACK_IMMUNITY_DURATION
+
+	if committed and archetype != VerticalSliceArchetypePresets.Archetype.SCOUT:
+		if archetype == VerticalSliceArchetypePresets.Archetype.RAIDER:
+			_stagger_remaining = maxf(_stagger_remaining, applied_stagger * 0.18)
+		return
+
+	if (
+		archetype == VerticalSliceArchetypePresets.Archetype.BRUTE
+		and _attack_phase != AttackPhase.NONE
+		and _get_player_combat_distance() <= _get_body_radius() + PLAYER_BODY_RADIUS + 6.0
+	):
+		_stagger_remaining = maxf(_stagger_remaining, applied_stagger * 0.22)
+		return
+
+	_cancel_attack()
+	_stagger_remaining = maxf(_stagger_remaining, applied_stagger)
 	_smoothed_velocity = Vector2.ZERO
 	velocity = Vector2.ZERO
-	_cancel_attack()
 	if _state == State.DISENGAGE or _state == State.RECOVER:
 		_set_state(State.ENGAGE if _is_in_attack_range() else State.CHASE)
 
 
 func is_staggered() -> bool:
-	return _stagger_remaining > 0.0
+	return _stagger_remaining > 0.0 and not _is_attack_committed()
+
+
+func _is_attack_committed() -> bool:
+	if _attack_phase == AttackPhase.NONE:
+		return false
+	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
+		return false
+	if _attack_phase == AttackPhase.LUNGE:
+		return true
+	if _attack_phase == AttackPhase.WINDUP:
+		var progress := 1.0 - (_attack_phase_remaining / maxf(engage_windup, 0.001))
+		return progress >= attack_commit_ratio
+	return false
 
 
 func _compute_brute_knockback(knockback_distance: float) -> float:
-	# Normal focused knockback is largely ignored; CC still creates some space.
 	if knockback_distance <= 26.0:
 		return 0.0
 	return knockback_distance * 0.35
+
+
+func _apply_collision_aware_knockback(direction: Vector2, distance: float) -> void:
+	CharacterWallRecovery.nudge_with_collision(self, direction, distance)
+
+
+func _get_body_radius() -> float:
+	var shape_node := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if shape_node == null or shape_node.shape == null:
+		return BODY_RADIUS
+	if shape_node.shape is CircleShape2D:
+		return (shape_node.shape as CircleShape2D).radius * maxf(scale.x, scale.y)
+	return BODY_RADIUS
+
+
+func _direction_to_player() -> Vector2:
+	if _player == null:
+		return Vector2.RIGHT
+	var offset := _player.global_position - global_position
+	if offset.length_squared() >= 1.0:
+		return offset.normalized()
+	return Vector2.from_angle(_visual.rotation - PI * 0.5).normalized()
+
+
+func _get_player_combat_distance() -> float:
+	if _player == null:
+		return INF
+	return global_position.distance_to(_player.global_position)
+
+
+func _is_player_in_attack_range() -> bool:
+	var distance := _get_player_combat_distance()
+	var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+	return distance <= attack_range * 1.35 or distance <= overlap_reach
+
+
+func _resolve_player_body_overlap() -> void:
+	if _player == null or not is_instance_valid(_player):
+		return
+
+	var offset := global_position - _player.global_position
+	var distance := offset.length()
+	var min_sep := _get_body_radius() + PLAYER_BODY_RADIUS - 1.0
+	if distance >= min_sep:
+		return
+
+	var push_dir := offset.normalized() if distance > 0.01 else _direction_to_player() * -1.0
+	if push_dir.length_squared() < 0.01:
+		push_dir = Vector2.UP
+	var push := push_dir * (min_sep - distance)
+
+	if _attack_phase != AttackPhase.NONE:
+		if _get_archetype() == VerticalSliceArchetypePresets.Archetype.BRUTE:
+			CharacterWallRecovery.nudge_with_collision(self, push_dir, push.length() * 0.18)
+		return
+
+	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.BRUTE:
+		CharacterWallRecovery.nudge_with_collision(self, push_dir, push.length() * 0.28)
+	else:
+		CharacterWallRecovery.nudge_with_collision(self, push_dir, push.length() * 0.55)
 
 
 func _process_attack_phase(delta: float) -> void:
@@ -153,9 +293,17 @@ func _process_attack_phase(delta: float) -> void:
 				_begin_attack_lunge()
 		AttackPhase.LUNGE:
 			var step := attack_lunge_distance / maxf(attack_lunge_duration, 0.001) * delta
-			var move := _attack_lunge_dir * step
-			global_position += move
-			_attack_lunge_traveled += step
+			var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+			if _get_player_combat_distance() > overlap_reach * 0.92:
+				var move := _attack_lunge_dir * step
+				var collision := move_and_collide(move)
+				if collision:
+					var slide := move.slide(collision.get_normal())
+					if slide.length_squared() > 0.25:
+						move_and_collide(slide)
+				_attack_lunge_traveled += step
+			else:
+				_attack_lunge_traveled += step
 			velocity = _attack_lunge_dir * (step / maxf(delta, 0.0001))
 			move_and_slide()
 			_visual.modulate = Color(1.25, 0.55, 0.45, 1.0)
@@ -170,7 +318,7 @@ func _begin_attack_windup() -> void:
 	_attack_phase_remaining = engage_windup
 	_attack_resolved = false
 	_attack_lunge_traveled = 0.0
-	_attack_lunge_dir = (_player.global_position - global_position).normalized()
+	_attack_lunge_dir = _direction_to_player()
 	if _attack_lunge_dir.length_squared() < 0.01:
 		_attack_lunge_dir = Vector2.RIGHT
 
@@ -178,10 +326,7 @@ func _begin_attack_windup() -> void:
 func _begin_attack_lunge() -> void:
 	_attack_phase = AttackPhase.LUNGE
 	_attack_phase_remaining = attack_lunge_duration
-	if _player != null:
-		_attack_lunge_dir = (_player.global_position - global_position).normalized()
-		if _attack_lunge_dir.length_squared() < 0.01:
-			_attack_lunge_dir = Vector2.RIGHT
+	_attack_lunge_dir = _direction_to_player()
 
 
 func _resolve_attack_hit() -> void:
@@ -191,8 +336,7 @@ func _resolve_attack_hit() -> void:
 	_attack_resolved = true
 
 	if _player != null and is_instance_valid(_player):
-		var distance := global_position.distance_to(_player.global_position)
-		if distance <= attack_range * 1.35 and not _is_player_untargetable():
+		if _is_player_in_attack_range() and not _is_player_untargetable():
 			var player_health := _player.get_node_or_null("Health") as Health
 			if player_health != null and player_health.is_alive():
 				player_health.take_damage(attack_damage)
@@ -269,7 +413,7 @@ func _update_state() -> void:
 		State.CHASE, State.ENGAGE, State.RECOVER:
 			if distance > lose_radius:
 				_set_state(State.IDLE)
-			elif distance <= attack_range * 1.05:
+			elif _is_in_attack_range():
 				_set_state(State.ENGAGE)
 			else:
 				_set_state(State.CHASE)
@@ -279,7 +423,7 @@ func _apply_movement(delta: float) -> void:
 	if _is_player_untargetable():
 		_smoothed_velocity = Vector2.ZERO
 		velocity = Vector2.ZERO
-		move_and_slide()
+		_wall_stuck_timer = CharacterWallRecovery.move_with_recovery(self, Vector2.ZERO, _wall_stuck_timer, delta)
 		return
 
 	var target_velocity := Vector2.ZERO
@@ -308,7 +452,10 @@ func _apply_movement(delta: float) -> void:
 		blend = 1.0 - exp(-steer_smoothing * 2.6 * delta)
 	_smoothed_velocity = _smoothed_velocity.lerp(target_velocity, blend)
 	velocity = _smoothed_velocity
-	move_and_slide()
+	_wall_stuck_timer = CharacterWallRecovery.move_with_recovery(
+		self, _smoothed_velocity, _wall_stuck_timer, delta
+	)
+	_resolve_player_body_overlap()
 
 
 func _compute_chase_velocity(archetype: VerticalSliceArchetypePresets.Archetype) -> Vector2:
@@ -378,10 +525,14 @@ func _try_begin_attack() -> void:
 		return
 
 	if global_position.distance_to(_player.global_position) > range_limit:
-		return
+		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+		if _get_player_combat_distance() > overlap_reach:
+			return
 
 	if not EnemyCombatSteering.has_clear_attack_line(self, _player.global_position):
-		return
+		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+		if _get_player_combat_distance() > overlap_reach:
+			return
 
 	var player_health := _player.get_node_or_null("Health") as Health
 	if player_health == null or not player_health.is_alive():
@@ -445,7 +596,9 @@ func is_engaging_player() -> bool:
 func _is_in_attack_range() -> bool:
 	if _player == null:
 		return false
-	return global_position.distance_to(_player.global_position) <= attack_range * 1.05
+	var distance := _get_player_combat_distance()
+	var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+	return distance <= attack_range * 1.05 or distance <= overlap_reach
 
 
 func _find_player() -> void:

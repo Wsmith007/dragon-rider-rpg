@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://scripts/combat/combat_visual_feedback.gd" id="6_feedback"]
 [ext_resource type="Script" path="res://scripts/combat/combat_attack_telegraph.gd" id="7_telegraph"]
 [ext_resource type="Script" path="res://scripts/combat/combat_focused_target_preview.gd" id="8_preview"]
+[ext_resource type="Script" path="res://scripts/player/player_target_focus.gd" id="9_target_focus"]
+[ext_resource type="Script" path="res://scripts/combat/combat_target_focus_indicator.gd" id="10_focus_indicator"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_player"]
 radius = 14.0
@@ -43,6 +45,9 @@ script = ExtResource("7_telegraph")
 [node name="TargetPreview" type="Node2D" parent="MeleeAttack"]
 script = ExtResource("8_preview")
 
+[node name="TargetFocusIndicator" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("10_focus_indicator")
+
 [node name="Hitbox" type="Area2D" parent="MeleeAttack"]
 collision_layer = 8
 collision_mask = 4
@@ -57,6 +62,9 @@ script = ExtResource("4_command")
 
 [node name="Engagement" type="Node" parent="."]
 script = ExtResource("5_engagement")
+
+[node name="TargetFocus" type="Node" parent="."]
+script = ExtResource("9_target_focus")
 
 [node name="CombatVisualFeedback" type="Node" parent="."]
 script = ExtResource("6_feedback")

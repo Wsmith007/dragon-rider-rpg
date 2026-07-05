@@ -2,6 +2,8 @@ extends Node2D
 class_name CombatAttackTelegraph
 ## Pass 6 prototype: attack telegraphs with wind-up / impact phases. See docs/combat_feel_notes.md.
 
+const PlayerTargetFocus = preload("res://scripts/player/player_target_focus.gd")
+
 signal debug_ranges_toggled(enabled: bool)
 
 @export var focused_fill_hit: Color = Color(0.45, 0.82, 1.0, 0.28)
@@ -36,6 +38,8 @@ signal debug_ranges_toggled(enabled: bool)
 @export var debug_cc_edge: Color = Color(1.0, 0.55, 1.0, 0.5)
 @export var debug_target_line_color: Color = Color(0.95, 0.95, 0.35, 0.65)
 @export var debug_target_ring_color: Color = Color(1.0, 0.95, 0.35, 0.85)
+@export var debug_focus_line_color: Color = Color(0.4, 0.75, 1.0, 0.75)
+@export var debug_focus_ring_color: Color = Color(0.45, 0.82, 1.0, 0.9)
 
 var debug_ranges_enabled: bool = false
 
@@ -241,6 +245,7 @@ func _draw_debug_ranges() -> void:
 	draw_arc(Vector2.ZERO, cc_radius, 0.0, TAU, 48, debug_cc_edge, 1.5, true)
 	draw_circle(Vector2.ZERO, cc_radius, debug_cc_color)
 	_draw_debug_likely_target()
+	_draw_debug_focus_target()
 
 
 func _draw_debug_likely_target() -> void:
@@ -254,6 +259,23 @@ func _draw_debug_likely_target() -> void:
 	var local_position := to_local(target.global_position)
 	draw_line(Vector2.ZERO, local_position, debug_target_line_color, 1.5, true)
 	draw_arc(local_position, 16.0, 0.0, TAU, 24, debug_target_ring_color, 2.0, true)
+
+
+func _draw_debug_focus_target() -> void:
+	var player := get_parent().get_parent() as Node
+	if player == null:
+		return
+	var focus: PlayerTargetFocus = player.get_node_or_null("TargetFocus") as PlayerTargetFocus
+	if focus == null or not focus.is_focus_active():
+		return
+
+	var target: Node2D = focus.get_focused_enemy()
+	if target == null or not is_instance_valid(target):
+		return
+
+	var local_position := to_local(target.global_position)
+	draw_line(Vector2.ZERO, local_position, debug_focus_line_color, 2.0, true)
+	draw_arc(local_position, 20.0, 0.0, TAU, 28, debug_focus_ring_color, 2.5, true)
 
 
 func _draw_focused_telegraph(progress: float) -> void:
