@@ -1,0 +1,25 @@
+extends RefCounted
+class_name GameAudioEvent
+## Named gameplay audio events. Gameplay requests events — never file paths.
+
+
+enum Event {
+	PLAYER_SWING,
+	PLAYER_CC,
+	PLAYER_HIT,
+	ATTACK_MISS,
+	PLAYER_DAMAGED,
+	ENEMY_HIT,
+	ENEMY_DEFEATED,
+	BRUTE_HEAVY,
+	BRUTE_RESIST,
+	TARGET_FOCUS_ON,
+	TARGET_FOCUS_SWITCH,
+	TARGET_FOCUS_OFF,
+	ENCOUNTER_COMPLETE,
+	RELATIONSHIP_IMPROVED,
+	RELATIONSHIP_STRAINED,
+	DRAGON_ASSIST,
+	DRAGON_PROTECT,
+	DRAGON_WAIT,
+}

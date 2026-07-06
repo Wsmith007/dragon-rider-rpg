@@ -58,6 +58,9 @@ func _wire_game_scene(game_root: Node2D) -> void:
 		enemy_indicators.bind_to_player(player)
 	if player_feedback_ui != null and player_feedback_ui.has_method("bind"):
 		player_feedback_ui.bind(game_root)
+	var game_audio := get_node_or_null("/root/GameAudio") as GameAudioService
+	if game_audio != null:
+		game_audio.bind_game_root(game_root)
 
 
 func _restart_gameplay() -> void:

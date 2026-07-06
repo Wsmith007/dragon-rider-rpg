@@ -3,6 +3,8 @@ extends Node2D
 
 signal attack_started
 signal attack_hit(enemy: Node2D)
+signal attack_swing_started(is_crowd_control: bool)
+signal attack_swing_finished(is_crowd_control: bool, did_hit: bool)
 signal weapon_profile_changed(profile_name: String)
 
 
@@ -194,6 +196,7 @@ func _perform_focused_attack() -> void:
 	_attack_active = true
 	_hit_targets.clear()
 	attack_started.emit()
+	attack_swing_started.emit(false)
 	_lock_attack_facing()
 
 	var windup_facing := _get_facing_direction()
@@ -223,6 +226,7 @@ func _perform_focused_attack() -> void:
 	_focused_cooldown_remaining = focused_cooldown
 	_attack_active = false
 	_unlock_attack_facing()
+	attack_swing_finished.emit(false, not hit_positions.is_empty())
 
 
 func _perform_crowd_control_attack() -> void:
@@ -230,6 +234,7 @@ func _perform_crowd_control_attack() -> void:
 	_crowd_control_cooldown_remaining = crowd_control_cooldown
 	_hit_targets.clear()
 	attack_started.emit()
+	attack_swing_started.emit(true)
 	_lock_attack_facing()
 
 	if _telegraph != null:
@@ -254,6 +259,7 @@ func _perform_crowd_control_attack() -> void:
 	_reset_player_move_multiplier()
 	_attack_active = false
 	_unlock_attack_facing()
+	attack_swing_finished.emit(true, not _hit_targets.is_empty())
 
 
 func _show_focused_impact_telegraph(base_facing: Vector2, hit_positions: Array[Vector2]) -> void:

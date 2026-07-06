@@ -549,15 +549,17 @@ Exact layout is implementation — beats are design requirements.
            ↓
 3b. Combat Depth — Pass 1 Phase B         ← IMPLEMENTED (target focus)
            ↓
-4. Vertical Slice Polish — Pass 1A        ← IN PROGRESS (player feedback)
+4. Vertical Slice Polish — Pass 1A        ← IMPLEMENTED (player feedback)
            ↓
 5. Vertical Slice UI Cleanup — Pass 1     ← IMPLEMENTED (HUD + Developer Mode)
            ↓
 6. Developer Experience — Pass 1          ← IMPLEMENTED (docked workspace + window)
            ↓
+7. Audio Feedback — Pass 1                ← IMPLEMENTED (centralized event audio)
+           ↓
    (then) Pass 1B — Dragon Personality · hide dev UI
            ↓
-   Player Polish Pass — audio, animation
+   Player Polish Pass — animation · final audio assets
 ```
 
 Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
@@ -647,9 +649,9 @@ Combat rewards **positioning, timing, spacing, and correct attack choice**. Phas
 
 ---
 
-### Subsequent — Vertical Slice Polish Pass 1A (begun)
+### Subsequent — Vertical Slice Polish Pass 1A (implemented)
 
-**Status: IN PROGRESS — player feedback layer live**
+**Status: IMPLEMENTED — player feedback layer live**
 
 **Purpose:** Make existing gameplay understandable without F10. Communicate outcomes, relationship direction, and dragon intent.
 
@@ -662,6 +664,21 @@ Combat rewards **positioning, timing, spacing, and correct attack choice**. Phas
 | Target Focus visual contrast | **Live** |
 
 Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md)
+
+### Audio Feedback Pass 1 (implemented)
+
+**Status: IMPLEMENTED — architecture + placeholder wiring live**
+
+**Purpose:** Centralized event-driven audio using six procedural placeholders. Reinforce existing visual/UI feedback without changing gameplay logic.
+
+| Feature | Status |
+|---------|--------|
+| `GameAudio` autoload + event catalog | **Live** |
+| Combat / UI / Dragon buses (future mix) | **Live** |
+| Binder on existing signals | **Live** |
+| Placeholder reuse policy | **Documented** |
+
+Detail: [`project_checkpoint_audio_feedback_pass1.md`](project_checkpoint_audio_feedback_pass1.md) · [`audio_placeholder_assets.md`](audio_placeholder_assets.md)
 
 **Pass 1B (next):** Dragon personality / communication · hide dev UI in player builds.
 
@@ -696,11 +713,11 @@ Detail: [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup
 
 Detail: [`project_checkpoint_developer_experience_pass1.md`](project_checkpoint_developer_experience_pass1.md)
 
-### Subsequent — Player Polish Pass (audio & animation)
+### Subsequent — Player Polish Pass (animation & final audio)
 
-After Pass 1A + 1B validate communication:
+After Pass 1A + Audio Pass 1 validate communication:
 
-- Combat audio · minimal animation · hide remaining dev overlays in player builds
+- Final audio assets (replace catalog entries) · minimal attack animation · hide remaining dev overlays in player builds
 
 #### Why archetypes before polish (unchanged)
 
