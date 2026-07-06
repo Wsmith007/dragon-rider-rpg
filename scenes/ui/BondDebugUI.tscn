@@ -2,6 +2,12 @@
 
 [ext_resource type="Script" path="res://scripts/ui/bond_debug_ui.gd" id="1_ui"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill_panel"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_content_panel"]
+bg_color = Color(0.2, 0.22, 0.26, 1)
+
 [node name="BondDebugUI" type="Control"]
 layout_mode = 2
 anchors_preset = 15
@@ -9,519 +15,529 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+mouse_filter = 0
 visible = true
 script = ExtResource("1_ui")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="FillPanel" type="PanelContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_fill_panel")
 
-[node name="Scroll" type="ScrollContainer" parent="Margin"]
+[node name="Margin" type="MarginContainer" parent="FillPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Scroll" type="ScrollContainer" parent="FillPanel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Panel" type="PanelContainer" parent="Margin/Scroll"]
+[node name="ContentPanel" type="PanelContainer" parent="FillPanel/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_content_panel")
 
-[node name="ContentMargin" type="MarginContainer" parent="Margin/Scroll/Panel"]
+[node name="ContentMargin" type="MarginContainer" parent="FillPanel/Margin/Scroll/ContentPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="Margin/Scroll/Panel/ContentMargin"]
+[node name="VBox" type="VBoxContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Relationship" type="VBoxContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
+[node name="Relationship" type="VBoxContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="RelationshipTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="RelationshipTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Relationship Debug"
 
-[node name="AppliedNotice" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedNotice" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Sync APPLIED from Cooperation Rating. Instability APPLIED from Encounter Quality. Bond is PROPOSED ONLY — NOT APPLIED."
 
-[node name="CurrentStatsTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="CurrentStatsTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Current Stats"
 
-[node name="CurrentStatsGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="CurrentStatsGrid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="CurrentBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentBondLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "Bond Strength"
 
-[node name="CurrentBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentBondValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "50"
 
-[node name="CurrentSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentSyncLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "Sync"
 
-[node name="CurrentSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentSyncValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "50"
 
-[node name="CurrentInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentInstabilityLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "Instability"
 
-[node name="CurrentInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
+[node name="CurrentInstabilityValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/CurrentStatsGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="CurrentEncounterTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="CurrentEncounterTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Current Encounter (tracking combat)"
 
-[node name="CurrentEncounterNotice" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="CurrentEncounterNotice" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Live counters only. Stat changes apply when an encounter resolves."
 
-[node name="EncounterGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="EncounterGrid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="AssistsLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="AssistsLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Assists"
 
-[node name="AssistsValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="AssistsValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="ProtectionsLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="ProtectionsLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Protections"
 
-[node name="ProtectionsValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="ProtectionsValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="CancellationsLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="CancellationsLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Cancellations"
 
-[node name="CancellationsValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="CancellationsValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="DamageLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DamageLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Damage"
 
-[node name="DamageValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DamageValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="DeathsLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DeathsLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Deaths"
 
-[node name="DeathsValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DeathsValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="EncounterActiveLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="EncounterActiveLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Encounter Active"
 
-[node name="EncounterActiveValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="EncounterActiveValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "NO"
 
-[node name="EncounterIdLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="EncounterIdLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Encounter ID"
 
-[node name="EncounterIdValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="EncounterIdValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="InvolvedCountLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="InvolvedCountLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Involved Enemies"
 
-[node name="InvolvedCountValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="InvolvedCountValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="WasDisengagedLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="WasDisengagedLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Was Disengaged"
 
-[node name="WasDisengagedValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="WasDisengagedValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "NO"
 
-[node name="DisengageCountLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DisengageCountLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Disengage Count"
 
-[node name="DisengageCountValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="DisengageCountValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "0"
 
-[node name="ExcellentEligibleLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="ExcellentEligibleLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Excellent Quality Eligible"
 
-[node name="ExcellentEligibleValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="ExcellentEligibleValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "NO"
 
-[node name="CooperationRatingLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="CooperationRatingLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "Cooperation (live)"
 
-[node name="CooperationRatingValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/EncounterGrid"]
+[node name="CooperationRatingValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/EncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastEncounterTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="LastEncounterTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Last Resolved Encounter"
 
-[node name="LastEncounterGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="LastEncounterGrid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="LastEncounterIdLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastEncounterIdLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Encounter ID"
 
-[node name="LastEncounterIdValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastEncounterIdValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastResolvedOutcomeLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastResolvedOutcomeLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Resolved Outcome"
 
-[node name="LastResolvedOutcomeValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastResolvedOutcomeValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastQualityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastQualityLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Encounter Quality"
 
-[node name="LastQualityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastQualityValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastCooperationLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastCooperationLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Cooperation Rating"
 
-[node name="LastCooperationValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastCooperationValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastInvolvedLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastInvolvedLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Involved Enemies"
 
-[node name="LastInvolvedValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastInvolvedValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastSummaryLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastSummaryLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Summary"
 
-[node name="LastSummaryValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastSummaryValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 autowrap_mode = 3
 text = "-"
 
-[node name="LastWasDisengagedLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastWasDisengagedLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Was Disengaged"
 
-[node name="LastWasDisengagedValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastWasDisengagedValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastDisengageCountLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastDisengageCountLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Disengage Count"
 
-[node name="LastDisengageCountValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastDisengageCountValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastExcellentEligibleLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastExcellentEligibleLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Excellent Quality Eligible"
 
-[node name="LastExcellentEligibleValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastExcellentEligibleValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastAppliedSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastAppliedSyncLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Applied Sync Δ (Cooperation)"
 
-[node name="LastAppliedSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastAppliedSyncValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="LastAppliedInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastAppliedInstabilityLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "Applied Instability Δ (Quality)"
 
-[node name="LastAppliedInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
+[node name="LastAppliedInstabilityValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/LastEncounterGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="EncounterResultTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="EncounterResultTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 visible = false
 text = "Encounter Result"
 
-[node name="QualityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="QualityValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 visible = false
 text = "-"
 
-[node name="AppliedTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Applied Relationship Changes (Last Encounter)"
 
-[node name="AppliedGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="AppliedGrid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="AppliedSyncLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedSyncLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "Applied Sync Δ (Cooperation)"
 
-[node name="AppliedSyncValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedSyncValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="AppliedInstabilityLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedInstabilityLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "Applied Instability Δ (Quality)"
 
-[node name="AppliedInstabilityValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedInstabilityValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="AppliedBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedBondLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "Applied Bond Δ"
 
-[node name="AppliedBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/AppliedGrid"]
+[node name="AppliedBondValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/AppliedGrid"]
 layout_mode = 2
 text = "NOT APPLIED"
 
-[node name="ProposedBondTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="ProposedBondTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Proposed Bond Change (NOT APPLIED)"
 
-[node name="ProposedBondGrid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="ProposedBondGrid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="ProposedBondLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
+[node name="ProposedBondLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
 layout_mode = 2
 text = "Bond Δ"
 
-[node name="ProposedBondValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
+[node name="ProposedBondValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship/ProposedBondGrid"]
 layout_mode = 2
 text = "-"
 
-[node name="SessionTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="SessionTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Session History"
 
-[node name="SessionCountValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="SessionCountValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Encounters: 0"
 
-[node name="SessionHistoryValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="SessionHistoryValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
 text = "(none)"
 
-[node name="RecentEventsTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="RecentEventsTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 text = "Recent Events"
 
-[node name="RecentEventsValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Relationship"]
+[node name="RecentEventsValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Relationship"]
 layout_mode = 2
 autowrap_mode = 3
 text = "(none)"
 
-[node name="Communication" type="VBoxContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
+[node name="Communication" type="VBoxContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="DragonThoughtLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Communication"]
+[node name="DragonThoughtLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Communication"]
 layout_mode = 2
 text = "Dragon Thought"
 
-[node name="DragonThoughtValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Communication"]
+[node name="DragonThoughtValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Communication"]
 layout_mode = 2
 autowrap_mode = 3
 text = "\"Watching.\""
 
-[node name="TitleLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
+[node name="TitleLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox"]
 layout_mode = 2
 text = "Bond Debug"
 
-[node name="Grid" type="GridContainer" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
+[node name="Grid" type="GridContainer" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 4
 columns = 2
 
-[node name="ProtectionRadiusLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionRadiusLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Prot. Radius"
 
-[node name="ProtectionRadiusValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionRadiusValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "150"
 
-[node name="AlertRangeLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="AlertRangeLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Alert Range"
 
-[node name="AlertRangeValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="AlertRangeValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "180"
 
-[node name="ThreatDistanceLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ThreatDistanceLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Threat Dist"
 
-[node name="ThreatDistanceValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ThreatDistanceValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "-"
 
-[node name="ProtectionDelayLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionDelayLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Prot. Delay"
 
-[node name="ProtectionDelayValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionDelayValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "0.5"
 
-[node name="ProtectionPersistenceLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionPersistenceLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Prot. Persist"
 
-[node name="ProtectionPersistenceValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="ProtectionPersistenceValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "2"
 
-[node name="PendingCommandLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="PendingCommandLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Pending Cmd"
 
-[node name="PendingCommandValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="PendingCommandValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "NONE"
 
-[node name="CommandDelayLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="CommandDelayLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Cmd Delay"
 
-[node name="CommandDelayValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="CommandDelayValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "0"
 
-[node name="DragonStateLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="DragonStateLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Dragon State"
 
-[node name="DragonStateValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="DragonStateValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "FOLLOWING"
 
-[node name="BondTierLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="BondTierLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Bond Tier"
 
-[node name="BondTierValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="BondTierValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Tier 2"
 
-[node name="BondTierProgressLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="BondTierProgressLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Tier Progress"
 
-[node name="BondTierProgressValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="BondTierProgressValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "0.66"
 
-[node name="PlannedEffectsTitle" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="PlannedEffectsTitle" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Planned Effects"
 
-[node name="PlannedEffectsSpacer" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="PlannedEffectsSpacer" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "(not active)"
 
-[node name="FutureSyncFloorLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureSyncFloorLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Sync Floor"
 
-[node name="FutureSyncFloorValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureSyncFloorValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "20.0"
 
-[node name="FutureInstabilityResistanceLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureInstabilityResistanceLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Inst. Resist"
 
-[node name="FutureInstabilityResistanceValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureInstabilityResistanceValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "10%"
 
-[node name="FutureInstabilityRecoveryLabel" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureInstabilityRecoveryLabel" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "Inst. Recovery"
 
-[node name="FutureInstabilityRecoveryValue" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox/Grid"]
+[node name="FutureInstabilityRecoveryValue" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox/Grid"]
 layout_mode = 2
 text = "1.20x"
 
-[node name="WindowHint" type="Label" parent="Margin/Scroll/Panel/ContentMargin/VBox"]
+[node name="WindowHint" type="Label" parent="FillPanel/Margin/Scroll/ContentPanel/ContentMargin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Press F10 to show or hide this panel."

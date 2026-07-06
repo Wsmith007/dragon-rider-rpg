@@ -1,50 +1,45 @@
-extends Control
-## Playtest shell: gameplay SubViewport on the left, docked debug panel on the right.
-
-
-const DEBUG_PANEL_WIDTH := 400
-
-@onready var _game_viewport: SubViewport = $LayoutHBox/GameplayViewportContainer/GameplayViewport
-@onready var _game_root: Node2D = _game_viewport.get_node("TestWorldGame")
-@onready var _player: CharacterBody2D = _game_root.get_node("Entities/Player")
-@onready var _dragon: CharacterBody2D = _game_root.get_node("Entities/Dragon")
-@onready var _camera: Camera2D = _game_root.get_node("Camera2D")
-@onready var _dragon_command: Node = _player.get_node("DragonCommand")
-@onready var _player_health_ui: Control = _game_root.get_node("UI/PlayerHealthUI")
-@onready var _bond_debug_ui: Control = $LayoutHBox/DebugPanel/BondDebugUI
-@onready var _debug_panel: PanelContainer = $LayoutHBox/DebugPanel
-@onready var _health_debug_controls: Node = _game_root.get_node("UI/HealthDebugControls")
-@onready var _enemy_spawn_debug: Node = _game_root.get_node("UI/EnemySpawnDebug")
-@onready var _enemies_container: Node2D = _game_root.get_node("Entities/Enemies")
+extends "res://scripts/world/playtest_shell.gd"
+## Playtest shell for TestWorld — wires gameplay systems after shell layout is ready.
 
 
 func _ready() -> void:
-	RelationshipSystem.setup_from_scene(_game_root)
-	_dragon.set_follow_target(_player)
-	if _camera.has_method("set_follow_target"):
-		_camera.set_follow_target(_player)
-	_dragon_command.command_toggle_requested.connect(_dragon.handle_command_toggle)
-	if _player_health_ui.has_method("bind_to_player"):
-		_player_health_ui.bind_to_player(_player)
-	if _bond_debug_ui.has_method("bind_to_dragon"):
-		_bond_debug_ui.bind_to_dragon(_dragon)
-	if _health_debug_controls.has_method("bind_to_player"):
-		_health_debug_controls.bind_to_player(_player)
-	if _enemy_spawn_debug.has_method("bind"):
-		_enemy_spawn_debug.bind(_player, _enemies_container)
-	var enemy_indicators := _game_root.get_node_or_null("UI/EnemyOffscreenIndicators") as Control
+	super._ready()
+	_wire_game_scene(get_game_root())
+
+
+func _wire_game_scene(game_root: Node2D) -> void:
+	if game_root == null:
+		return
+
+	RelationshipSystem.setup_from_scene(game_root)
+
+	var player := game_root.get_node("Entities/Player") as CharacterBody2D
+	var dragon := game_root.get_node("Entities/Dragon") as CharacterBody2D
+	var camera := game_root.get_node("Camera2D") as Camera2D
+	var dragon_command := player.get_node("DragonCommand")
+	var player_hud := game_root.get_node("UI/PlayerHud") as Control
+	var bond_debug_ui := get_bond_debug_ui()
+	var health_debug_controls := game_root.get_node("UI/HealthDebugControls")
+	var enemy_spawn_debug := game_root.get_node("UI/EnemySpawnDebug")
+	var enemies_container := game_root.get_node("Entities/Enemies") as Node2D
+	var player_feedback_ui := game_root.get_node("UI/PlayerFeedbackUI") as Control
+
+	dragon.set_follow_target(player)
+	if camera.has_method("set_follow_target"):
+		camera.set_follow_target(player)
+	set_game_camera(camera)
+	dragon_command.command_toggle_requested.connect(dragon.handle_command_toggle)
+
+	if player_hud.has_method("bind"):
+		player_hud.bind(game_root)
+	if bond_debug_ui != null and bond_debug_ui.has_method("bind_to_dragon"):
+		bond_debug_ui.bind_to_dragon(dragon)
+	if health_debug_controls.has_method("bind_to_player"):
+		health_debug_controls.bind_to_player(player)
+	if enemy_spawn_debug.has_method("bind"):
+		enemy_spawn_debug.bind(player, enemies_container)
+	var enemy_indicators := game_root.get_node_or_null("UI/EnemyOffscreenIndicators") as Control
 	if enemy_indicators != null and enemy_indicators.has_method("bind_to_player"):
-		enemy_indicators.bind_to_player(_player)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	if not event.pressed or event.echo:
-		return
-	if event.keycode != KEY_F10:
-		return
-
-	if _debug_panel != null:
-		_debug_panel.visible = not _debug_panel.visible
-	get_viewport().set_input_as_handled()
+		enemy_indicators.bind_to_player(player)
+	if player_feedback_ui != null and player_feedback_ui.has_method("bind"):
+		player_feedback_ui.bind(game_root)

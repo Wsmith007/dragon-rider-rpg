@@ -59,7 +59,7 @@ func _activate() -> void:
 		return
 
 	_triggered = true
-	_spawn_enemies()
+	call_deferred("_spawn_enemies")
 	encounter_started.emit(encounter_name)
 	set_deferred("monitoring", false)
 

@@ -549,7 +549,15 @@ Exact layout is implementation — beats are design requirements.
            ↓
 3b. Combat Depth — Pass 1 Phase B         ← IMPLEMENTED (target focus)
            ↓
-   (then) Player Polish Pass — audio, animation, HUD
+4. Vertical Slice Polish — Pass 1A        ← IN PROGRESS (player feedback)
+           ↓
+5. Vertical Slice UI Cleanup — Pass 1     ← IMPLEMENTED (HUD + Developer Mode)
+           ↓
+6. Developer Experience — Pass 1          ← IMPLEMENTED (docked workspace + window)
+           ↓
+   (then) Pass 1B — Dragon Personality · hide dev UI
+           ↓
+   Player Polish Pass — audio, animation
 ```
 
 Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
@@ -639,11 +647,60 @@ Combat rewards **positioning, timing, spacing, and correct attack choice**. Phas
 
 ---
 
-### Subsequent — Player Polish Pass
+### Subsequent — Vertical Slice Polish Pass 1A (begun)
 
-After the three milestones above validate the loop:
+**Status: IN PROGRESS — player feedback layer live**
 
-- Combat audio · minimal animation · player-facing bond feedback · hide dev UI in player builds
+**Purpose:** Make existing gameplay understandable without F10. Communicate outcomes, relationship direction, and dragon intent.
+
+| Feature | Status |
+|---------|--------|
+| Encounter summary panel | **Live** |
+| Relationship direction toasts | **Live** |
+| Dragon status chip | **Live** |
+| Combat hit/stagger/resist floaters | **Live** |
+| Target Focus visual contrast | **Live** |
+
+Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md)
+
+**Pass 1B (next):** Dragon personality / communication · hide dev UI in player builds.
+
+### Vertical Slice UI Cleanup Pass 1 (implemented)
+
+**Status: IMPLEMENTED — presentation only**
+
+**Purpose:** Clean HUD layout, unified F10 Developer Mode, larger default window, transient area names, reduced dragon text noise.
+
+| Change | Detail |
+|--------|--------|
+| **PlayerHud** | Unified top-left: HP + dragon status |
+| **Area announce** | Transient center-top on zone enter |
+| **Developer Mode** | F10 toggles help + debug overlays together |
+| **Window** | 1920×1080 full-viewport gameplay |
+| **Dragon bubble** | Disabled; HUD + StatusVisual ring |
+
+Detail: [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md)
+
+### Developer Experience Pass 1 (implemented)
+
+**Status: IMPLEMENTED — presentation / workflow only**
+
+**Purpose:** Larger comfortable playtest window, docked developer workspace so tools never cover gameplay, shared playtest shell architecture.
+
+| Change | Detail |
+|--------|--------|
+| **Default window** | **2560×1440** |
+| **Reference world view** | 1920 units wide — camera zoom compensates for viewport width |
+| **Developer Mode** | F10 docks help (below game) + debug (right); game viewport shrinks |
+| **playtest_shell.gd** | Shared layout for TestWorld + Vertical Slice |
+
+Detail: [`project_checkpoint_developer_experience_pass1.md`](project_checkpoint_developer_experience_pass1.md)
+
+### Subsequent — Player Polish Pass (audio & animation)
+
+After Pass 1A + 1B validate communication:
+
+- Combat audio · minimal animation · hide remaining dev overlays in player builds
 
 #### Why archetypes before polish (unchanged)
 
@@ -778,3 +835,6 @@ Story, factions, races, politics
 | **v1.6** | 2026-05-29 | Enemy Archetype Pass 1B — attack commitment & interruption tuning |
 | **v1.7** | 2026-05-29 | Combat Depth Pass 1 Phase A — movement foundation |
 | **v1.8** | 2026-05-29 | Combat Depth Pass 1 Phase B — Target Focus System |
+| **v1.9** | 2026-05-29 | Vertical Slice Polish Pass 1A begun — player feedback & communication |
+| **v1.10** | 2026-05-29 | Vertical Slice UI Cleanup Pass 1 — HUD layout & Developer Mode |
+| **v1.11** | 2026-05-29 | Developer Experience Pass 1 — docked workspace, 2560×1440 window |
