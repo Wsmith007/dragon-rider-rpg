@@ -2,12 +2,14 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest:** `TestWorld.tscn` · `VerticalSlice_Level_P1.tscn` (F6)  
-**Design constitution:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md)  
-**Relationship pipeline:** [`project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
-**Combat depth reference:** [`project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md)
+**Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
+**Relationship pipeline:** [`project_checkpoint_milestone9A.md`](./project_checkpoint_milestone9A.md)  
+**Combat depth reference:** [`project_checkpoint_combat_depth_1B.md`](./project_checkpoint_combat_depth_1B.md)
 
 **Status:** **IN PROGRESS — Pass 1A implemented** (player feedback layer live; playtest validation pending)  
-**UI Cleanup:** [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md) — HUD layout, Developer Mode, area announce (Pass 1)  
+**UI Cleanup:** [`project_checkpoint_ui_cleanup_pass1.md`](./project_checkpoint_ui_cleanup_pass1.md) — HUD layout (historical for shell layout)  
+**Developer shell:** [`project_checkpoint_developer_experience_pass1.md`](./project_checkpoint_developer_experience_pass1.md) — **current** F10 docked sidebar  
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
 **Scope:** Player communication only — no gameplay, balance, AI, or relationship math changes.  
 **Date:** 2026-05-29
 
@@ -24,7 +26,7 @@ The player should understand:
 - **What the dragon is doing** — Following, Waiting, Protecting, Assisting
 - **How well they worked together** — direction of relationship change, not raw formulas
 
-**Not in scope:** audio, animations, dragon dialogue, new combat mechanics, shield systems, hiding dev UI (Pass 1B+).
+**Not in scope:** final audio assets, animations, dragon dialogue, new combat mechanics, shield systems, hiding dev UI (Dragon Personality Pass 1).
 
 ---
 
@@ -118,11 +120,12 @@ Existing telegraphs, hit sparks, and flash feedback unchanged.
 | **Relationship toast** | Upper-center (transient) | Player |
 | **Combat floaters** | At hit world position | Player |
 | **Off-screen enemy arrows** | Screen edges | Player |
-| **Help panel (BondTestHelpUI)** | Developer Mode (F10) — bottom-left overlay | **Dev** |
-| **Debug panel (BondDebugUI)** | Developer Mode (F10) — right overlay | **Dev** |
+| **Help panel (BondTestHelpUI)** | Developer Mode (F10) — docked sidebar bottom | **Dev** |
+| **Debug panel (BondDebugUI)** | Developer Mode (F10) — docked sidebar top | **Dev** |
 | **F11 telegraph overlay** | Toggle only (F11) | **Dev** |
 
-> **UI Cleanup Pass 1:** Help and debug panels no longer occupy permanent layout space. See [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md).
+> **UI Cleanup Pass 1:** Help and debug panels no longer occupy permanent layout space. See [`project_checkpoint_ui_cleanup_pass1.md`](./project_checkpoint_ui_cleanup_pass1.md).  
+> **Developer Experience Pass 1 (current):** Panels dock in **420 px right sidebar** via `playtest_shell.gd` — see [`project_checkpoint_developer_experience_pass1.md`](./project_checkpoint_developer_experience_pass1.md).
 
 **Review notes:**
 
@@ -163,7 +166,7 @@ Existing telegraphs, hit sparks, and flash feedback unchanged.
 | `scripts/ui/player_feedback_ui.gd` | Encounter panel, toasts, dragon chip, combat floaters |
 | `scenes/ui/PlayerHud.tscn` | Unified top-left HUD (replaces separate HP + dragon chip) |
 | `scripts/ui/player_hud.gd` | HP + dragon status bind |
-| `scripts/ui/developer_mode_controller.gd` | F10 Developer Mode overlays |
+| `scripts/world/playtest_shell.gd` | F10 Developer Mode — docked sidebar (see Developer Experience checkpoint) |
 | `scripts/world/test_world.gd` | Binds feedback UI in TestWorld shell |
 | `scripts/world/vertical_slice_world_shell.gd` | Binds feedback UI in slice shell |
 | `scenes/world/TestWorldGame.tscn` | Instanced PlayerFeedbackUI |
@@ -184,7 +187,9 @@ Existing telegraphs, hit sparks, and flash feedback unchanged.
 - [ ] Playtest: floaters not cluttered in multi-enemy fights
 - [ ] Tune summary/toast timing if fights feel back-to-back
 
-### Pass 1B — Dragon Personality (recommended next)
+### Dragon Personality Pass 1 (recommended next)
+
+Per [`PROJECT_STATE.md`](../PROJECT_STATE.md) roadmap:
 
 - Dragon dialogue / communication bubble tied to partnership moments (not debug catalog dumps)
 - Hide BondTestHelpUI + F10 panel behind debug flag in player builds
@@ -192,7 +197,7 @@ Existing telegraphs, hit sparks, and flash feedback unchanged.
 
 ### Later polish
 
-- Combat audio · minimal attack animation · Outcome Rating rename (Flawless/Safe/Rough) when design revision lands
+- Final audio assets · Player Animation Pass 1 · Outcome Rating rename (Flawless/Safe/Rough) when design revision lands
 - Death / retry flow · save at slice end
 
 ---
@@ -214,5 +219,5 @@ Existing telegraphs, hit sparks, and flash feedback unchanged.
 
 | Document | Update |
 |----------|--------|
-| [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) | Roadmap — Pass 1A begun |
-| [`combat_feel_notes.md`](combat_feel_notes.md) | Pointer to player feedback layer |
+| [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) | Roadmap — Pass 1A begun |
+| [`combat_feel_notes.md`](../notes/combat_feel_notes.md) | Pointer to player feedback layer |

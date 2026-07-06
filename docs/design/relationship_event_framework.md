@@ -1,9 +1,10 @@
 # Relationship Event Framework
 
 **Status:** Living design document — distinguishes **implemented**, **planned**, and **future** behavior  
-**Gameplay checkpoints:** `docs/project_checkpoint_milestone7.md`, `docs/project_checkpoint_milestone8.md` (historical), **`docs/project_checkpoint_milestone9A.md` (current live state)**  
-**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (experience goals and slice scope)  
-**Related:** `docs/bond_system.md`, `docs/dragon_ai.md`, `docs/game_architecture.md`
+**Gameplay checkpoints:** `../historical/project_checkpoint_milestone7.md`, `../historical/project_checkpoint_milestone8.md` (historical), **`../checkpoints/project_checkpoint_milestone9A.md` (current live state)**  
+**Agent entry:** [`PROJECT_STATE.md`](../PROJECT_STATE.md) · [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md)  
+**Vertical Slice design:** `./vertical_slice_design_v1.md` (experience goals and slice scope)  
+**Related:** `./bond_system.md`, `./dragon_ai.md`, `./game_architecture.md`
 
 This document defines relationship events, stat ownership, encounter evaluation, and long-term progression philosophy. **Code is the source of truth for live behavior**; sections below are labeled by implementation status.
 
@@ -272,7 +273,7 @@ Returning to earlier regions should **demonstrate growth** — the rider–drago
 
 ## Relationship vs combat power
 
-Bond Strength, Sync, and Instability describe **partnership quality and strain**. They are not disguised combat stats. High Bond improves cooperation affordances and (future) resilience — not raw damage spikes. See `docs/bond_system.md` and `docs/game_architecture.md`.
+Bond Strength, Sync, and Instability describe **partnership quality and strain**. They are not disguised combat stats. High Bond improves cooperation affordances and (future) resilience — not raw damage spikes. See `./bond_system.md` and `./game_architecture.md`.
 
 ---
 
@@ -865,7 +866,7 @@ See **Future Systems → Future Dragon Health Integration**.
 ### References
 
 - Bond tiers: `scripts/bond/bond_resilience.gd`
-- Active stat effects: `docs/project_checkpoint_milestone7.md`
+- Active stat effects: `../historical/project_checkpoint_milestone7.md`
 - Dragon state flow: ALERT → PROTECTING → ASSISTING (separate systems)
 
 ---

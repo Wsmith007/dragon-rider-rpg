@@ -189,4 +189,4 @@ All systems use **BondResilience** tier boundaries: 0–30, 31–60, 61–85, 86
 | Debug UI | `scripts/ui/bond_debug_ui.gd`, `scenes/ui/BondTestHelpUI.tscn` |
 | Stat test keys | `scripts/ui/bond_test_controls.gd` |
 
-Design reference: `docs/bond_system.md`, `docs/dragon_ai.md`, `docs/game_architecture.md`.
+Design reference: `../design/bond_system.md`, `../design/dragon_ai.md`, `../design/game_architecture.md`.

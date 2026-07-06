@@ -4,21 +4,23 @@
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest shell:** `res://scenes/world/TestWorld.tscn`
 
+**Agent entry points:** [`README.md`](../README.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md) · [`CURSOR_ONBOARDING.md`](../CURSOR_ONBOARDING.md) · [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md)
+
 This document is the **design constitution** for the Vertical Slice. It defines *what the first playable version must feel like* and *what belongs in scope*. It is **not** a milestone checkpoint.
 
 **Technical references (live behavior):**
 
 | Document | Role |
 |----------|------|
-| [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) | Rider melee, enemy combat prototype, combat feel passes 1–7 |
-| [`project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md) | Relationship pipeline, Sync/Instability application, encounter resolve |
-| [`relationship_event_framework.md`](relationship_event_framework.md) | Event catalog, stat ownership, encounter philosophy |
+| [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) | Rider melee, enemy combat prototype, combat feel passes 1–7 |
+| [`project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md) | Relationship pipeline, Sync/Instability application, encounter resolve |
+| [`relationship_event_framework.md`](./relationship_event_framework.md) | Event catalog, stat ownership, encounter philosophy |
 
-**Supporting context:** [`combat.md`](combat.md), [`combat_feel_notes.md`](combat_feel_notes.md), [`bond_system.md`](bond_system.md), [`dragon_ai.md`](dragon_ai.md), [`game_architecture.md`](game_architecture.md), [`technical_architecture.md`](technical_architecture.md)
+**Supporting context:** [`combat.md`](./combat.md), [`combat_feel_notes.md`](../notes/combat_feel_notes.md), [`bond_system.md`](./bond_system.md), [`dragon_ai.md`](./dragon_ai.md), [`game_architecture.md`](./game_architecture.md), [`technical_architecture.md`](./technical_architecture.md)
 
-**Supersedes for design direction:** [`vertical_slice_plan.md`](vertical_slice_plan.md) — retained as historical early prototype planning; mechanics and scope have evolved since that document was written.
+**Supersedes for design direction:** [`vertical_slice_plan.md`](../historical/vertical_slice_plan.md) — retained as historical early prototype planning; mechanics and scope have evolved since that document was written.
 
-**Level prototype:** [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md) — graybox scene `scenes/world/VerticalSlice_Level_P1.tscn` (Pass 1 + P1.1 fix + **Pass 2** layout)
+**Level prototype:** [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md) — graybox scene `scenes/world/VerticalSlice_Level_P1.tscn` (Pass 1 + P1.1 fix + **Pass 2** layout)
 
 ---
 
@@ -81,7 +83,7 @@ A small space that feels excellent beats a large space that feels hollow. The sl
 
 # Section 2 — Core Game Pillars
 
-These pillars describe the **current project identity** for the Vertical Slice. Full-game pillars (politics, races, magic economies) exist in [`game_architecture.md`](game_architecture.md) but are **deferred** until the core loop is proven.
+These pillars describe the **current project identity** for the Vertical Slice. Full-game pillars (politics, races, magic economies) exist in [`game_architecture.md`](./game_architecture.md) but are **deferred** until the core loop is proven.
 
 ### 1. Rider + Dragon Partnership
 
@@ -137,7 +139,7 @@ The Scout punishes standing still and ignoring flanks.
 | **Characteristics** | Balanced speed · balanced damage · balanced health · general-purpose melee opponent |
 | **Lessons taught** | Core combat loop · rider/dragon cooperation · weapon comparison |
 
-The Raider maps to the **current default prototype tuning** ([`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)). It is the reference opponent: focused attack cadence, engage wind-up, surround slots. Players learn the loop without a special gimmick — cooperation and weapon feel emerge here.
+The Raider maps to the **current default prototype tuning** ([`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md)). It is the reference opponent: focused attack cadence, engage wind-up, surround slots. Players learn the loop without a special gimmick — cooperation and weapon feel emerge here.
 
 ### Brute
 
@@ -162,11 +164,11 @@ The Brute does not die to panic focused spam.
 | Concept | Meaning |
 |---------|---------|
 | **Archetype (slice)** | A **role** with distinct behavior and teaching purpose — Scout, Raider, Brute |
-| **Variant (full game)** | Regional or faction **expressions** of types (elite, corrupted, aged) — strength progression within regions per [`game_architecture.md`](game_architecture.md) |
+| **Variant (full game)** | Regional or faction **expressions** of types (elite, corrupted, aged) — strength progression within regions per [`game_architecture.md`](./game_architecture.md) |
 
 Slice archetypes are **not** "Raider but +50% HP." A Brute is slow, resistant, and threatening on a different axis than a Raider — not a larger reskin.
 
-**Naming note:** [`combat_feel_notes.md`](combat_feel_notes.md) uses older exploratory labels (Standard, Heavy, Beast). **Raider** = Standard/default; **Brute** = Heavy-like role. Beast and ranged roles remain **post-slice**.
+**Naming note:** [`combat_feel_notes.md`](../notes/combat_feel_notes.md) uses older exploratory labels (Standard, Heavy, Beast). **Raider** = Standard/default; **Brute** = Heavy-like role. Beast and ranged roles remain **post-slice**.
 
 ---
 
@@ -444,7 +446,7 @@ Continue exploring
 | **Dragon health & combined harm** | Outcome rating revision blocked on dragon damage |
 | **Full save/load** | Session persistence nice-to-have first |
 | **Regional enemy variants (elite, corrupted, …)** | Post-slice; archetypes ≠ regional variants |
-| **Combat audio & animation polish** | **Slice build Phase 3** — after level + archetypes (Section 12) |
+| **Final audio assets & attack animation** | Placeholder audio live ([`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md)); final assets + animation in upcoming passes |
 
 ---
 
@@ -462,7 +464,23 @@ Dagger / sword / polearm with weapon-scaled CC. **Supports:** weapon identity vs
 
 ### Default enemy (Raider baseline)
 
-Single `Enemy` tuning matches **Raider** role — export overrides ready for Scout/Brute (`chase_speed`, `engage_reposition_speed`, `knockback_resistance`, health, damage). **Supports:** archetype prototype without new AI.
+Single `Enemy` tuning matches **Raider** role — Scout/Brute applied on slice via `VerticalSliceArchetypePresets`. **Supports:** archetype teaching on handcrafted level.
+
+### Enemy archetypes (Scout / Raider / Brute)
+
+Behavioral roles implemented for slice — see Section 3 and [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md).
+
+### Event audio (placeholder)
+
+Centralized `GameAudio` + six procedural WAVs — see [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md).
+
+### Player-facing feedback (Polish 1A)
+
+Encounter summary, relationship toasts, dragon chip, combat floaters — see [`project_checkpoint_vertical_slice_polish_1A.md`](../checkpoints/project_checkpoint_vertical_slice_polish_1A.md).
+
+### Developer shell
+
+F10 docked sidebar, full-viewport gameplay when F10 off — see [`project_checkpoint_developer_experience_pass1.md`](../checkpoints/project_checkpoint_developer_experience_pass1.md).
 
 ### Relationship framework (Milestone 8 + 9A)
 
@@ -484,17 +502,20 @@ Major gaps before the slice is **player-complete**. Ordered by [**Section 12 imp
 
 | Phase | System | Need |
 |-------|--------|------|
-| **1** | Handcrafted level Pass 2 | **Complete** — [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md) P2.1 |
-| **1** | Slice spawn & encounter scripting | Archetype beats per Section 6; boundary colliders |
-| **2** | Scout / Raider / Brute prototypes | Scene or export presets — behavior roles, not reskins |
-| **2** | Mixed-encounter tuning | Scout+Raider, two Raiders, Scout+Brute, climax mix |
-| **3** | Combat audio | Swing, hit, miss, stagger, dragon strike |
-| **3** | Animation polish (minimal) | Sync to Pass 6 timings; telegraphs supplemental |
-| **3** | Player-facing relationship feedback | Last encounter line without F10 |
+| **1** | Handcrafted level Pass 2 | **Complete** |
+| **1** | Slice spawn & encounter scripting | **Complete** — [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md) |
+| **2** | Scout / Raider / Brute prototypes | **Complete** — playtest validation pending |
+| **2** | Mixed-encounter tuning | **Complete** on slice — playtest validation pending |
+| **3** | Event audio (placeholders) | **Complete** — Audio Feedback Pass 1 |
+| **3** | Audio playtest validation | **Audio Feedback Pass 1A** — checklist pending |
+| **3** | Player-facing relationship feedback | **Complete** — Polish Pass 1A |
+| **3** | Animation polish (minimal) | **Player Animation Pass 1** — not started |
 | **3** | Starting weapon (formal) | Move from debug hotkeys |
-| **3** | Dev UI hidden for player builds | F10/F11/spawn behind debug flag |
+| **3** | Dev UI hidden for player builds | **Dragon Personality Pass 1** |
+| **3** | Dragon personality communication | **Dragon Personality Pass 1** |
 | **Later** | Death / retry flow | Game over → retry segment |
 | **Later** | Basic save at slice end | Optional |
+| **Later** | Final audio assets | Replace catalog placeholders |
 
 **Not required for slice v1:** dodge, magic, inventory, Bond pattern pass, dragon health, races, flight.
 
@@ -541,28 +562,38 @@ Exact layout is implementation — beats are design requirements.
 **Current planned milestones** before the slice is player-shippable. This is **not** the post-slice full-game roadmap (Section 15).
 
 ```
-1. Vertical Slice Level Prototype — Pass 2  ← COMPLETE (P2.1 grove fix)
+1. Vertical Slice Level Prototype — Pass 2  ← COMPLETE (P2.2)
            ↓
-2. Enemy Archetype Prototype — Pass 1     ← IMPLEMENTED (playtest)
+2. Enemy Archetype Prototype — Pass 1+1B  ← IMPLEMENTED (playtest pending)
            ↓
-3. Combat Depth — Pass 1 Phase A          ← IMPLEMENTED (movement foundation)
+3. Combat Depth — Pass 1 Phase A+B        ← IMPLEMENTED (playtest pending)
            ↓
-3b. Combat Depth — Pass 1 Phase B         ← IMPLEMENTED (target focus)
+4. Vertical Slice Polish — Pass 1A        ← IMPLEMENTED (playtest pending)
            ↓
-4. Vertical Slice Polish — Pass 1A        ← IMPLEMENTED (player feedback)
+5. Vertical Slice UI Cleanup — Pass 1     ← IMPLEMENTED
            ↓
-5. Vertical Slice UI Cleanup — Pass 1     ← IMPLEMENTED (HUD + Developer Mode)
+6. Developer Experience — Pass 1          ← IMPLEMENTED
            ↓
-6. Developer Experience — Pass 1          ← IMPLEMENTED (docked workspace + window)
+7. Audio Feedback — Pass 1                ← IMPLEMENTED (placeholder architecture)
            ↓
-7. Audio Feedback — Pass 1                ← IMPLEMENTED (centralized event audio)
+8. Documentation Cleanup — Pass 1         ← COMPLETE
            ↓
-   (then) Pass 1B — Dragon Personality · hide dev UI
+8b. Documentation Organization — Pass 1  ← COMPLETE
            ↓
-   Player Polish Pass — animation · final audio assets
+9. Audio Feedback — Pass 1A               ← NEXT (playtest validation)
+           ↓
+10. Informal Playtest
+           ↓
+11. Dragon Personality — Pass 1
+           ↓
+12. Player Animation — Pass 1
+           ↓
+13. Structured Vertical Slice Playtest
+           ↓
+14. Documentation Cleanup — Pass 2        ← future
 ```
 
-Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
+Detail: [`PROJECT_STATE.md`](../PROJECT_STATE.md) · [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md)
 
 ---
 
@@ -574,7 +605,7 @@ Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
 
 **Focus:** navigation · readability · pacing · boundaries · environmental flow
 
-**Delivered:** Variable-width spine, visible=collision walls, sealed grove with **two south exits**, location-shaped spaces, route guides. Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md).
+**Delivered:** Variable-width spine, visible=collision walls, sealed grove with **two south exits**, location-shaped spaces, route guides. Detail: [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md).
 
 ---
 
@@ -592,7 +623,7 @@ Detail: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
 
 **Pass 1B goals accomplished:** attack commitment windows, archetype interruption tuning, Raider 1v1 fairness, Brute point-blank reliability, improved Brute hit impact.
 
-Detail: [`combat_feel_notes.md`](combat_feel_notes.md) → Pass 1 + Pass 1B.
+Detail: [`combat_feel_notes.md`](../notes/combat_feel_notes.md) → Pass 1 + Pass 1B.
 
 **Not in scope:** full poise system, heavy attacks, dragon combo attacks, species art.
 
@@ -604,7 +635,7 @@ Detail: [`combat_feel_notes.md`](combat_feel_notes.md) → Pass 1 + Pass 1B.
 
 **Purpose:** Increase player **decision-making** — combat becomes less about attack spam and more about choosing the correct action.
 
-Full design: [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1 Phase A.
+Full design: [`combat_feel_notes.md`](../notes/combat_feel_notes.md) → Combat Depth Pass 1 Phase A.
 
 #### Phase A — Movement Foundation (live)
 
@@ -641,7 +672,7 @@ Foundation for future **shield gameplay** — stance is general-purpose rider co
 
 Combat rewards **positioning, timing, spacing, and correct attack choice**. Phase A adds facing lock during attacks; Phase B+ may add extended recovery punish windows.
 
-**Phase B — Target Focus (live):** Caps Lock toggles facing toward a chosen enemy; Tab cycles targets. Facing-only — not lock-on combat. See [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1 Phase B.
+**Phase B — Target Focus (live):** Caps Lock toggles facing toward a chosen enemy; Tab cycles targets. Facing-only — not lock-on combat. See [`combat_feel_notes.md`](../notes/combat_feel_notes.md) → Combat Depth Pass 1 Phase B.
 
 **Phase C+ (not yet):** shield block · enemy punish windows · extended recovery tuning.
 
@@ -663,7 +694,7 @@ Combat rewards **positioning, timing, spacing, and correct attack choice**. Phas
 | Combat hit/stagger/resist floaters | **Live** |
 | Target Focus visual contrast | **Live** |
 
-Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md)
+Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](../checkpoints/project_checkpoint_vertical_slice_polish_1A.md)
 
 ### Audio Feedback Pass 1 (implemented)
 
@@ -678,9 +709,11 @@ Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_ve
 | Binder on existing signals | **Live** |
 | Placeholder reuse policy | **Documented** |
 
-Detail: [`project_checkpoint_audio_feedback_pass1.md`](project_checkpoint_audio_feedback_pass1.md) · [`audio_placeholder_assets.md`](audio_placeholder_assets.md)
+Detail: [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md) · [`audio_placeholder_assets.md`](../audio/audio_placeholder_assets.md)
 
-**Pass 1B (next):** Dragon personality / communication · hide dev UI in player builds.
+**Pass 1A (next validation):** Playtest checklist in audio checkpoint — see [`PROJECT_STATE.md`](../PROJECT_STATE.md).
+
+**Dragon Personality Pass 1 (next implementation):** Dragon communication · hide dev UI in player builds.
 
 ### Vertical Slice UI Cleanup Pass 1 (implemented)
 
@@ -693,10 +726,10 @@ Detail: [`project_checkpoint_audio_feedback_pass1.md`](project_checkpoint_audio_
 | **PlayerHud** | Unified top-left: HP + dragon status |
 | **Area announce** | Transient center-top on zone enter |
 | **Developer Mode** | F10 toggles help + debug overlays together |
-| **Window** | 1920×1080 full-viewport gameplay |
+| **Window** | **2560×1440** default; gameplay SubViewport fills shell when F10 off — see [`project_checkpoint_developer_experience_pass1.md`](../checkpoints/project_checkpoint_developer_experience_pass1.md) |
 | **Dragon bubble** | Disabled; HUD + StatusVisual ring |
 
-Detail: [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md)
+Detail: [`project_checkpoint_ui_cleanup_pass1.md`](../checkpoints/project_checkpoint_ui_cleanup_pass1.md)
 
 ### Developer Experience Pass 1 (implemented)
 
@@ -711,7 +744,7 @@ Detail: [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup
 | **Developer Mode** | F10 docks help (below game) + debug (right); game viewport shrinks |
 | **playtest_shell.gd** | Shared layout for TestWorld + Vertical Slice |
 
-Detail: [`project_checkpoint_developer_experience_pass1.md`](project_checkpoint_developer_experience_pass1.md)
+Detail: [`project_checkpoint_developer_experience_pass1.md`](../checkpoints/project_checkpoint_developer_experience_pass1.md)
 
 ### Subsequent — Player Polish Pass (animation & final audio)
 
@@ -721,7 +754,7 @@ After Pass 1A + Audio Pass 1 validate communication:
 
 #### Why archetypes before polish (unchanged)
 
-Polish locks timing to threat cadence — scout rush vs brute wind-up must exist first. See Pass 1 rationale in [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md).
+Polish locks timing to threat cadence — scout rush vs brute wind-up must exist first. See Pass 1 rationale in [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md).
 
 ---
 
@@ -800,13 +833,14 @@ Story, factions, races, politics
 
 | Layer | Document |
 |-------|----------|
-| **Vertical Slice design direction** | **`docs/vertical_slice_design_v1.md` (this document)** |
-| **Live combat prototype** | `docs/project_checkpoint_combat_feel_v1.md` |
-| **Live relationship / encounter resolve** | `docs/project_checkpoint_milestone9A.md` |
-| **Relationship behavior catalog** | `docs/relationship_event_framework.md` |
-| **Combat feel history & experiments** | `docs/combat_feel_notes.md` |
-| **High-level combat vision** | `docs/combat.md` |
-| **Product systems map** | `docs/game_architecture.md` |
+| **Documentation hierarchy & agent onboarding** | [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md) · [`CURSOR_ONBOARDING.md`](../CURSOR_ONBOARDING.md) |
+| **Vertical Slice design direction** | **`./vertical_slice_design_v1.md` (this document)** |
+| **Live combat prototype** | `../checkpoints/project_checkpoint_combat_feel_v1.md` |
+| **Live relationship / encounter resolve** | `../checkpoints/project_checkpoint_milestone9A.md` |
+| **Relationship behavior catalog** | `./relationship_event_framework.md` |
+| **Combat feel history & experiments** | `../notes/combat_feel_notes.md` |
+| **High-level combat vision** | `./combat.md` |
+| **Product systems map** | `./game_architecture.md` |
 
 **Rule:** This document wins for **slice scope, pacing, archetypes, and build order**. Checkpoints win for **current numeric behavior** until amended.
 
@@ -855,3 +889,6 @@ Story, factions, races, politics
 | **v1.9** | 2026-05-29 | Vertical Slice Polish Pass 1A begun — player feedback & communication |
 | **v1.10** | 2026-05-29 | Vertical Slice UI Cleanup Pass 1 — HUD layout & Developer Mode |
 | **v1.11** | 2026-05-29 | Developer Experience Pass 1 — docked workspace, 2560×1440 window |
+| **v1.12** | 2026-07-06 | Documentation Cleanup Pass 1 — hierarchy, PROJECT_STATE, onboarding |
+| **v1.13** | 2026-07-06 | PROJECT_STATE polish — active development homepage |
+| **v1.14** | 2026-07-06 | Documentation Organization Pass 1 — docs folder structure |

@@ -2,15 +2,16 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest:** `res://scenes/world/TestWorld.tscn` or `VerticalSlice_Level_P1.tscn` (F6)  
-**Design journal:** [`combat_feel_notes.md`](combat_feel_notes.md) → Combat Depth Pass 1 Phase A + Phase B  
-**Vertical slice design:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) → Milestone 3  
-**Prior combat reference:** [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) (Passes 1–7 melee prototype)
+**Design journal:** [`combat_feel_notes.md`](../notes/combat_feel_notes.md) → Combat Depth Pass 1 Phase A + Phase B  
+**Vertical slice design:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) → Milestone 3  
+**Prior combat reference:** [`project_checkpoint_combat_feel_v1.md`](./project_checkpoint_combat_feel_v1.md) (Passes 1–7 melee prototype)
 
 **Status:** Stable reference for **Combat Depth Pass 1 Phase A + Phase B** — movement foundation and Target Focus.  
 **Scope:** Combat Stance, weapon movement identity, attack facing commitment, Target Focus, debug readouts.  
 **Not in scope:** shields, blocking, stamina, dodge rolls, camera lock-on, auto-hit, enemy rebalance, bond/sync/instability changes.
 
-**Date:** 2026-05-29 · **Playtest validation:** pending
+**Date:** 2026-05-29 · **Playtest validation:** pending  
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md) · Audio: [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md)
 
 ---
 
@@ -226,7 +227,7 @@ Combat remains positioning-first: choose when to attack, which attack, and where
 | **Acquire vs retarget** | Initial pick is front-biased; kill retarget is nearest-only — behavior differs by design |
 | **Enemy AI** | Focus does not change enemy behavior; Scouts still skirmish, Brutes still commit |
 | **Animation** | Facing is visual rotation lerp — no dedicated lock-on anim set |
-| **Audio** | No focus acquire / retarget / clear cues |
+| **Final focus audio** | Placeholder cues live (`TARGET_FOCUS_ON/SWITCH/OFF`) — see [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md) |
 
 **Intentionally unchanged:** bond, sync, instability, relationship, encounter scoring, dragon AI, enemy balance tables, weapon damage profiles, camera follow logic.
 
@@ -245,7 +246,7 @@ Validate Phase A + B in playtest first, then:
 
 ### After Combat Depth validates
 
-Per [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md):
+Per [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md):
 
 - **Player Polish Pass** — combat audio, minimal attack animation, player-facing bond feedback, hide dev UI in player builds
 
@@ -284,6 +285,6 @@ Per [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md):
 
 | Document | Use |
 |----------|-----|
-| [`combat_feel_notes.md`](combat_feel_notes.md) | Pass-by-pass journal with playtest questions |
-| [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) | Milestone 3 scope and slice roadmap |
-| [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) | Melee prototype Passes 1–7 reference |
+| [`combat_feel_notes.md`](../notes/combat_feel_notes.md) | Pass-by-pass journal with playtest questions |
+| [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) | Milestone 3 scope and slice roadmap |
+| [`project_checkpoint_combat_feel_v1.md`](./project_checkpoint_combat_feel_v1.md) | Melee prototype Passes 1–7 reference |

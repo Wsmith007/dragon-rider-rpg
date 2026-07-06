@@ -2,8 +2,9 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest shells:** `TestWorld.tscn` · `VerticalSlice_Level_P1.tscn` (F6)  
-**Prior work:** [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md) (overlay model — superseded for dev panels)  
-**Design constitution:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md)
+**Prior work:** [`project_checkpoint_ui_cleanup_pass1.md`](./project_checkpoint_ui_cleanup_pass1.md) (overlay model — superseded for dev panels)  
+**Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)
 
 **Status:** **IMPLEMENTED — stable enough for ongoing playtest**  
 **Scope:** Application shell, viewport fill, docked developer workspace — **no gameplay, combat, AI, or relationship math changes**  
@@ -270,6 +271,8 @@ Further polish (draggable split, player-build hide, debug log flag default-off, 
 
 | Document | Relationship |
 |----------|--------------|
-| [`project_checkpoint_ui_cleanup_pass1.md`](project_checkpoint_ui_cleanup_pass1.md) | Historical overlay model — dev panels since moved to docked sidebar |
-| [`project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md) | Relationship observation data shown in debug panel |
-| [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) | Roadmap — Developer Experience Pass 1 marked implemented |
+| [`project_checkpoint_ui_cleanup_pass1.md`](./project_checkpoint_ui_cleanup_pass1.md) | Historical overlay model — dev panels since moved to docked sidebar |
+| [`project_checkpoint_milestone9A.md`](./project_checkpoint_milestone9A.md) | Relationship observation data shown in debug panel |
+| [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) | Roadmap — Developer Experience Pass 1 marked implemented |
+| [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) | Documentation authority |
+| [`PROJECT_STATE.md`](../PROJECT_STATE.md) | Current milestone and entry point |

@@ -2,7 +2,8 @@
 
 **Scene:** `res://scenes/world/VerticalSlice_Level_P1.tscn`  
 **Game root:** `res://scenes/world/VerticalSliceLevelP1Game.tscn`  
-**Design reference:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 6, 12  
+**Design reference:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 6, 12  
+**Agent entry:** [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
 **Status:** Graybox — **Pass 2 complete** (P2.2 connectivity — Phase 1 layout signed off)
 
 TestWorld remains the permanent systems sandbox.
@@ -14,10 +15,10 @@ TestWorld remains the permanent systems sandbox.
 | # | Milestone | Status | Purpose |
 |---|-----------|--------|---------|
 | **1** | **Level Prototype Pass 2** | **Complete** (P2.2) | Connected environment — navigation, boundaries, pacing, flow |
-| **2** | **Enemy Archetype Prototype Pass 1** | **Implemented** | Behavioral Scout / Raider / Brute roles |
-| **3** | **Combat Depth Pass 1** | Documented only | Combat Stance + movement identity — **not implemented** |
+| **2** | **Enemy Archetype Prototype Pass 1+1B** | **Implemented** (playtest pending) | Behavioral Scout / Raider / Brute roles |
+| **3** | **Combat Depth Pass 1 Phase A+B** | **Implemented** (playtest pending) | Combat Stance + Target Focus — see [`project_checkpoint_combat_depth_1B.md`](../checkpoints/project_checkpoint_combat_depth_1B.md) |
 
-Detail in [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12.
+Detail in [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 12.
 
 ---
 
@@ -153,7 +154,7 @@ Script: `scripts/world/vertical_slice_graybox_geometry.gd`
 - **Zone HUD** — `SliceZoneLabel` updates from layout-driven zone notifiers  
 - **No invisible blockers** — if you see a wall, it collides  
 - **Quiet Grove rest** — entering restores full HP; enemies stop chasing while the player is inside  
-- **Dragon companion passages** — keep routes wide enough for dragon follow (~32 px body); tight corners may require rare catch-up/teleport (see [`dragon_ai.md`](dragon_ai.md))  
+- **Dragon companion passages** — keep routes wide enough for dragon follow (~32 px body); tight corners may require rare catch-up/teleport (see [`dragon_ai.md`](../design/dragon_ai.md))  
 
 ---
 
@@ -201,7 +202,7 @@ Pass 2 + P2.1 + P2.2 satisfy Phase 1 level layout goals:
 - [x] No east-wall out-of-bounds from grove  
 - [x] Encounter order unchanged; triggers on spine  
 
-**Ready for Enemy Archetype Prototype Pass 1** after brief playtest confirmation of both Hold routes and gate readability.
+**Playtest validation pending** — archetype encounters and dual Hold routes ready for structured slice playtest. See [`PROJECT_STATE.md`](../PROJECT_STATE.md).
 
 ---
 

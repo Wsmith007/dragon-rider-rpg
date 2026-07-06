@@ -2,13 +2,15 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn` (playtest shell with split layout)  
-**Prior checkpoint:** `docs/project_checkpoint_milestone8.md` (historical — observation only at M8)  
-**Design reference:** `docs/relationship_event_framework.md` (v2.0 — **source of truth** for relationship behavior)  
-**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (experience goals and slice scope — **not** mechanical SoT)
+**Prior checkpoint:** `../historical/project_checkpoint_milestone8.md` (historical — observation only at M8)  
+**Design reference:** `../design/relationship_event_framework.md` (v2.0 — **source of truth** for relationship behavior)  
+**Vertical Slice design:** `../design/vertical_slice_design_v1.md` (experience goals and slice scope — **not** mechanical SoT)
 
 Milestone 9A adds **live Sync and Instability changes** from resolved encounters using a **split rating model**. Bond Strength remains **protected** from per-encounter resolution.
 
----
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)
+
+> **Historical section:** [Debug UI & Playtest Layout](#debug-ui--playtest-layout) below describes the **pre–Developer Experience Pass 1** split layout (1600×900, permanent 1200+400). **Current shell:** [`project_checkpoint_developer_experience_pass1.md`](./project_checkpoint_developer_experience_pass1.md) — 2560×1440, F10 docked 420px sidebar, full viewport when F10 off.
 
 ## Milestone Summary
 
@@ -80,7 +82,7 @@ Aggro/alert alone do **not** start encounters.
 
 **Disengage grace:** 4 s chase timeout / flee distance → 6 s grace window to resume same encounter; disengage prevents Excellent Quality.
 
-See `docs/project_checkpoint_milestone8.md` for historical M8 detail on disengage constants and flow.
+See `../historical/project_checkpoint_milestone8.md` for historical M8 detail on disengage constants and flow.
 
 ---
 
@@ -142,7 +144,7 @@ Measures **teamwork / execution**. Classifier: `CooperationRatingClassifier`.
 - **Not modified** at encounter resolve
 - Debug UI may show **Bond Δ preview** (e.g. −1 on Disastrous death) — **NOT APPLIED**
 - Future Bond changes intended via **session/pattern evaluation**, not per-fight rolls
-- See `docs/bond_system.md` and `docs/relationship_event_framework.md` §7.2 / Bond Strength guardrails
+- See `../design/bond_system.md` and `../design/relationship_event_framework.md` §7.2 / Bond Strength guardrails
 
 ---
 
@@ -156,6 +158,8 @@ Measures **teamwork / execution**. Classifier: `CooperationRatingClassifier`.
 ---
 
 ## Debug UI & Playtest Layout
+
+> **⚠ Historical — preserved as written at Milestone 9A.** Superseded by [`project_checkpoint_developer_experience_pass1.md`](./project_checkpoint_developer_experience_pass1.md). Relationship observation **content** in BondDebugUI is still current; **layout and window sizes** below are not.
 
 **F10** — toggles docked **Debug Panel** (right column); gameplay expands to full width when hidden.
 
@@ -192,7 +196,7 @@ Measures **teamwork / execution**. Classifier: `CooperationRatingClassifier`.
 | Stat application | `scripts/bond/bond_system.gd` |
 | Playtest shell | `scenes/world/TestWorld.tscn`, `TestWorldGame.tscn` |
 | Debug UI | `scripts/ui/bond_debug_ui.gd`, `scenes/ui/BondDebugUI.tscn` |
-| Framework doc | `docs/relationship_event_framework.md` |
+| Framework doc | `../design/relationship_event_framework.md` |
 
 ---
 
@@ -224,7 +228,7 @@ Measures **teamwork / execution**. Classifier: `CooperationRatingClassifier`.
 | Severe | 51–75% | +2 |
 | Disastrous | 76%+ or near-death | +4 |
 
-Cooperation Rating and Sync deltas unchanged. See `docs/relationship_event_framework.md` → **Planned Revision**.
+Cooperation Rating and Sync deltas unchanged. See `../design/relationship_event_framework.md` → **Planned Revision**.
 
 **Death handling (planned):** separate failure states outside routine outcome bands.
 
@@ -240,7 +244,7 @@ Cooperation Rating and Sync deltas unchanged. See `docs/relationship_event_frame
 - Exploration and story events (session-level Bond)
 - Enemy escape / dragon injured resolved outcomes
 
-See `docs/relationship_event_framework.md` → **Future Systems**.
+See `../design/relationship_event_framework.md` → **Future Systems**.
 
 ---
 
@@ -257,7 +261,7 @@ See `docs/relationship_event_framework.md` → **Future Systems**.
 - Returning to earlier areas should **demonstrate growth**
 - Relationship progression as important as character progression
 
-See `docs/relationship_event_framework.md` → **Long-Term Progression Philosophy** and `docs/game_architecture.md`.
+See `../design/relationship_event_framework.md` → **Long-Term Progression Philosophy** and `../design/game_architecture.md`.
 
 ---
 

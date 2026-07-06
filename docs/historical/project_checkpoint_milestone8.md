@@ -2,13 +2,13 @@
 
 > **Historical checkpoint.** Milestone 8 shipped **relationship observation only** — stats were not applied at resolve.  
 > For **current live relationship behavior** after Milestone 9A (live Sync/Instability, split ratings), see  
-> [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md) and  
-> [`docs/relationship_event_framework.md`](relationship_event_framework.md) (v2.0).
+> [`../checkpoints/project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md) and  
+> [`../design/relationship_event_framework.md`](../design/relationship_event_framework.md) (v2.0).
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn`  
-**Prior checkpoint:** `docs/project_checkpoint_milestone7.md`  
-**Design reference:** `docs/relationship_event_framework.md`
+**Prior checkpoint:** `./project_checkpoint_milestone7.md`  
+**Design reference:** `../design/relationship_event_framework.md`
 
 Milestone 8 adds **relationship observation infrastructure only**. Bond Strength, Sync, and Instability are **never modified** by this system.
 
@@ -209,7 +209,7 @@ Example preview tiers (not applied):
 | Proposed deltas | `scripts/relationship/proposed_delta_generator.gd`, `proposed_relationship_deltas.gd` |
 | Session history | `scripts/relationship/relationship_session_tracker.gd` |
 | Debug UI | `scripts/ui/bond_debug_ui.gd`, `scenes/ui/BondDebugUI.tscn` |
-| Event framework doc | `docs/relationship_event_framework.md` |
+| Event framework doc | `../design/relationship_event_framework.md` |
 
 ---
 

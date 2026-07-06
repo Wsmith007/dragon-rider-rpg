@@ -1,6 +1,6 @@
 # Game Overview
 
-**Vertical Slice design:** [`docs/vertical_slice_design_v1.md`](vertical_slice_design_v1.md) — scope, experience goals, slice pillars, and **enemy archetypes** (Scout / Raider / Brute). This document describes the **full game** vision; the slice intentionally defers politics, races, magic, and large-world systems until the core rider–dragon loop is proven.
+**Vertical Slice design:** [`./vertical_slice_design_v1.md`](./vertical_slice_design_v1.md) — scope, experience goals, slice pillars, and **enemy archetypes** (Scout / Raider / Brute). This document describes the **full game** vision; the slice intentionally defers politics, races, magic, and large-world systems until the core rider–dragon loop is proven.
 
 The game is a 2D action adventure RPG focused on dragon rider relationships, political tension between races, and semi-independent dragon companions.
 
@@ -289,13 +289,13 @@ Progression is intended to feel relational rather than purely statistical.
 
 Enemy scaling should come primarily from **region difficulty**, **enemy type**, and **enemy variants** — not full player-level scaling. Returning to earlier areas should demonstrate growth. **Relationship progression should remain as important as character progression.**
 
-See `docs/relationship_event_framework.md` (Long-Term Progression Philosophy).
+See `./relationship_event_framework.md` (Long-Term Progression Philosophy).
 
 ## Relationship system (Milestone 9A — live)
 
 `RelationshipSystem` (autoload) tracks local encounters and applies **Sync** (Cooperation Rating) and **Instability** (Encounter Quality) at resolve. **Bond Strength is protected** from per-encounter rolls; future Bond changes are session/pattern-based.
 
-See `docs/project_checkpoint_milestone9A.md`.
+See `../checkpoints/project_checkpoint_milestone9A.md`.
 
 ---
 

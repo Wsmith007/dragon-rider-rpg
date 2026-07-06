@@ -180,7 +180,7 @@ Dragon combat behaviors emit **relationship events** consumed by `RelationshipSy
 - **Encounter Quality** measures outcome stress → drives **Instability** at resolve.
 - Cancellations and hesitations affect **Cooperation**, not Encounter Quality directly.
 
-See `docs/relationship_event_framework.md` and `docs/project_checkpoint_milestone9A.md`.
+See `./relationship_event_framework.md` and `../checkpoints/project_checkpoint_milestone9A.md`.
 
 ---
 

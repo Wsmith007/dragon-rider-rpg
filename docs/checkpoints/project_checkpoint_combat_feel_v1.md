@@ -2,16 +2,26 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Main scene:** `res://scenes/world/TestWorld.tscn` (playtest shell with split layout)  
-**Prior relationship checkpoint:** `docs/project_checkpoint_milestone9A.md` (relationship / bond — **not** combat prototype SoT)  
-**Vertical Slice design:** `docs/vertical_slice_design_v1.md` (player experience, scope, success criteria — **not** mechanical SoT)  
-**Combat design journal:** `docs/combat_feel_notes.md` (pass-by-pass history + future ideas)  
-**High-level combat vision:** `docs/combat.md` (co-op philosophy, bond/sync/instability — partially ahead of prototype)
+**Prior relationship checkpoint:** `./project_checkpoint_milestone9A.md` (relationship / bond — **not** combat prototype SoT)  
+**Vertical Slice design:** `../design/vertical_slice_design_v1.md` (player experience, scope, success criteria — **not** mechanical SoT)  
+**Combat design journal:** `../notes/combat_feel_notes.md` (pass-by-pass history + future ideas)  
+**High-level combat vision:** `../design/combat.md` (co-op philosophy, bond/sync/instability — partially ahead of prototype)
 
 **Status:** Stable reference for the **current combat prototype** after Combat Feel Passes **1–7**.  
 **Scope:** Rider melee, default enemy behavior, combat feedback, and playtest-tuned feel.  
-**Not in scope:** Full weapons, equipment, enemy variants, leveling, progression, dragon combat expansion, magic.
+**Not in scope:** Full weapons, equipment, inventory, leveling, progression, dragon combat expansion, magic.
 
-**Post-v1 tuning (live):** Weapon Profile **Tuning Pass 1** refines Pass 1–2 debug profiles — sword highest DPS, weapon-scaled CC, polearm control focus. See `docs/combat_feel_notes.md` → Weapon Profile Prototype Tuning Pass 1.
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)
+
+**Extends this checkpoint (post–Combat Feel v1):**
+
+| System | See |
+|--------|-----|
+| Scout / Raider / Brute archetypes | [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) §3 · [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md) |
+| Combat Stance + Target Focus | [`project_checkpoint_combat_depth_1B.md`](./project_checkpoint_combat_depth_1B.md) |
+| Event audio (placeholders) | [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md) |
+
+**Post-v1 tuning (live):** Weapon Profile **Tuning Pass 1** refines Pass 1–2 debug profiles — sword highest DPS, weapon-scaled CC, polearm control focus. See `../notes/combat_feel_notes.md` → Weapon Profile Prototype Tuning Pass 1.
 
 ---
 
@@ -28,8 +38,8 @@
 | Likely-target preview (Pass 7) | **Live** |
 | Weapon profile prototype (debug 1/2/3) | **Live** — Tuning Pass 1: focused + weapon-scaled CC |
 | Weapon / equipment systems | **Not implemented** |
-| Enemy archetype variants | **Not implemented** |
-| Combat audio | **Not implemented** |
+| Enemy archetype variants (slice roles) | **Live on slice level** — see [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md); §3 below still describes **default Raider** prototype |
+| Combat audio | **Placeholder architecture live** — see [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md) |
 | Attack animations | **Not implemented** |
 | Stamina / charge limits on CC | **Not implemented** |
 
@@ -390,11 +400,11 @@ Summarized from `combat_feel_notes.md` → Weapon Identity Direction. Do not tre
 |------------|-------|
 | **No weapon system** | One global focused + CC profile on all swings |
 | **No equipment** | No gear modifying reach, arc, or damage |
-| **No enemy variants** | Single `Enemy` archetype; speed exports exist for future override |
+| **Enemy archetypes** | This checkpoint §3 describes **default Raider** tuning; Scout/Brute live via slice presets — see [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md) |
 | **No dragon health** | Player harm only for encounter quality |
 | **No magic** | Melee prototype only |
 | **No attack animations** | Timing and `_draw()` telegraphs only |
-| **No audio feedback** | Silent hits, wind-ups, misses |
+| **Final audio assets** | Placeholder event audio live — see [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md) |
 | **No stamina / charges** | CC limited by cooldown only |
 | **No progression integration** | Combat stats not tied to leveling |
 | **Global hit-stop** | Briefly affects entire simulation, not player-only |
@@ -408,7 +418,9 @@ Summarized from `combat_feel_notes.md` → Weapon Identity Direction. Do not tre
 ## Section 7 — Next Logical Milestones
 
 Listed for planning only — **not implemented**.  
-**Vertical Slice build order** (level → archetypes → polish): [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12. Slice enemy roles: Scout / Raider / Brute (Section 3).
+**Vertical Slice build order:** [`PROJECT_STATE.md`](../PROJECT_STATE.md) · [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 12. Slice enemy roles: Scout / Raider / Brute (Section 3).
+
+> **Note:** Items 2 (archetypes) and 3 (combat audio placeholders) have shipped since this section was written — see [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md) and [`project_checkpoint_audio_feedback_pass1.md`](./project_checkpoint_audio_feedback_pass1.md).
 
 ### 1. Weapon Profile Prototype
 
@@ -416,7 +428,7 @@ Split focused/CC parameters by weapon class (dagger / sword / polearm) **without
 
 ### 2. Enemy Variant Prototype
 
-Scout / Raider / Brute **archetypes** (slice design) — gameplay roles using `chase_speed`, `engage_reposition_speed`, and `knockback_resistance` overrides. See [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3. *(Checkpoint label "Heavy / scout / beast" predates Raider/Brute naming.)*
+Scout / Raider / Brute **archetypes** (slice design) — gameplay roles using `chase_speed`, `engage_reposition_speed`, and `knockback_resistance` overrides. See [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 3. *(Checkpoint label "Heavy / scout / beast" predates Raider/Brute naming.)*
 
 ### 3. Combat Audio Pass
 
@@ -440,7 +452,7 @@ Link character level / stats to combat capabilities without breaking the directi
 
 ### Primary combat prototype reference
 
-**`docs/project_checkpoint_combat_feel_v1.md`** (this document) is the **primary reference** for:
+**`./project_checkpoint_combat_feel_v1.md`** (this document) is the **primary reference** for:
 
 - Live player melee behavior (focused + CC)
 - Combat feel passes 1–7 summary and current values
@@ -451,11 +463,11 @@ Link character level / stats to combat capabilities without breaking the directi
 
 | Document | Role |
 |----------|------|
-| **`docs/combat_feel_notes.md`** | Pass-by-pass journal, playtest questions, weapon identity design notes, future ideas — **supplements** this checkpoint; may contain historical or forward-looking sections |
-| **`docs/combat.md`** | High-level combat vision (rider–dragon co-op, bond/sync/instability philosophy) — **not** pass-level mechanical SoT |
-| **`docs/project_checkpoint_milestone9A.md`** | Relationship / bond / encounter resolve SoT — **orthogonal** to combat feel; still authoritative for Sync/Instability application |
-| **`docs/game_architecture.md`** | Product-level systems map |
-| **`docs/technical_architecture.md`** | Code organization; notes `CombatSystem` as future/managed layer |
+| **`../notes/combat_feel_notes.md`** | Pass-by-pass journal, playtest questions, weapon identity design notes, future ideas — **supplements** this checkpoint; may contain historical or forward-looking sections |
+| **`../design/combat.md`** | High-level combat vision (rider–dragon co-op, bond/sync/instability philosophy) — **not** pass-level mechanical SoT |
+| **`./project_checkpoint_milestone9A.md`** | Relationship / bond / encounter resolve SoT — **orthogonal** to combat feel; still authoritative for Sync/Instability application |
+| **`../design/game_architecture.md`** | Product-level systems map |
+| **`../design/technical_architecture.md`** | Code organization; notes `CombatSystem` as future/managed layer |
 
 ### Key implementation files
 

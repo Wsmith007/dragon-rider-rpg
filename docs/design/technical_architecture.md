@@ -179,7 +179,7 @@ Hooks → RelationshipEventBus → RelationshipEncounterTracker
 
 **Bond Strength:** protected at resolve; future **Bond pattern evaluation** across sessions.
 
-**Source of truth:** `docs/relationship_event_framework.md`, `docs/project_checkpoint_milestone9A.md`.
+**Source of truth:** `./relationship_event_framework.md`, `../checkpoints/project_checkpoint_milestone9A.md`.
 
 ---
 

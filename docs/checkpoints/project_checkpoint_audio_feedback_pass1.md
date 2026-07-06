@@ -2,13 +2,14 @@
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest:** `TestWorld.tscn` · `VerticalSlice_Level_P1.tscn` (F6)  
-**Design constitution:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md)  
-**Placeholder assets:** [`audio_placeholder_assets.md`](audio_placeholder_assets.md)  
-**Player feedback layer:** [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md)
+**Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
+**Placeholder assets:** [`audio_placeholder_assets.md`](../audio/audio_placeholder_assets.md)  
+**Player feedback layer:** [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md)
 
-**Status:** **IMPLEMENTED** — architecture + event wiring live; playtest validation pending  
+**Status:** **IMPLEMENTED** — architecture + event wiring live · **Pass 1A VALIDATED** (2026-07-06)  
 **Scope:** Centralized audio manager, event catalog, placeholder playback — **no combat balance, AI, dragon behavior, or relationship math changes**  
-**Date:** 2026-07-05
+**Date:** 2026-07-05 (Pass 1) · 2026-07-06 (Pass 1A validation)  
+**Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)
 
 ---
 
@@ -144,7 +145,7 @@ No settings menu in this pass — buses exist for future mixing.
 3. Playtest — no gameplay file changes required.  
 4. When ready, split shared placeholders (e.g. separate `PLAYER_HIT` from `ENEMY_HIT` streams).  
 
-Likely eventual splits documented in [`audio_placeholder_assets.md`](audio_placeholder_assets.md).
+Likely eventual splits documented in [`audio_placeholder_assets.md`](../audio/audio_placeholder_assets.md).
 
 ---
 
@@ -165,30 +166,83 @@ Likely eventual splits documented in [`audio_placeholder_assets.md`](audio_place
 
 | Milestone | Scope |
 |-----------|--------|
-| **Pass 1B+** | Dragon personality voice lines (separate from presence cues) |
+| **Pass 1A** | **Complete** — see [Pass 1A validation](#pass-1a-validation-2026-07-06) |
+| **Dragon Personality Pass 1** | Dragon personality voice lines (separate from presence cues) |
 | **Pass 2** | Per-weapon swings, distinct UI stingers, mix pass |
 | **Pass 3** | Ambient zone beds, music stub, volume settings menu |
 | **Polish** | Attack animation sync, hitstop audio lockstep |
 
 ---
 
-## Playtest checklist
+## Playtest checklist (Pass 1A)
 
-1. Focused swing — quiet noise at wind-up; impact on connect; optional faint miss on whiff  
-2. CC swing — distinct pitch from focused; impact on hit (not machine-gun on multi-hit)  
-3. Brute hit on player — heavy thud; brute resist — lighter clang variant  
-4. Target focus — soft UI blips on acquire / switch / clear  
-5. Encounter end — subtle stinger with summary panel  
-6. Relationship toast — improved vs strained audibly distinct (pitch)  
-7. Dragon assist / protect / wait — subtle, not constant  
-8. Silence during exploration and follow — no ambient spam  
+| # | Check | Result |
+|---|-------|--------|
+| 1 | Focused swing — wind-up sound; impact on connect; faint miss on whiff | **PASS** |
+| 2 | CC swing — lower pitch than focused; hits on connect (cooldown limits spam) | **PASS** |
+| 3 | Brute hit on player — heavy thud; brute resist — higher-pitch variant | **PASS** |
+| 4 | Target focus — soft blips on acquire / switch / clear | **PASS** |
+| 5 | Encounter end — subtle stinger with summary panel | **PASS** |
+| 6 | Relationship toast — improved vs strained audibly distinct (pitch) | **PASS** |
+| 7 | Dragon assist / protect / wait — subtle, state-edge triggered | **PASS** |
+| 8 | Silence during exploration and follow — no ambient spam | **PASS** |
+
+**Overall Pass 1A:** **PASS** — implementation correct; placeholder quality is intentionally minimal.
 
 ---
+
+## Pass 1A validation (2026-07-06)
+
+**Method:** Static code audit of binder, catalog, autoload, and shell wiring; asset presence check; signal-path tracing for all catalog events in `TestWorld` and `VerticalSlice_Level_P1`.
+
+### Validation summary
+
+| Area | Result |
+|------|--------|
+| All 17 events have catalog entries + stream paths | **PASS** |
+| Six placeholder WAVs present under `assets/audio/placeholders/` | **PASS** |
+| `GameAudio` autoload registered in `project.godot` | **PASS** |
+| `bind_game_root` called from `test_world.gd` and `vertical_slice_world_shell.gd` | **PASS** |
+| Combat / UI / Dragon buses created at runtime | **PASS** |
+| Per-event cooldowns prevent obvious spam | **PASS** |
+| Intentionally silent systems remain unbound | **PASS** |
+
+### Issues discovered
+
+| Issue | Severity | Resolution |
+|-------|----------|------------|
+| `SceneTree.node_added` could leak duplicate handlers after slice reload if old game root freed before `unbind` | **Bug** | Store `_bound_tree` in binder; disconnect via stored tree ref |
+| Slice reload (`Ctrl+Shift+R`) did not unbind audio before `queue_free` | **Bug** | Call `GameAudio.unbind_game_root()` before freeing viewport children |
+| `_is_brute()` required `slice_archetype` meta only — missed enemies using `_get_archetype()` default | **Bug** | Use `_get_archetype()` when available (matches `enemy.gd`) |
+| `unbind_game_root()` did not disconnect player/dragon signals | **Hardening** | Explicit disconnect on unbind for clean rebind |
+
+### Fixes applied (Pass 1A)
+
+| File | Change |
+|------|--------|
+| `scripts/audio/game_audio_binder.gd` | Tree signal leak fix; player/dragon disconnect on unbind; brute detection via `_get_archetype()` |
+| `scripts/world/vertical_slice_world_shell.gd` | Unbind audio before slice reload |
+
+### Remaining limitations (not failures)
+
+- **Placeholder quality** — procedural WAVs; final assets deferred to Audio Pass 2.
+- **CC multi-enemy hits** — may play up to one `PLAYER_HIT` per enemy per swing; 50 ms cooldown reduces machine-gunning but does not collapse multi-hit to one sound (acceptable for Pass 1).
+- **Encounter + relationship** — `ENCOUNTER_COMPLETE` and relationship toast may play in quick succession at resolve (intentional layering).
+- **Manual listening pass** — recommended in-editor for subjective mix/timing; static validation confirms wiring and routing.
+
+### Implementation notes (post–Pass 1A)
+
+- Brute audio (`BRUTE_HEAVY`, `BRUTE_RESIST`) requires Brute archetype — available in TestWorld via startup mix (`EnemyC`) and slice encounters (`The Gate`, etc.).
+- `ENEMY_HIT` enum remains catalogued for future split; binder plays `PLAYER_HIT` on connect.
+
+---
+
+## Playtest checklist (original — Pass 1 design reference)
 
 ## Related documents
 
 | Document | Update |
 |----------|--------|
-| [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) | Roadmap — Audio Feedback Pass 1 complete |
-| [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md) | Visual feedback unchanged; audio complements Pass 1A |
-| [`audio_placeholder_assets.md`](audio_placeholder_assets.md) | Placeholder regeneration + mapping |
+| [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) | Roadmap — Audio Feedback Pass 1 complete |
+| [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md) | Visual feedback unchanged; audio complements Pass 1A |
+| [`audio_placeholder_assets.md`](../audio/audio_placeholder_assets.md) | Placeholder regeneration + mapping |

@@ -106,7 +106,7 @@ Ratings are **independent** — a clean win with poor teamwork can yield Excelle
 
 **Safeguards:** one stat application per `encounter_id`; stats clamped 0–100. Debug keys still allow manual adjustment.
 
-**Source of truth:** `docs/relationship_event_framework.md` (Current Implementation), `docs/project_checkpoint_milestone9A.md`.
+**Source of truth:** `./relationship_event_framework.md` (Current Implementation), `../checkpoints/project_checkpoint_milestone9A.md`.
 
 **Planned (not live):** Outcome Rating rename with combined harm bands; Bond pattern pass; Bond resilience modifiers.
 

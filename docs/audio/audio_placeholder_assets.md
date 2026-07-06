@@ -1,6 +1,7 @@
 # Placeholder Audio Assets
 
 **Status:** Temporary — for audio timing and architecture validation only  
+**Implemented:** Audio Feedback Pass 1 — see [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md)  
 **Location:** `assets/audio/placeholders/`  
 **Generator:** `tools/generate_placeholder_audio.py`
 
@@ -52,7 +53,7 @@ Running the script **overwrites** all six files in `assets/audio/placeholders/`.
 
 ---
 
-## Gameplay event mapping (planned / Audio Feedback Pass 1)
+## Gameplay event mapping (Audio Feedback Pass 1 — live)
 
 These mappings define how placeholders are reused until final assets exist. Event names match `GameAudioEvent.Event` in `scripts/audio/game_audio_event.gd`.
 
@@ -127,6 +128,7 @@ Replace **one catalog entry at a time** in `scripts/audio/game_audio_catalog.gd`
 
 | Document | Role |
 |----------|------|
-| `docs/project_checkpoint_audio_feedback_pass1.md` | Audio architecture pass (when implemented) |
+| `../checkpoints/project_checkpoint_audio_feedback_pass1.md` | Audio architecture checkpoint |
+| [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) | Documentation authority |
 | `scripts/audio/game_audio_catalog.gd` | Stream paths and bus routing |
 | `tools/generate_placeholder_audio.py` | Asset regeneration |

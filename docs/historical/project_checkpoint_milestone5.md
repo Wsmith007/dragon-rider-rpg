@@ -196,4 +196,4 @@ Protection is **not** affected by instability.
 - **Instability** = strain (assist reliability)
 - **Trust (`trust_state`)** = deprecated; retained for compatibility only
 
-Read `docs/bond_system.md` and `docs/dragon_ai.md` for the 3-stat model in design prose.
+Read `../design/bond_system.md` and `../design/dragon_ai.md` for the 3-stat model in design prose.

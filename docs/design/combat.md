@@ -1,9 +1,10 @@
 # Combat Overview
 
-**Current combat prototype (live mechanics):** [`docs/project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)  
-**Relationship / bond at encounter resolve:** [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
-**Vertical Slice design:** [`docs/vertical_slice_design_v1.md`](vertical_slice_design_v1.md) — slice enemy **roles**: Scout, Raider, Brute (gameplay teaching, not HP variants).  
-**Combat feel journal (passes 1–7):** [`docs/combat_feel_notes.md`](combat_feel_notes.md)
+**Current combat prototype (live mechanics):** [`../checkpoints/project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md)  
+**Relationship / bond at encounter resolve:** [`../checkpoints/project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md)  
+**Vertical Slice design:** [`./vertical_slice_design_v1.md`](./vertical_slice_design_v1.md) — slice enemy **roles**: Scout, Raider, Brute (gameplay teaching, not HP variants).  
+**Agent entry:** [`../PROJECT_STATE.md`](../PROJECT_STATE.md)  
+**Combat feel journal (passes 1–7):** [`../notes/combat_feel_notes.md`](../notes/combat_feel_notes.md)
 
 Combat is a fast-paced real-time action system centered around cooperative combat between rider and dragon.
 
@@ -52,7 +53,7 @@ Combat constantly modifies:
 
 Every encounter potentially changes the rider-dragon relationship.
 
-**Milestone 9A (live):** `RelationshipSystem` applies **Sync** from **Cooperation Rating** and **Instability** from **Encounter Quality** when an encounter resolves. **Bond Strength is not modified** per encounter. See `docs/project_checkpoint_milestone9A.md`.
+**Milestone 9A (live):** `RelationshipSystem` applies **Sync** from **Cooperation Rating** and **Instability** from **Encounter Quality** when an encounter resolves. **Bond Strength is not modified** per encounter. See `../checkpoints/project_checkpoint_milestone9A.md`.
 
 ---
 
@@ -84,7 +85,7 @@ After Combat Feel Passes 1–7, rider melee uses **two attacks** (no weapon equi
 
 **CC attack:** 28 px radius circle, lower damage than focused, stronger knockback/stagger, longer wind-up and cooldown.
 
-Full values, timing, enemy reactions, and limitations: [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md).
+Full values, timing, enemy reactions, and limitations: [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md).
 
 **Historical:** Passes 1–2 used a single **360° AoE on Space**; Pass 3 split focused vs CC inputs.
 
@@ -213,7 +214,7 @@ Enemies are designed to pressure:
 - emotional stability
 - threat prioritization
 
-**Live prototype:** slot-based surround, separation, chase/engage states, stagger on player hits — see [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) Section 3.
+**Live prototype:** slot-based surround, separation, chase/engage states, stagger on player hits — see [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) Section 3.
 
 Enemies should create situations where:
 - dragon instinct conflicts with rider intent
@@ -344,7 +345,7 @@ The first goal is proving:
 - sync and instability change assist behavior meaningfully
 - bond strength changes protection behavior meaningfully
 
-Weapon systems, equipment, enemy variants, magic, and progression remain intentionally postponed. See [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md).
+Weapon systems, equipment, enemy variants, magic, and progression remain intentionally postponed. See [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md).
 
 ---
 

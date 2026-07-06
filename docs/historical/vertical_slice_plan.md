@@ -1,6 +1,7 @@
 # Vertical Slice Goal
 
-> **Design direction:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) is now the **primary design reference** for the first playable version. This document is retained as **early prototype planning history** — some items below (dodge, Human/Elf races, milestone numbering) predate Combat Feel v1 and Milestone 9A.
+> **Design direction:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) is now the **primary design reference** for the first playable version. This document is retained as **early prototype planning history** — some items below (dodge, Human/Elf races, milestone numbering) predate Combat Feel v1 and Milestone 9A.  
+> **Documentation:** Level 5 historical — see [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md).
 
 The goal of the first playable prototype is to prove that:
 - the dragon feels emotionally alive
@@ -311,7 +312,7 @@ After the prototype succeeds, future systems may include:
 
 Future expansion should only occur after the core rider-dragon relationship feels successful.
 
-**Post–Milestone 9A:** Sync and Instability apply live from resolved encounters via `RelationshipSystem`. See `docs/project_checkpoint_milestone9A.md`.
+**Post–Milestone 9A:** Sync and Instability apply live from resolved encounters via `RelationshipSystem`. See `../checkpoints/project_checkpoint_milestone9A.md`.
 
 ---
 

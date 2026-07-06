@@ -1,10 +1,11 @@
 # Combat Feel Notes
 
 **Status:** Passes **1–7 are implemented** (prototype — not final). Sections below marked *future* or *design direction* are not live unless stated otherwise.  
-**Current combat reference (live values & SoT):** [`docs/project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)  
-**Combat Depth Pass 1 (Phase A + B):** [`docs/project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md)  
-**Relationship / bond reference:** [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
-**High-level combat vision:** [`docs/combat.md`](combat.md)
+**Documentation hierarchy:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
+**Current combat reference (live values & SoT):** [`../checkpoints/project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md)  
+**Combat Depth Pass 1 (Phase A + B):** [`../checkpoints/project_checkpoint_combat_depth_1B.md`](../checkpoints/project_checkpoint_combat_depth_1B.md)  
+**Relationship / bond reference:** [`../checkpoints/project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md)  
+**High-level combat vision:** [`../design/combat.md`](../design/combat.md)
 
 This document is the **pass-by-pass journal** and design notebook. For a single stable summary of live combat, use **Combat Feel v1**.
 
@@ -22,7 +23,7 @@ This document is the **pass-by-pass journal** and design notebook. For a single 
 
 **Combat Depth Pass 1 Phase B (2026-05-29):** Target Focus System — **IMPLEMENTED** — see [Combat Depth Pass 1 Phase B](#combat-depth-pass-1-phase-b).
 
-**Vertical Slice Polish Pass 1A (2026-05-29):** Player feedback & communication — **IN PROGRESS** — see [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md).
+**Vertical Slice Polish Pass 1A (2026-05-29):** Player feedback & communication — **IMPLEMENTED** (playtest pending) — see [`project_checkpoint_vertical_slice_polish_1A.md`](../checkpoints/project_checkpoint_vertical_slice_polish_1A.md).
 
 ---
 
@@ -30,7 +31,7 @@ This document is the **pass-by-pass journal** and design notebook. For a single 
 
 **Status: IMPLEMENTED — playtest validation pending**
 
-Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3.
+Design reference: [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 3.
 
 **Principle:** Behavior defines the archetype. Statistics support behavior — not the other way around.
 
@@ -345,7 +346,7 @@ No random chance — commitment is purely timing/state based.
 
 **Status: v4 DIRECT FOLLOW — breadcrumbs disabled**
 
-See [`dragon_ai.md`](dragon_ai.md). Breadcrumb follow reverted (unstable near corners). Direct follow + rare catch-up/teleport when **far** and stuck. **F12** debug.
+See [`dragon_ai.md`](../design/dragon_ai.md). Breadcrumb follow reverted (unstable near corners). Direct follow + rare catch-up/teleport when **far** and stuck. **F12** debug.
 
 ---
 
@@ -355,7 +356,7 @@ See [`dragon_ai.md`](dragon_ai.md). Breadcrumb follow reverted (unstable near co
 
 **Purpose:** Improve player **control** during combat. Movement becomes another combat decision — where to stand, where to face, when to attack — without constantly turning to maintain pressure.
 
-Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
+Design reference: [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 12, Milestone 3.
 
 **Scope:** Combat Stance · weapon movement identity · attack facing commitment · movement state polish · debug readouts.
 
@@ -621,11 +622,11 @@ Telegraphs face locked target while focus active; hit query unchanged.
 
 **Status: Phase A + Phase B IMPLEMENTED — playtest validation pending · Phase C+ planned**
 
-**Checkpoint:** [`project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md)
+**Checkpoint:** [`project_checkpoint_combat_depth_1B.md`](../checkpoints/project_checkpoint_combat_depth_1B.md)
 
 **Purpose:** Increase player **decision-making**. Combat should become less about repeatedly attacking and more about choosing the correct action — positioning, timing, spacing, and attack choice over attack spam.
 
-Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
+Design reference: [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 12, Milestone 3.
 
 Phase A (movement foundation) and Phase B (Target Focus) are documented above. Remaining Pass 1 scope (future phases):
 
@@ -634,7 +635,7 @@ Phase A (movement foundation) and Phase B (Target Focus) are documented above. R
 
 **Status: COMPLETE (P2.1 grove fix) — Phase 1 layout signed off**
 
-Documentation: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
+Documentation: [`vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md)
 
 - Variable-width spine (wide → choke → junction → choke → destination)
 - Wall segments drawn == collision; grove sealed with **full east wall** and **two south exits only**
@@ -649,7 +650,7 @@ Documentation: [`vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
 
 **Status: IMPLEMENTED — slice level + global enemy attack readability**
 
-Documentation: [`docs/vertical_slice_level_p1.md`](vertical_slice_level_p1.md)
+Documentation: [`../level/vertical_slice_level_p1.md`](../level/vertical_slice_level_p1.md)
 
 ### Level boundary / flow fix
 
@@ -1235,7 +1236,7 @@ Soft assist only nudges the **hit query**, not movement or camera. Player still 
 
 ## Combat Feel Pass 3 (implemented — superseded by Passes 4–7 for values)
 
-**Status: IMPLEMENTED · Cone/range/damage updated in Pass 4+ — see [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)**
+**Status: IMPLEMENTED · Cone/range/damage updated in Pass 4+ — see [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md)**
 
 Pass 3 introduced the **focused vs CC input split** (historical Pass 3 geometry below).
 
@@ -1423,7 +1424,7 @@ Pass 3 implements a **dagger-style focused cone** and **Shift+Space 360° CC** a
 
 ### Future attack structure
 
-**Live (Passes 3–7):** focused primary + Shift+Space CC — see [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md).
+**Live (Passes 3–7):** focused primary + Shift+Space CC — see [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md).
 
 **Future (weapons / resources):**
 
@@ -1475,7 +1476,7 @@ Lightweight prototype changes for playtest readability and group threat:
 
 ## Attack design direction
 
-> **Live behavior:** [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) · **Weapon plan:** [Weapon Identity Direction](#weapon-identity-direction)
+> **Live behavior:** [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) · **Weapon plan:** [Weapon Identity Direction](#weapon-identity-direction)
 
 **Implemented (Passes 3–7):**
 
@@ -1502,7 +1503,7 @@ Lightweight prototype changes for playtest readability and group threat:
 
 ## Enemy speed by type (future)
 
-**Vertical Slice archetypes:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 3 defines **Scout**, **Raider**, **Brute** as gameplay roles. See [Combat Depth Pass 1 — Enemy archetype direction](#enemy-archetype-direction-scout--brute) for updated Scout/Brute behavior goals.
+**Vertical Slice archetypes:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) Section 3 defines **Scout**, **Raider**, **Brute** as gameplay roles. See [Combat Depth Pass 1 — Enemy archetype direction](#enemy-archetype-direction-scout--brute) for updated Scout/Brute behavior goals.
 
 Default prototype values live on `Enemy` exports (`chase_speed`, `engage_reposition_speed`). Slice presets in `vertical_slice_archetype_presets.gd` — **AI behaviors not yet archetype-specific**.
 
@@ -1539,7 +1540,7 @@ Default prototype values live on `Enemy` exports (`chase_speed`, `engage_reposit
 
 ### Current behavior (live — Passes 3–7)
 
-See [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) for full values.
+See [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) for full values.
 
 | Input | Timing (Pass 6) | Visual (Pass 5–7) |
 |-------|-----------------|-------------------|
@@ -1720,7 +1721,7 @@ These informed Pass 3 — **directional arc is now live** as the default rider m
 
 ## Explicitly not planned here
 
-Leveling, equipment, magic systems, dragon health, Outcome Rating revision, enemy scaling, bosses, advanced CC — see [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) limitations and [`project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md) for relationship scope.
+Leveling, equipment, magic systems, dragon health, Outcome Rating revision, enemy scaling, bosses, advanced CC — see [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) limitations and [`project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md) for relationship scope.
 
 ---
 
@@ -1739,7 +1740,7 @@ Leveling, equipment, magic systems, dragon health, Outcome Rating revision, enem
 | Weapon P2 | Profile tuning + weapon-scaled CC — **prototype** |
 | Weapon T1 | Identity refinement (sword DPS, polearm control) — **prototype** |
 | Pass 3 dir. | Weapon Identity Direction (dagger/sword/polearm) — design only |
-| **v1 checkpoint** | [`project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md) — combat prototype SoT |
+| **v1 checkpoint** | [`project_checkpoint_combat_feel_v1.md`](../checkpoints/project_checkpoint_combat_feel_v1.md) — combat prototype SoT |
 | **Combat Depth P1A** | Combat Stance, weapon move speed, attack facing lock — **implemented** |
 | **Combat Depth P1B** | Target Focus System — **implemented** |
 | **Archetype P1** | Scout DISENGAGE/probe, Raider baseline, Brute RECOVER/knockback filter — **implemented** |

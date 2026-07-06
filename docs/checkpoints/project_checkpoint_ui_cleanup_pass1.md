@@ -1,9 +1,11 @@
 # Dragon Rider RPG — Vertical Slice UI Cleanup Pass 1 Checkpoint
 
+> **⚠ Partially superseded.** HUD layout, PlayerHud, and area announce remain valid. **Window size, shell layout, and Developer Mode behavior** were superseded by [`project_checkpoint_developer_experience_pass1.md`](./project_checkpoint_developer_experience_pass1.md) (2560×1440, F10 docked 420px sidebar via `playtest_shell.gd`). This document is preserved as the UI Cleanup Pass 1 record.
+
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Playtest:** `TestWorld.tscn` · `VerticalSlice_Level_P1.tscn` (F6)  
-**Prior polish:** [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md)  
-**Design constitution:** [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md)
+**Prior polish:** [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md)  
+**Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)
 
 **Status:** **IMPLEMENTED** — presentation-only pass; playtest validation pending  
 **Scope:** HUD layout, Developer Mode, window size, area announce, dragon state visuals  
@@ -167,6 +169,6 @@ No constant floating text above the dragon during normal follow/alert cycles.
 
 | Document | Relationship |
 |----------|--------------|
-| [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md) | Player feedback layer — cross-referenced |
-| [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) | Roadmap updated |
-| [`project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md) | Target focus visuals unchanged mechanically |
+| [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md) | Player feedback layer — cross-referenced |
+| [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md) | Roadmap updated |
+| [`project_checkpoint_combat_depth_1B.md`](./project_checkpoint_combat_depth_1B.md) | Target focus visuals unchanged mechanically |

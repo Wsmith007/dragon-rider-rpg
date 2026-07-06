@@ -2,7 +2,7 @@
 
 > **Historical checkpoint (pre–Milestone 9A).** Relationship stats were **debug-adjusted only** at M7.  
 > For current live Sync/Instability from encounter resolve, see  
-> [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md).
+> [`../checkpoints/project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md).
 
 **Engine:** Godot 4.6 · **Language:** GDScript  
 **Repo:** `Wsmith007/dragon-rider-rpg` on GitHub  
@@ -10,7 +10,7 @@
 **Branch:** `main`
 
 This document is a **Milestone 7 historical checkpoint**. For **current prototype status** (including Milestone 9A relationship stat application), prefer  
-[`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md).
+[`../checkpoints/project_checkpoint_milestone9A.md`](../checkpoints/project_checkpoint_milestone9A.md).
 
 ---
 
@@ -249,7 +249,7 @@ Bubble scene is swappable for future styles, emotion icons, race themes, or hide
 
 ## Next Recommended Milestone
 
-> **Superseded in part by Milestone 9A** — Sync and Instability now apply live from encounter resolve. Bond pattern pass and resilience wiring remain open. See `docs/project_checkpoint_milestone9A.md`.
+> **Superseded in part by Milestone 9A** — Sync and Instability now apply live from encounter resolve. Bond pattern pass and resilience wiring remain open. See `../checkpoints/project_checkpoint_milestone9A.md`.
 
 1. **Bond pattern pass** — session trends → Bond Strength (Bond still protected per encounter)
 2. **Wire resilience helpers** — sync floor, instability resistance, instability recovery
@@ -276,4 +276,4 @@ Bubble scene is swappable for future styles, emotion icons, race themes, or hide
 | Assist / hesitation | `scripts/dragon/dragon_cooperation_behavior.gd` |
 | Debug UI | `scripts/ui/bond_debug_ui.gd` |
 
-Design reference: `docs/bond_system.md`, `docs/dragon_ai.md`, `docs/game_architecture.md`, `docs/technical_architecture.md`.
+Design reference: `../design/bond_system.md`, `../design/dragon_ai.md`, `../design/game_architecture.md`, `../design/technical_architecture.md`.
