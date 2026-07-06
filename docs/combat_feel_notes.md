@@ -2,6 +2,7 @@
 
 **Status:** Passes **1–7 are implemented** (prototype — not final). Sections below marked *future* or *design direction* are not live unless stated otherwise.  
 **Current combat reference (live values & SoT):** [`docs/project_checkpoint_combat_feel_v1.md`](project_checkpoint_combat_feel_v1.md)  
+**Combat Depth Pass 1 (Phase A + B):** [`docs/project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md)  
 **Relationship / bond reference:** [`docs/project_checkpoint_milestone9A.md`](project_checkpoint_milestone9A.md)  
 **High-level combat vision:** [`docs/combat.md`](combat.md)
 
@@ -20,6 +21,8 @@ This document is the **pass-by-pass journal** and design notebook. For a single 
 **Combat Depth Pass 1 Phase A (2026-05-29):** Movement foundation — **IMPLEMENTED** — see [Combat Depth Pass 1 Phase A](#combat-depth-pass-1-phase-a).
 
 **Combat Depth Pass 1 Phase B (2026-05-29):** Target Focus System — **IMPLEMENTED** — see [Combat Depth Pass 1 Phase B](#combat-depth-pass-1-phase-b).
+
+**Vertical Slice Polish Pass 1A (2026-05-29):** Player feedback & communication — **IN PROGRESS** — see [`project_checkpoint_vertical_slice_polish_1A.md`](project_checkpoint_vertical_slice_polish_1A.md).
 
 ---
 
@@ -616,13 +619,15 @@ Telegraphs face locked target while focus active; hit query unchanged.
 
 ## Combat Depth Pass 1 (overview)
 
-**Status: Phase A IMPLEMENTED · Phase B+ PLANNED**
+**Status: Phase A + Phase B IMPLEMENTED — playtest validation pending · Phase C+ planned**
+
+**Checkpoint:** [`project_checkpoint_combat_depth_1B.md`](project_checkpoint_combat_depth_1B.md)
 
 **Purpose:** Increase player **decision-making**. Combat should become less about repeatedly attacking and more about choosing the correct action — positioning, timing, spacing, and attack choice over attack spam.
 
 Design reference: [`vertical_slice_design_v1.md`](vertical_slice_design_v1.md) Section 12, Milestone 3.
 
-Phase A (movement foundation) is documented above. Remaining Pass 1 scope (future phases):
+Phase A (movement foundation) and Phase B (Target Focus) are documented above. Remaining Pass 1 scope (future phases):
 
 
 ## Vertical Slice Level Pass 2

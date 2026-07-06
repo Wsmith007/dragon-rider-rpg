@@ -268,8 +268,8 @@ func _show_focused_impact_telegraph(base_facing: Vector2, hit_positions: Array[V
 		focused_close_half_angle_deg,
 		not hit_positions.is_empty()
 	)
-	for position in hit_positions:
-		_telegraph.show_hit_spark(position)
+	for hit_position in hit_positions:
+		_telegraph.show_hit_spark(hit_position)
 
 
 func _apply_focused_hits() -> Array[Vector2]:

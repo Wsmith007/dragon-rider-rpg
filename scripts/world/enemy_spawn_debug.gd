@@ -10,6 +10,13 @@ const SPAWN_DISTANCE_MIN := 180.0
 const SPAWN_DISTANCE_MAX := 520.0
 const MAX_PLACEMENT_ATTEMPTS := 16
 const PACK_SIZE := 3
+const STARTUP_ARCHETYPE_MIX := [
+	VerticalSliceArchetypePresets.Archetype.SCOUT,
+	VerticalSliceArchetypePresets.Archetype.RAIDER,
+	VerticalSliceArchetypePresets.Archetype.BRUTE,
+	VerticalSliceArchetypePresets.Archetype.SCOUT,
+	VerticalSliceArchetypePresets.Archetype.RAIDER,
+]
 
 var _player: CharacterBody2D
 var _enemies_container: Node2D
@@ -19,6 +26,22 @@ var _spawn_counter: int = 0
 func bind(player: CharacterBody2D, enemies_container: Node2D) -> void:
 	_player = player
 	_enemies_container = enemies_container
+	_apply_startup_archetype_mix()
+
+
+func _apply_startup_archetype_mix() -> void:
+	if _enemies_container == null:
+		return
+
+	var index := 0
+	for child in _enemies_container.get_children():
+		if not child is CharacterBody2D:
+			continue
+		var archetype: VerticalSliceArchetypePresets.Archetype = STARTUP_ARCHETYPE_MIX[
+			index % STARTUP_ARCHETYPE_MIX.size()
+		]
+		VerticalSliceArchetypePresets.apply_to_enemy(child as CharacterBody2D, archetype)
+		index += 1
 
 
 func spawn_random_enemy() -> CharacterBody2D:
@@ -30,11 +53,21 @@ func spawn_random_enemy() -> CharacterBody2D:
 	if enemy == null:
 		return null
 
+	var archetype := VerticalSliceArchetypePresets.pick_random_archetype()
+	VerticalSliceArchetypePresets.apply_to_enemy(enemy, archetype)
+
 	_spawn_counter += 1
-	enemy.name = "SpawnedEnemy_%d" % _spawn_counter
+	enemy.name = "Spawned%s_%d" % [VerticalSliceArchetypePresets.archetype_name(archetype), _spawn_counter]
 	enemy.global_position = _pick_random_spawn_position()
 	_enemies_container.add_child(enemy)
-	print("DEBUG SPAWN | enemy=", enemy.name, " | pos=", enemy.global_position)
+	print(
+		"DEBUG SPAWN | enemy=",
+		enemy.name,
+		" | archetype=",
+		VerticalSliceArchetypePresets.archetype_name(archetype),
+		" | pos=",
+		enemy.global_position
+	)
 	return enemy
 
 

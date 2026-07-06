@@ -3,7 +3,7 @@ class_name CombatFocusedTargetPreview
 ## Pass 7 prototype: subtle likely-target ring. See docs/combat_feel_notes.md.
 
 @export var ring_radius: float = 17.0
-@export var ring_color: Color = Color(0.5, 0.86, 1.0, 0.5)
+@export var ring_color: Color = Color(0.45, 0.82, 0.95, 0.42)
 @export var marker_radius: float = 3.0
 @export var pulse_speed: float = 3.5
 
@@ -41,8 +41,8 @@ func _draw() -> void:
 	var ring := ring_color
 	ring.a *= pulse
 
-	draw_arc(local_position, ring_radius, 0.0, TAU, 28, ring, 1.25, true)
+	draw_arc(local_position, ring_radius, 0.0, TAU, 28, ring, 1.0, true)
 
 	var marker := ring
-	marker.a *= pulse * 0.85
+	marker.a *= pulse * 0.75
 	draw_circle(local_position, marker_radius, marker)

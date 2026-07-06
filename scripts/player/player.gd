@@ -1,9 +1,6 @@
 extends CharacterBody2D
 ## Top-down rider movement, health, and combat signals.
 
-const CharacterWallRecovery = preload("res://scripts/combat/character_wall_recovery.gd")
-const PlayerTargetFocus = preload("res://scripts/player/player_target_focus.gd")
-
 signal moved(velocity: Vector2)
 signal player_damaged(current_health: float, maximum_health: float)
 signal player_died

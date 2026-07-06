@@ -1,8 +1,6 @@
 extends Control
 ## On-screen help for bond test keys with live Bond / Sync / Instability readouts.
 
-const PlayerTargetFocus = preload("res://scripts/player/player_target_focus.gd")
-
 
 @onready var _bond_strength_value: Label = $Panel/Margin/Scroll/VBox/Ctrl1Row/BondStrengthValue
 @onready var _sync_value: Label = $Panel/Margin/Scroll/VBox/Ctrl3Row/SyncValue

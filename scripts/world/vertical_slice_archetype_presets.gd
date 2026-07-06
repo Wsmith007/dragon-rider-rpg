@@ -147,6 +147,13 @@ static func apply_to_enemy(enemy: CharacterBody2D, archetype: Archetype) -> void
 	if collision != null and collision.shape is CircleShape2D and preset.has("body_collision_radius"):
 		(collision.shape as CircleShape2D).radius = preset["body_collision_radius"]
 
+	if preset.has("max_health") and enemy.is_node_ready():
+		var health := enemy.get_node_or_null("Health")
+		if health != null:
+			var hp: float = preset["max_health"]
+			health.max_health = hp
+			health.current_health = hp
+
 
 static func _apply_silhouette(visual: Polygon2D, archetype: Archetype) -> void:
 	match archetype:
@@ -197,3 +204,16 @@ static func archetype_name(archetype: Archetype) -> String:
 		Archetype.BRUTE:
 			return "Brute"
 	return "Raider"
+
+
+## Weighted random pick for debug spawns: Scout > Raider > Brute.
+static func pick_random_archetype() -> Archetype:
+	const WEIGHTS: Array[float] = [5.0, 3.0, 1.0]
+	var total := WEIGHTS[0] + WEIGHTS[1] + WEIGHTS[2]
+	var roll := randf() * total
+	var cumulative := 0.0
+	for i in WEIGHTS.size():
+		cumulative += WEIGHTS[i]
+		if roll <= cumulative:
+			return i as Archetype
+	return Archetype.RAIDER

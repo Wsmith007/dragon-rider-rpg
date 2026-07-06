@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://i66r6p4nvlp1"]
+[gd_scene load_steps=25 format=3 uid="uid://i66r6p4nvlp1"]
 
 [ext_resource type="Script" path="res://scripts/world/vertical_slice_level_p1.gd" id="1_level"]
 [ext_resource type="Script" path="res://scripts/systems/camera_follow.gd" id="2_camera"]
@@ -7,12 +7,12 @@
 [ext_resource type="Script" path="res://scripts/world/floor_grid_visual.gd" id="5_floor_grid"]
 [ext_resource type="Script" path="res://scripts/world/vertical_slice_graybox_geometry.gd" id="6_geometry"]
 [ext_resource type="Script" path="res://scripts/world/vertical_slice_encounter.gd" id="7_encounter"]
-[ext_resource type="PackedScene" uid="uid://drckc1d62aiqe" path="res://scenes/ui/PlayerHealthUI.tscn" id="8_player_health_ui"]
+[ext_resource type="PackedScene" uid="uid://bplayerhud01" path="res://scenes/ui/PlayerHud.tscn" id="8_player_hud"]
 [ext_resource type="Script" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
-[ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="10_bond_test_help"]
 [ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
 [ext_resource type="Script" path="res://scripts/world/enemy_spawn_debug.gd" id="12_enemy_spawn"]
 [ext_resource type="PackedScene" uid="uid://benemyindicators" path="res://scenes/ui/EnemyOffscreenIndicators.tscn" id="13_enemy_indicators"]
+[ext_resource type="PackedScene" uid="uid://bplayerfeedbackui" path="res://scenes/ui/PlayerFeedbackUI.tscn" id="14_player_feedback"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ambush"]
 size = Vector2(220, 180)
@@ -151,7 +151,7 @@ script = ExtResource("2_camera")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="PlayerHealthUI" parent="UI" instance=ExtResource("8_player_health_ui")]
+[node name="PlayerHud" parent="UI" instance=ExtResource("8_player_hud")]
 
 [node name="BondTestControls" type="Node" parent="UI"]
 script = ExtResource("9_bond_test_controls")
@@ -162,17 +162,6 @@ script = ExtResource("11_health_debug")
 [node name="EnemySpawnDebug" type="Node" parent="UI"]
 script = ExtResource("12_enemy_spawn")
 
-[node name="BondTestHelpUI" parent="UI" instance=ExtResource("10_bond_test_help")]
-
 [node name="EnemyOffscreenIndicators" parent="UI" instance=ExtResource("13_enemy_indicators")]
 
-[node name="SliceZoneLabel" type="Label" parent="UI"]
-offset_left = 16.0
-offset_top = 8.0
-offset_right = 360.0
-offset_bottom = 36.0
-theme_override_colors/font_color = Color(0.9, 0.92, 0.86, 0.95)
-theme_override_colors/font_outline_color = Color(0.05, 0.08, 0.05, 0.9)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 16
-text = "The Clearing"
+[node name="PlayerFeedbackUI" parent="UI" instance=ExtResource("14_player_feedback")]

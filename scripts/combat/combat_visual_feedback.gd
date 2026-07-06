@@ -24,9 +24,9 @@ var _override_stagger: float = -1.0
 var _use_player_hit_confirm: bool = false
 
 
-func override_next_hit_reaction(knockback_distance: float, stagger_duration: float) -> void:
+func override_next_hit_reaction(knockback_distance: float, override_stagger_duration: float) -> void:
 	_override_knockback = knockback_distance
-	_override_stagger = stagger_duration
+	_override_stagger = override_stagger_duration
 
 
 func queue_player_hit_confirm() -> void:

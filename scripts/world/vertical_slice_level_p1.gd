@@ -11,12 +11,13 @@ const ENEMY_SCENE: PackedScene = preload("res://scenes/enemies/Enemy.tscn")
 @onready var _player: CharacterBody2D = $Entities/Player
 @onready var _dragon: CharacterBody2D = $Entities/Dragon
 @onready var _enemies: Node2D = $Entities/Enemies
-@onready var _zone_label: Label = $UI/SliceZoneLabel
+@onready var _player_feedback: Control = $UI/PlayerFeedbackUI
 
 
 func _ready() -> void:
 	_configure_encounters()
 	_bind_zone_notifiers()
+	call_deferred("_announce_starting_area")
 
 
 func _configure_encounters() -> void:
@@ -109,10 +110,18 @@ func _bind_zone_notifiers() -> void:
 func _on_zone_entered(body: Node2D, zone_name: String) -> void:
 	if not body.is_in_group("player"):
 		return
-	if _zone_label != null:
-		_zone_label.text = zone_name
+	_announce_area(zone_name)
 	if zone_name == QUIET_GROVE_ZONE:
 		_apply_quiet_grove_rest()
+
+
+func _announce_area(area_name: String) -> void:
+	if _player_feedback != null and _player_feedback.has_method("announce_area"):
+		_player_feedback.announce_area(area_name)
+
+
+func _announce_starting_area() -> void:
+	_announce_area("The Clearing")
 
 
 func _on_zone_exited(body: Node2D, zone_name: String) -> void:
@@ -172,7 +181,6 @@ func restart_slice() -> void:
 		if encounter is VerticalSliceEncounter:
 			(encounter as VerticalSliceEncounter).reset_encounter()
 
-	if _zone_label != null:
-		_zone_label.text = "The Clearing"
+	_announce_area("The Clearing")
 
 	print("VERTICAL SLICE | restart | Shift+R")

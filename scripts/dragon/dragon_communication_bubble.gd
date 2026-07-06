@@ -7,6 +7,7 @@ class_name DragonCommunicationBubble
 
 
 @export var anchor_offset: Vector2 = Vector2(0.0, -44.0)
+@export var display_enabled: bool = false
 @export var display_duration: float = 1.75
 @export var fade_duration: float = 0.25
 @export var max_text_width: float = 140.0
@@ -40,13 +41,15 @@ func _process(delta: float) -> void:
 
 
 func bind_to_communication(behavior: DragonCommunicationBehavior) -> void:
-	if behavior == null:
+	if not display_enabled or behavior == null:
 		return
 	if not behavior.message_changed.is_connected(_on_message_changed):
 		behavior.message_changed.connect(_on_message_changed)
 
 
 func _bind_communication() -> void:
+	if not display_enabled:
+		return
 	var behavior := get_parent().get_node_or_null("CommunicationBehavior") as DragonCommunicationBehavior
 	if behavior == null:
 		push_warning("DragonCommunicationBubble: CommunicationBehavior not found.")

@@ -21,6 +21,7 @@ content_margin_bottom = 5.0
 [node name="CommunicationBubble" type="Node2D"]
 z_index = 8
 script = ExtResource("1_bubble")
+display_enabled = false
 
 [node name="BubbleRoot" type="Control" parent="."]
 layout_mode = 3

@@ -1,8 +1,6 @@
 extends CharacterBody2D
 ## Enemy AI with slice archetype behaviors: Scout (skirmish), Raider (baseline), Brute (control check).
 
-const CharacterWallRecovery = preload("res://scripts/combat/character_wall_recovery.gd")
-
 signal player_detected
 signal player_lost
 signal attacked_player

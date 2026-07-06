@@ -1,9 +1,6 @@
 extends CharacterBody2D
 ## Dragon actor: follow, wait, alert, defensive protection, and cooperative assist.
 
-const CharacterWallRecovery = preload("res://scripts/combat/character_wall_recovery.gd")
-const DragonNavigationRecovery = preload("res://scripts/dragon/dragon_navigation_recovery.gd")
-
 signal behavior_changed(mode_name: String)
 signal state_changed(state: DragonState.State)
 signal dragon_assisted(enemy: Node2D)

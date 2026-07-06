@@ -2,8 +2,6 @@ extends Node2D
 class_name CombatAttackTelegraph
 ## Pass 6 prototype: attack telegraphs with wind-up / impact phases. See docs/combat_feel_notes.md.
 
-const PlayerTargetFocus = preload("res://scripts/player/player_target_focus.gd")
-
 signal debug_ranges_toggled(enabled: bool)
 
 @export var focused_fill_hit: Color = Color(0.45, 0.82, 1.0, 0.28)
@@ -87,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func begin_focused_windup(
 	facing: Vector2,
-	range: float,
+	cone_range: float,
 	half_angle_deg: float,
 	close_range: float,
 	close_half_angle_deg: float
@@ -95,7 +93,7 @@ func begin_focused_windup(
 	if facing.length_squared() < 0.01:
 		return
 
-	_store_focused_params(facing, range, half_angle_deg, close_range, close_half_angle_deg, false, true)
+	_store_focused_params(facing, cone_range, half_angle_deg, close_range, close_half_angle_deg, false, true)
 	_focused_duration = focused_windup_duration
 	_focused_started_at = Time.get_ticks_msec() / 1000.0
 	_focused_until = _focused_started_at + _focused_duration
@@ -104,7 +102,7 @@ func begin_focused_windup(
 
 func show_focused_impact(
 	facing: Vector2,
-	range: float,
+	cone_range: float,
 	half_angle_deg: float,
 	close_range: float,
 	close_half_angle_deg: float,
@@ -113,7 +111,7 @@ func show_focused_impact(
 	if facing.length_squared() < 0.01:
 		return
 
-	_store_focused_params(facing, range, half_angle_deg, close_range, close_half_angle_deg, did_hit, false)
+	_store_focused_params(facing, cone_range, half_angle_deg, close_range, close_half_angle_deg, did_hit, false)
 	_focused_duration = focused_impact_duration
 	_focused_started_at = Time.get_ticks_msec() / 1000.0
 	_focused_until = _focused_started_at + _focused_duration
@@ -148,7 +146,7 @@ func show_hit_spark(world_position: Vector2) -> void:
 
 func _store_focused_params(
 	facing: Vector2,
-	range: float,
+	cone_range: float,
 	half_angle_deg: float,
 	close_range: float,
 	close_half_angle_deg: float,
@@ -156,7 +154,7 @@ func _store_focused_params(
 	is_windup: bool
 ) -> void:
 	_focused_facing = facing.normalized()
-	_focused_range = range
+	_focused_range = cone_range
 	_focused_half_angle_deg = half_angle_deg
 	_focused_close_range = close_range
 	_focused_close_half_angle_deg = close_half_angle_deg
@@ -220,7 +218,7 @@ func _draw_debug_ranges() -> void:
 	if facing.length_squared() < 0.01:
 		facing = Vector2.DOWN
 
-	var range := float(_melee_attack.get("focused_range"))
+	var cone_range := float(_melee_attack.get("focused_range"))
 	var half_angle := float(_melee_attack.get("focused_half_angle_deg"))
 	var close_range := float(_melee_attack.get("focused_close_range"))
 	var close_half_angle := float(_melee_attack.get("focused_close_half_angle_deg"))
@@ -236,7 +234,7 @@ func _draw_debug_ranges() -> void:
 	)
 	_draw_cone_wedge(
 		facing,
-		range,
+		cone_range,
 		half_angle,
 		debug_cone_color,
 		debug_cone_edge,
@@ -279,12 +277,14 @@ func _draw_debug_focus_target() -> void:
 
 
 func _draw_focused_telegraph(progress: float) -> void:
+	var fill: Color
+	var wedge_edge: Color
 	if _focused_is_windup:
 		var pulse := 0.65 + sin(progress * PI) * 0.35
-		var fill := focused_windup_fill
-		var edge := focused_windup_edge
+		fill = focused_windup_fill
+		wedge_edge = focused_windup_edge
 		fill.a *= pulse
-		edge.a *= pulse
+		wedge_edge.a *= pulse
 		_draw_close_range_overlay(
 			_focused_facing,
 			_focused_close_range,
@@ -298,16 +298,16 @@ func _draw_focused_telegraph(progress: float) -> void:
 			_focused_range,
 			_focused_half_angle_deg,
 			fill,
-			edge,
+			wedge_edge,
 			pulse
 		)
 		return
 
 	var fade := 1.0 - progress
-	var fill := focused_fill_hit if _focused_hit else focused_fill_miss
-	var edge := focused_edge_hit if _focused_hit else focused_edge_miss
+	fill = focused_fill_hit if _focused_hit else focused_fill_miss
+	wedge_edge = focused_edge_hit if _focused_hit else focused_edge_miss
 	fill.a *= fade
-	edge.a *= fade
+	wedge_edge.a *= fade
 
 	_draw_close_range_overlay(
 		_focused_facing,
@@ -317,7 +317,7 @@ func _draw_focused_telegraph(progress: float) -> void:
 		focused_close_forgiveness_edge,
 		fade
 	)
-	_draw_cone_wedge(_focused_facing, _focused_range, _focused_half_angle_deg, fill, edge, fade)
+	_draw_cone_wedge(_focused_facing, _focused_range, _focused_half_angle_deg, fill, wedge_edge, fade)
 
 	var sweep_end := _focused_facing.normalized() * _focused_range * lerpf(0.35, 1.0, progress)
 	var sweep := focused_sweep_color
@@ -326,26 +326,29 @@ func _draw_focused_telegraph(progress: float) -> void:
 
 
 func _draw_crowd_control_telegraph(progress: float) -> void:
+	var fill: Color
+	var ring_edge: Color
+	var radius: float
 	if _cc_is_windup:
 		var pulse := 0.55 + sin(progress * PI * 2.0) * 0.25
-		var radius := lerpf(_cc_radius * 0.25, _cc_radius * 0.55, progress)
-		var fill := cc_windup_fill
-		var edge := cc_windup_edge
+		radius = lerpf(_cc_radius * 0.25, _cc_radius * 0.55, progress)
+		fill = cc_windup_fill
+		ring_edge = cc_windup_edge
 		fill.a *= pulse
-		edge.a *= pulse
+		ring_edge.a *= pulse
 		draw_circle(Vector2.ZERO, radius, fill)
-		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 32, edge, 1.5, true)
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 32, ring_edge, 1.5, true)
 		return
 
 	var fade := 1.0 - progress
-	var radius := lerpf(_cc_radius * 0.45, _cc_radius, progress)
-	var fill := cc_ring_fill
-	var edge := cc_ring_edge
+	radius = lerpf(_cc_radius * 0.45, _cc_radius, progress)
+	fill = cc_ring_fill
+	ring_edge = cc_ring_edge
 	fill.a *= fade * 0.85
-	edge.a *= fade
+	ring_edge.a *= fade
 
 	draw_circle(Vector2.ZERO, radius, fill)
-	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, edge, 2.5, true)
+	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, ring_edge, 2.5, true)
 
 
 func _draw_close_range_overlay(
@@ -360,10 +363,10 @@ func _draw_close_range_overlay(
 		return
 
 	var fill := fill_color
-	var edge := edge_color
+	var wedge_edge := edge_color
 	fill.a *= alpha_scale
-	edge.a *= alpha_scale
-	_draw_cone_wedge(facing, close_range, close_half_angle_deg, fill, edge, alpha_scale)
+	wedge_edge.a *= alpha_scale
+	_draw_cone_wedge(facing, close_range, close_half_angle_deg, fill, wedge_edge, alpha_scale)
 
 
 func _draw_hit_spark(local_position: Vector2, progress: float) -> void:
@@ -379,25 +382,25 @@ func _draw_hit_spark(local_position: Vector2, progress: float) -> void:
 
 func _draw_cone_wedge(
 	facing: Vector2,
-	range: float,
+	cone_range: float,
 	half_angle_deg: float,
 	fill_color: Color,
 	edge_color: Color,
 	alpha_scale: float
 ) -> void:
-	var points := _build_cone_points(facing, range, half_angle_deg)
+	var points := _build_cone_points(facing, cone_range, half_angle_deg)
 	if points.size() < 3:
 		return
 
 	draw_colored_polygon(points, fill_color)
 
 	if edge_color.a > 0.01:
-		var edge := edge_color
-		edge.a *= alpha_scale
-		draw_polyline(points + PackedVector2Array([points[0]]), edge, 1.5, true)
+		var polyline_edge := edge_color
+		polyline_edge.a *= alpha_scale
+		draw_polyline(points + PackedVector2Array([points[0]]), polyline_edge, 1.5, true)
 
 
-func _build_cone_points(facing: Vector2, range: float, half_angle_deg: float) -> PackedVector2Array:
+func _build_cone_points(facing: Vector2, cone_range: float, half_angle_deg: float) -> PackedVector2Array:
 	var points: PackedVector2Array = [Vector2.ZERO]
 	var half_angle := deg_to_rad(half_angle_deg)
 	var base_angle := facing.normalized().angle()
@@ -406,7 +409,7 @@ func _build_cone_points(facing: Vector2, range: float, half_angle_deg: float) ->
 	for i in range(SEGMENTS + 1):
 		var t := float(i) / float(SEGMENTS)
 		var angle := base_angle - half_angle + t * half_angle * 2.0
-		points.append(Vector2.from_angle(angle) * range)
+		points.append(Vector2.from_angle(angle) * cone_range)
 
 	return points
 
