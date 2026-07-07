@@ -110,3 +110,33 @@ static func get_profile(profile_id: Id) -> Dictionary:
 static func get_focused_arc_deg(profile_id: Id) -> float:
 	var data: Dictionary = PROFILES[profile_id]
 	return float(data["focused_half_angle_deg"]) * 2.0
+
+
+static func get_reach_class(profile_id: Id) -> WeaponReachClass.Id:
+	match profile_id:
+		Id.DAGGER:
+			return WeaponReachClass.Id.SHORT
+		Id.POLEARM:
+			return WeaponReachClass.Id.LONG
+		_:
+			return WeaponReachClass.Id.MEDIUM
+
+
+static func get_identity(profile_id: Id) -> WeaponIdentity.Id:
+	match profile_id:
+		Id.DAGGER:
+			return WeaponIdentity.Id.DAGGER
+		Id.POLEARM:
+			return WeaponIdentity.Id.POLEARM
+		_:
+			return WeaponIdentity.Id.SWORD
+
+
+static func get_audio_profile(profile_id: Id) -> WeaponAudioProfile.Id:
+	match profile_id:
+		Id.DAGGER:
+			return WeaponAudioProfile.Id.HIT_DAGGER
+		Id.POLEARM:
+			return WeaponAudioProfile.Id.HIT_POLEARM
+		_:
+			return WeaponAudioProfile.Id.HIT_SWORD

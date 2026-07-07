@@ -11,10 +11,14 @@ var _world_players: Array[AudioStreamPlayer2D] = []
 var _world_audio_root: Node2D
 var _event_cooldown_until: Dictionary = {}
 var _binder: GameAudioBinder
+var _impact_variation_state: Dictionary = {}
+var _swing_duck_restore: Dictionary = {}
+var _swing_stream_path_set: Dictionary = {}
 
 
 func _ready() -> void:
 	_ensure_audio_buses()
+	_build_swing_stream_lookup()
 	_preload_placeholder_streams()
 	_create_player_pools()
 	_binder = GameAudioBinder.new()
@@ -29,6 +33,71 @@ func play(event: GameAudioEvent.Event, world_position: Vector2 = Vector2.ZERO) -
 	if _is_on_cooldown(event):
 		return
 
+	_play_from_playback(playback, world_position)
+	_apply_cooldown(event)
+
+
+func play_weapon_swing(
+	profile_id: WeaponProfilePrototype.Id,
+	cc_step: int,
+	world_position: Vector2
+) -> void:
+	var playback := GameAudioCatalog.get_weapon_swing_playback(profile_id, cc_step)
+	if playback.is_empty():
+		return
+
+	var cooldown_key := _weapon_swing_cooldown_key(profile_id, cc_step)
+	if _is_on_custom_cooldown(cooldown_key):
+		return
+
+	_play_from_playback(playback, world_position)
+	_apply_custom_cooldown(cooldown_key, 0.045)
+
+
+func play_cc_swing_sequence(
+	profile_id: WeaponProfilePrototype.Id,
+	world_position: Vector2,
+	windup_duration: float
+) -> void:
+	play_weapon_swing(profile_id, 0, world_position)
+
+	var tree := get_tree()
+	if tree == null:
+		return
+
+	var step_two_delay := maxf(windup_duration * 0.38, 0.04)
+	var step_three_delay := maxf(windup_duration, step_two_delay + 0.04)
+
+	tree.create_timer(step_two_delay).timeout.connect(
+		func() -> void:
+			if is_instance_valid(self):
+				play_weapon_swing(profile_id, 1, world_position),
+		CONNECT_ONE_SHOT
+	)
+	tree.create_timer(step_three_delay).timeout.connect(
+		func() -> void:
+			if is_instance_valid(self):
+				play_weapon_swing(profile_id, 2, world_position),
+		CONNECT_ONE_SHOT
+	)
+
+
+func play_weapon_impact(identity_id: WeaponIdentity.Id, world_position: Vector2) -> bool:
+	var audio_profile := WeaponAudioProfile.profile_for_identity(identity_id)
+	var stream_path := WeaponAudioProfile.pick_stream_path(audio_profile, _impact_variation_state)
+	if stream_path.is_empty():
+		return false
+
+	var playback := GameAudioCatalog.get_weapon_impact_playback(stream_path)
+	if playback.is_empty():
+		return false
+
+	_duck_active_swings()
+	_play_from_playback(playback, world_position)
+	return true
+
+
+func _play_from_playback(playback: Dictionary, world_position: Vector2) -> void:
 	var stream: AudioStream = _stream_cache.get(playback["stream_path"])
 	if stream == null:
 		return
@@ -41,8 +110,6 @@ func play(event: GameAudioEvent.Event, world_position: Vector2 = Vector2.ZERO) -
 		_play_world(stream, world_position, playback, pitch_scale)
 	else:
 		_play_ui(stream, playback, pitch_scale)
-
-	_apply_cooldown(event)
 
 
 func bind_game_root(game_root: Node2D) -> void:
@@ -100,6 +167,42 @@ func _preload_placeholder_streams() -> void:
 			_stream_cache[path] = stream
 
 
+func _build_swing_stream_lookup() -> void:
+	_swing_stream_path_set.clear()
+	for path in GameAudioCatalog.swing_stream_paths():
+		_swing_stream_path_set[path] = true
+
+
+func _duck_active_swings() -> void:
+	var duck_db := GameAudioCatalog.SWING_DUCK_DB
+	for player in _world_players:
+		if not is_instance_valid(player) or not player.playing or player.stream == null:
+			continue
+		var stream_path := String(player.stream.resource_path)
+		if not _swing_stream_path_set.has(stream_path):
+			continue
+		var player_id := player.get_instance_id()
+		if not _swing_duck_restore.has(player_id):
+			_swing_duck_restore[player_id] = player.volume_db
+		player.volume_db = float(_swing_duck_restore[player_id]) + duck_db
+
+	var tree := get_tree()
+	if tree == null:
+		return
+	tree.create_timer(0.12).timeout.connect(_restore_ducked_swings, CONNECT_ONE_SHOT)
+
+
+func _restore_ducked_swings() -> void:
+	for player in _world_players:
+		if not is_instance_valid(player):
+			continue
+		var player_id := player.get_instance_id()
+		if not _swing_duck_restore.has(player_id):
+			continue
+		player.volume_db = float(_swing_duck_restore[player_id])
+		_swing_duck_restore.erase(player_id)
+
+
 func _create_player_pools() -> void:
 	for index in range(UI_PLAYER_POOL_SIZE):
 		var player := AudioStreamPlayer.new()
@@ -111,7 +214,8 @@ func _create_player_pools() -> void:
 		var player := AudioStreamPlayer2D.new()
 		player.name = "WorldPlayer_%d" % index
 		player.max_distance = 2400.0
-		player.attenuation = 1.0
+		# Top-down slice: combat/dragon cues stay level regardless of world offset from camera listener.
+		player.attenuation = 0.0
 		add_child(player)
 		_world_players.append(player)
 
@@ -201,6 +305,21 @@ func _apply_cooldown(event: GameAudioEvent.Event) -> void:
 	if duration <= 0.0:
 		return
 	_event_cooldown_until[event] = Time.get_ticks_msec() / 1000.0 + duration
+
+
+func _weapon_swing_cooldown_key(profile_id: WeaponProfilePrototype.Id, cc_step: int) -> String:
+	return "weapon_swing_%d_%d" % [int(profile_id), cc_step]
+
+
+func _is_on_custom_cooldown(key: String) -> bool:
+	var until: float = _event_cooldown_until.get(key, 0.0)
+	return Time.get_ticks_msec() / 1000.0 < until
+
+
+func _apply_custom_cooldown(key: String, duration: float) -> void:
+	if duration <= 0.0:
+		return
+	_event_cooldown_until[key] = Time.get_ticks_msec() / 1000.0 + duration
 
 
 func _cooldown_for_event(event: GameAudioEvent.Event) -> float:

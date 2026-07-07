@@ -621,6 +621,12 @@ func _get_archetype() -> VerticalSliceArchetypePresets.Archetype:
 	return VerticalSliceArchetypePresets.Archetype.RAIDER
 
 
+func get_weapon_identity() -> WeaponIdentity.Id:
+	if has_meta("weapon_identity"):
+		return get_meta("weapon_identity") as WeaponIdentity.Id
+	return WeaponIdentity.from_archetype(_get_archetype())
+
+
 func _on_died() -> void:
 	if is_dead:
 		return

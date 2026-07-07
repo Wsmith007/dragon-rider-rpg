@@ -78,6 +78,14 @@ Checkpoints describe **live or recently shipped behavior**. Each checkpoint owns
 
 | Document | Owns |
 |----------|------|
+| [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) | Dragon situational communication, anti-spam timing, `GameBuildConfig` developer UI gating |
+
+| Document | Owns |
+|----------|------|
+| [`project_checkpoint_player_animation_pass1.md`](./checkpoints/project_checkpoint_player_animation_pass1.md) | Minimal idle / walk / attack presentation synced to MeleeAttack timings |
+
+| Document | Owns |
+|----------|------|
 | [`project_checkpoint_ui_cleanup_pass1.md`](./checkpoints/project_checkpoint_ui_cleanup_pass1.md) | HUD layout philosophy, PlayerHud, area announce — **historical for window/shell layout** |
 
 ### Audio
@@ -85,7 +93,10 @@ Checkpoints describe **live or recently shipped behavior**. Each checkpoint owns
 | Document | Owns |
 |----------|------|
 | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) | `GameAudio` architecture, event catalog, binder wiring, buses |
+| [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md) | Combat Audio Pass 1 — swing whooshes, `weapon_impact_library_v1`, weapon audio profiles |
+| [`project_checkpoint_combat_audio_polish_pass1.md`](./checkpoints/project_checkpoint_combat_audio_polish_pass1.md) | Redirect → Combat Audio Pass 1 |
 | [`audio_placeholder_assets.md`](./audio/audio_placeholder_assets.md) | Placeholder WAV policy, regeneration, catalog mapping |
+| [`../assets/audio/weapon_impact_library_v1/README.md`](../assets/audio/weapon_impact_library_v1/README.md) | Melee impact library v1 — profiles and import |
 
 ### Level & slice content
 
@@ -121,6 +132,7 @@ Pass-by-pass journals, experiments, and brainstorming. **Historical and forward-
 | Document | Role |
 |----------|------|
 | [`combat_feel_notes.md`](./notes/combat_feel_notes.md) | Combat pass journal — archetype naming (Standard/Heavy) vs slice names (Raider/Brute) |
+| [`playtest_observation_log.md`](./notes/playtest_observation_log.md) | Informal + structured playtest observations (Level 4) |
 
 Future brainstorming and design journals belong at this level.
 
@@ -161,8 +173,11 @@ When two documents disagree, apply in order:
 | How does melee work? | `checkpoints/project_checkpoint_combat_feel_v1.md` + `checkpoints/project_checkpoint_combat_depth_1B.md` |
 | How do Sync/Instability change? | `checkpoints/project_checkpoint_milestone9A.md` |
 | How does audio fire? | `checkpoints/project_checkpoint_audio_feedback_pass1.md` |
+| Weapon swing / impact / audio profiles | `checkpoints/project_checkpoint_combat_audio_pass1.md` |
 | Where is F10 / viewport? | `checkpoints/project_checkpoint_developer_experience_pass1.md` |
 | What does the player see without F10? | `checkpoints/project_checkpoint_vertical_slice_polish_1A.md` |
+| Dragon communication / player build dev flag | `checkpoints/project_checkpoint_dragon_personality_pass1.md` |
+| Player attack animation | `checkpoints/project_checkpoint_player_animation_pass1.md` |
 | What's the graybox route? | `level/vertical_slice_level_p1.md` |
 | What was true in Milestone 8? | `historical/project_checkpoint_milestone8.md` (historical only) |
 

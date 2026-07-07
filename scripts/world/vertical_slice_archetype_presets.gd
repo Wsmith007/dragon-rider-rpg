@@ -132,6 +132,7 @@ static func apply_to_enemy(enemy: CharacterBody2D, archetype: Archetype) -> void
 			enemy.set(key, preset[key])
 
 	enemy.set_meta("slice_archetype", archetype)
+	enemy.set_meta("weapon_identity", WeaponIdentity.from_archetype(archetype))
 
 	var visual := enemy.get_node_or_null("Visual") as Polygon2D
 	if visual != null:

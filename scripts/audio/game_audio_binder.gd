@@ -10,8 +10,9 @@ var _dragon: CharacterBody2D
 var _last_player_health: float = -1.0
 var _focus_was_active: bool = false
 var _focus_target_id: int = -1
-var _last_dragon_state: int = -1
 var _bound_enemy_ids: Dictionary = {}
+var _bound_tree: SceneTree
+var _player_attack_impact_played: bool = false
 
 
 func setup(audio: Node) -> void:
@@ -37,6 +38,8 @@ func bind_game_root(game_root: Node2D) -> void:
 
 
 func unbind_game_root() -> void:
+	_disconnect_player_signals()
+	_disconnect_dragon_signals()
 	_disconnect_tree_signals()
 	_bound_enemy_ids.clear()
 	_player = null
@@ -45,7 +48,7 @@ func unbind_game_root() -> void:
 	_last_player_health = -1.0
 	_focus_was_active = false
 	_focus_target_id = -1
-	_last_dragon_state = -1
+	_player_attack_impact_played = false
 	if _audio != null:
 		_audio.set_world_audio_root(null)
 
@@ -81,9 +84,9 @@ func _bind_dragon() -> void:
 	if _dragon == null:
 		return
 
-	if _dragon.has_signal("state_changed") and not _dragon.state_changed.is_connected(_on_dragon_state_changed):
-		_dragon.state_changed.connect(_on_dragon_state_changed)
-		_last_dragon_state = _dragon.state
+	var strike_behavior := _dragon.get_node_or_null("StrikeBehavior") as DragonStrikeBehavior
+	if strike_behavior != null and not strike_behavior.strike_started.is_connected(_on_dragon_strike_started):
+		strike_behavior.strike_started.connect(_on_dragon_strike_started)
 
 	var command_behavior := _dragon.get_node_or_null("CommandBehavior") as DragonCommandBehavior
 	if command_behavior != null and not command_behavior.wait_position_set.is_connected(_on_dragon_wait_ack):
@@ -101,16 +104,44 @@ func _connect_tree_signals(game_root: Node2D) -> void:
 	var tree := game_root.get_tree()
 	if tree == null:
 		return
+	_bound_tree = tree
 	if not tree.node_added.is_connected(_on_node_added):
 		tree.node_added.connect(_on_node_added)
 
 
 func _disconnect_tree_signals() -> void:
-	if _game_root == null or not is_instance_valid(_game_root):
+	if _bound_tree != null and _bound_tree.node_added.is_connected(_on_node_added):
+		_bound_tree.node_added.disconnect(_on_node_added)
+	_bound_tree = null
+
+
+func _disconnect_player_signals() -> void:
+	if _player == null or not is_instance_valid(_player):
 		return
-	var tree := _game_root.get_tree()
-	if tree != null and tree.node_added.is_connected(_on_node_added):
-		tree.node_added.disconnect(_on_node_added)
+	if _player.has_signal("player_damaged") and _player.player_damaged.is_connected(_on_player_damaged):
+		_player.player_damaged.disconnect(_on_player_damaged)
+	var melee := _player.get_node_or_null("MeleeAttack")
+	if melee != null:
+		if melee.has_signal("attack_swing_started") and melee.attack_swing_started.is_connected(_on_attack_swing_started):
+			melee.attack_swing_started.disconnect(_on_attack_swing_started)
+		if melee.has_signal("attack_swing_finished") and melee.attack_swing_finished.is_connected(_on_attack_swing_finished):
+			melee.attack_swing_finished.disconnect(_on_attack_swing_finished)
+		if melee.has_signal("attack_hit") and melee.attack_hit.is_connected(_on_attack_hit):
+			melee.attack_hit.disconnect(_on_attack_hit)
+	var target_focus := _player.get_node_or_null("TargetFocus") as PlayerTargetFocus
+	if target_focus != null and target_focus.focus_changed.is_connected(_on_focus_changed):
+		target_focus.focus_changed.disconnect(_on_focus_changed)
+
+
+func _disconnect_dragon_signals() -> void:
+	if _dragon == null or not is_instance_valid(_dragon):
+		return
+	var strike_behavior := _dragon.get_node_or_null("StrikeBehavior") as DragonStrikeBehavior
+	if strike_behavior != null and strike_behavior.strike_started.is_connected(_on_dragon_strike_started):
+		strike_behavior.strike_started.disconnect(_on_dragon_strike_started)
+	var command_behavior := _dragon.get_node_or_null("CommandBehavior") as DragonCommandBehavior
+	if command_behavior != null and command_behavior.wait_position_set.is_connected(_on_dragon_wait_ack):
+		command_behavior.wait_position_set.disconnect(_on_dragon_wait_ack)
 
 
 func _bind_existing_enemies() -> void:
@@ -141,12 +172,35 @@ func _bind_enemy(node: Node) -> void:
 
 
 func _on_attack_swing_started(is_crowd_control: bool) -> void:
-	var event := GameAudioEvent.Event.PLAYER_CC if is_crowd_control else GameAudioEvent.Event.PLAYER_SWING
+	_player_attack_impact_played = false
 	var position := _player.global_position if _player != null else Vector2.ZERO
-	_audio.play(event, position)
+	var profile_id := _get_weapon_profile_id()
+	if is_crowd_control:
+		var windup := _get_cc_windup_duration()
+		_audio.play_cc_swing_sequence(profile_id, position, windup)
+	else:
+		_audio.play_weapon_swing(profile_id, -1, position)
 
 
-func _on_attack_swing_finished(is_crowd_control: bool, did_hit: bool) -> void:
+func _get_weapon_profile_id() -> WeaponProfilePrototype.Id:
+	if _player == null:
+		return WeaponProfilePrototype.Id.DAGGER
+	var melee := _player.get_node_or_null("MeleeAttack")
+	if melee == null:
+		return WeaponProfilePrototype.Id.DAGGER
+	return melee.weapon_profile as WeaponProfilePrototype.Id
+
+
+func _get_cc_windup_duration() -> float:
+	if _player == null:
+		return 0.17
+	var melee := _player.get_node_or_null("MeleeAttack")
+	if melee == null:
+		return 0.17
+	return float(melee.crowd_control_windup)
+
+
+func _on_attack_swing_finished(_is_crowd_control: bool, did_hit: bool) -> void:
 	if did_hit:
 		return
 	var position := _player.global_position if _player != null else Vector2.ZERO
@@ -156,7 +210,19 @@ func _on_attack_swing_finished(is_crowd_control: bool, did_hit: bool) -> void:
 func _on_attack_hit(enemy: Node2D) -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
-	_audio.play(GameAudioEvent.Event.PLAYER_HIT, enemy.global_position)
+	if _player_attack_impact_played:
+		if _audio.has_method("defer_hit_evaluation"):
+			_audio.defer_hit_evaluation(enemy)
+		return
+
+	_player_attack_impact_played = true
+	var position := enemy.global_position
+	if _player != null:
+		# Anchor melee confirm near the listener while keeping slight spatial offset toward the target.
+		position = _player.global_position.lerp(enemy.global_position, 0.35)
+
+	var identity_id := WeaponIdentity.from_weapon_profile(_get_weapon_profile_id())
+	_audio.play_weapon_impact(identity_id, position)
 	if _audio.has_method("defer_hit_evaluation"):
 		_audio.defer_hit_evaluation(enemy)
 
@@ -177,10 +243,9 @@ func _on_enemy_died(enemy: Node) -> void:
 
 
 func _on_enemy_attacked_player(enemy: CharacterBody2D) -> void:
-	if not _is_brute(enemy):
-		return
 	var position := _player.global_position if _player != null else enemy.global_position
-	_audio.play(GameAudioEvent.Event.BRUTE_HEAVY, position)
+	var identity_id := _get_enemy_weapon_identity(enemy)
+	_audio.play_weapon_impact(identity_id, position)
 
 
 func _on_focus_changed(active: bool, target: Node2D) -> void:
@@ -217,14 +282,15 @@ func _on_relationship_stats_applied(
 		_audio.play(GameAudioEvent.Event.RELATIONSHIP_STRAINED)
 
 
-func _on_dragon_state_changed(new_state: DragonState.State) -> void:
+func _on_dragon_strike_started(_enemy: Node2D, kind: DragonStrikeBehavior.StrikeKind) -> void:
 	if _dragon == null:
 		return
-	if new_state == DragonState.State.ASSISTING and _last_dragon_state != DragonState.State.ASSISTING:
-		_audio.play(GameAudioEvent.Event.DRAGON_ASSIST, _dragon.global_position)
-	elif new_state == DragonState.State.PROTECTING and _last_dragon_state != DragonState.State.PROTECTING:
-		_audio.play(GameAudioEvent.Event.DRAGON_PROTECT, _dragon.global_position)
-	_last_dragon_state = new_state
+	var position := _dragon.global_position
+	match kind:
+		DragonStrikeBehavior.StrikeKind.ASSIST:
+			_audio.play(GameAudioEvent.Event.DRAGON_ASSIST, position)
+		DragonStrikeBehavior.StrikeKind.PROTECTION:
+			_audio.play(GameAudioEvent.Event.DRAGON_PROTECT, position)
 
 
 func _on_dragon_wait_ack(_wait_pos: Vector2) -> void:
@@ -245,10 +311,20 @@ func evaluate_enemy_hit_result(enemy: Node2D) -> void:
 	_audio.play(GameAudioEvent.Event.BRUTE_RESIST, enemy.global_position)
 
 
+func _get_enemy_weapon_identity(enemy: CharacterBody2D) -> WeaponIdentity.Id:
+	if enemy.has_method("get_weapon_identity"):
+		return enemy.get_weapon_identity()
+	if enemy.has_meta("weapon_identity"):
+		return enemy.get_meta("weapon_identity") as WeaponIdentity.Id
+	return WeaponIdentity.Id.SWORD
+
+
 func _is_brute(enemy: Node2D) -> bool:
-	if not enemy.has_meta("slice_archetype"):
-		return false
-	return int(enemy.get_meta("slice_archetype")) == VerticalSliceArchetypePresets.Archetype.BRUTE
+	if enemy.has_method("_get_archetype"):
+		return enemy.call("_get_archetype") == VerticalSliceArchetypePresets.Archetype.BRUTE
+	if enemy.has_meta("slice_archetype"):
+		return int(enemy.get_meta("slice_archetype")) == VerticalSliceArchetypePresets.Archetype.BRUTE
+	return false
 
 
 func _get_player_health() -> float:

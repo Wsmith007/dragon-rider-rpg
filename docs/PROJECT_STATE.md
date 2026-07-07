@@ -6,7 +6,7 @@
 |--|--|
 | **Engine** | Godot 4.6 · GDScript |
 | **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-06 (Documentation Organization Pass 1) |
+| **Last updated** | 2026-07-06 (Combat Audio Pass 1 complete) |
 
 **New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
 
@@ -16,9 +16,7 @@
 
 ## Current Project Revision
 
-**Documentation Organization Pass 1**
-
-Reorganized `docs/` into subfolders (`design/`, `checkpoints/`, `level/`, `audio/`, `notes/`, `historical/`), updated links, added `README.md`, and added Standard Milestone Handoff workflow. **No gameplay changes.**
+**Combat Audio Pass 1 — complete**
 
 ---
 
@@ -26,7 +24,7 @@ Reorganized `docs/` into subfolders (`design/`, `checkpoints/`, `level/`, `audio
 
 **Vertical Slice — polish and validation**
 
-Core systems are implemented. Work is shifting to **playtest validation** and **player-facing polish** before a structured fifteen-minute slice playtest.
+Core systems are implemented. Work focuses on **Structured Vertical Slice Playtest** readiness.
 
 Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md)
 
@@ -34,14 +32,17 @@ Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1
 
 ## Current Milestone
 
-**Documentation Organization Pass 1** — **complete** (documentation only)
+**Structured Vertical Slice Playtest** — formal fifteen-minute arc evaluation
+
+**Previous:** Combat Audio Pass 1 — [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md)
 
 ---
 
 ## Current Focus
 
-1. Prepare for **Audio Feedback Pass 1A** — validate implemented audio (see audio checkpoint)
-2. Use reorganized docs + [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) Standard Milestone Handoff for future passes
+1. Run the **Structured Vertical Slice Playtest**
+2. Capture findings in [`playtest_observation_log.md`](./notes/playtest_observation_log.md)
+3. Address only **low-risk readability** fixes that fit the documented roadmap
 
 ---
 
@@ -49,14 +50,19 @@ Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1
 
 | Order | Milestone | What it is |
 |-------|-----------|------------|
-| 1 | **Audio Feedback Pass 1A** | Playtest validation of Audio Feedback Pass 1 (**next**) |
-| 2 | **Informal Playtest** | Smoke test — systems + slice level |
-| 3 | **Dragon Personality Pass 1** | Dragon communication + hide dev UI in player builds |
-| 4 | **Player Animation Pass 1** | Minimal attack animation synced to combat timings |
-| 5 | **Structured Vertical Slice Playtest** | Formal fifteen-minute arc evaluation |
-| 6 | **Documentation Cleanup Pass 2** | Resolve moderate/major doc conflicts (future) |
+| 1 | **Structured Vertical Slice Playtest** | Formal fifteen-minute arc evaluation (**current**) |
+| 2 | **Documentation Cleanup Pass 2** | Resolve moderate/major doc conflicts (future) |
 
 Do not invent milestones beyond this sequence without updating this file and [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) §12.
+
+### Next milestone candidates (after playtest — not started)
+
+Planning notes only; pick based on playtest findings:
+
+- **Hit feedback polish** — hit-stop, recoil, stagger, particles, camera shake
+- **Combat interaction depth** — enemy reactions, block/shield, material hit responses
+- **Weapon expansion** — new identities with audio profiles (staff, axe, club, hammer, spear)
+- **Enemy combat readability** — windups, attack tells, weapon-specific behavior
 
 ---
 
@@ -76,12 +82,16 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Authority rules when docs disagree | [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) |
 | Agent / Cursor workflow | [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) |
 | Slice scope, pacing, defer list | [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) |
+| **Playtest observations** | [`playtest_observation_log.md`](./notes/playtest_observation_log.md) |
 | Melee combat (Passes 1–7) | [`project_checkpoint_combat_feel_v1.md`](./checkpoints/project_checkpoint_combat_feel_v1.md) |
 | Combat Stance + Target Focus | [`project_checkpoint_combat_depth_1B.md`](./checkpoints/project_checkpoint_combat_depth_1B.md) |
 | Sync / Instability / encounters | [`project_checkpoint_milestone9A.md`](./checkpoints/project_checkpoint_milestone9A.md) |
 | Player HUD without F10 | [`project_checkpoint_vertical_slice_polish_1A.md`](./checkpoints/project_checkpoint_vertical_slice_polish_1A.md) |
+| Dragon communication + dev UI gating | [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) |
+| Player combat animation | [`project_checkpoint_player_animation_pass1.md`](./checkpoints/project_checkpoint_player_animation_pass1.md) |
+| **Combat audio (swing + impact)** | [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md) |
+| Event audio architecture | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
 | F10 sidebar + viewport | [`project_checkpoint_developer_experience_pass1.md`](./checkpoints/project_checkpoint_developer_experience_pass1.md) |
-| Event audio | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
 | Graybox level + encounters | [`vertical_slice_level_p1.md`](./level/vertical_slice_level_p1.md) |
 
 ---
@@ -97,11 +107,12 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Sync + Instability at resolve | Live | Milestone 9A |
 | Handcrafted slice level | Live | `level/vertical_slice_level_p1.md` |
 | Player feedback (no F10) | Live | Polish 1A |
-| F10 dev shell | Live | Developer Experience Pass 1 |
-| Placeholder event audio | Live (Pass 1) | Audio Feedback Pass 1 — **Pass 1A validation next** |
-| Attack animation | Not started | Player Animation Pass 1 |
-| Dragon personality UI | Not started | Dragon Personality Pass 1 |
-| Dev UI hidden (player build) | Not started | Dragon Personality Pass 1 |
+| F10 dev shell | Live (gated) | Developer Experience · Dragon Personality Pass 1 |
+| Placeholder event audio | **Pass 1A complete** | Audio Feedback Pass 1 |
+| **Combat audio (swing + impact)** | **Pass 1 complete** | Combat Audio Pass 1 |
+| Player combat animation | **Pass 1 complete** | Player Animation Pass 1 |
+| Dragon situational communication | **Pass 1 complete** | Dragon Personality Pass 1 |
+| Dev UI hidden (player build) | **Pass 1 complete** | `GameBuildConfig` |
 | Bond Strength progression | Deferred | Milestone 9A |
 | Death/retry, save | Deferred | Design §8 |
 
@@ -109,7 +120,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 
 ## Recently completed
 
-Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
+Combat Audio Pass 1 · Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
 
 Dates: see individual checkpoint headers.
 
@@ -121,8 +132,10 @@ Pointers only — full detail in checkpoints and design §8.
 
 - No inventory, dodge, magic, flight, or races in slice scope
 - Bond Strength preview only at encounter resolve
-- Placeholder audio (six WAVs); no attack animations yet
-- F10 / F11 / spawn keys always visible — no player-build flag
+- Swing whooshes and melee impacts are **placeholder/processed** assets until Audio Pass 2
+- Sword impact has one unique variation until `hit_sword_02` is replaced with a distinct recording
+- Placeholder polygon rider art
+- Player builds require `gameplay/developer_tools_enabled = false` in export — not yet a preset template
 - Structured fifteen-minute playtest not yet run as formal gate
 
 ---
@@ -143,4 +156,5 @@ Tracked conflicts — not blockers for onboarding. See [`CURSOR_ONBOARDING.md`](
 - [`README.md`](./README.md) — docs folder map  
 - [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) — standard agent workflow  
 - [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) — which document wins  
-- [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) — design constitution
+- [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) — design constitution  
+- [`playtest_observation_log.md`](./notes/playtest_observation_log.md) — playtest journal
