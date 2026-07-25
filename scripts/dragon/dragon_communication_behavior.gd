@@ -2,7 +2,7 @@ extends Node
 class_name DragonCommunicationBehavior
 ## Ambient combat/exploration text is intentionally disabled.
 ## Dragon personality in Pass 1 is communicated through behavior (stance, facing,
-## proximity, assist/protect/wait/recall/hesitation) — not automatic thought bubbles.
+## proximity, assist/protect/wait/recall/hesitation) - not automatic thought bubbles.
 ##
 ## Future: player-initiated dialogue may publish through message_changed when the
 ## rider deliberately interacts with the dragon (NPC-style conversation).
