@@ -6,7 +6,7 @@
 |--|--|
 | **Engine** | Godot 4.6 · GDScript |
 | **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-06 (Combat Audio Pass 1 complete) |
+| **Last updated** | 2026-07-24 (Player Animation Pass 1 validated & committed) |
 
 **New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
 

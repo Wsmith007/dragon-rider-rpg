@@ -17,7 +17,8 @@ const PLAYER_BODY_RADIUS := 14.0
 const MOVE_INPUT_DEADZONE := 0.01
 
 @onready var _health: Health = $Health
-@onready var _visual: Polygon2D = $Visual
+@onready var _visual_pivot: Node2D = $VisualPivot
+@onready var _visual: Polygon2D = $VisualPivot/SpinLayer/Visual
 @onready var _target_focus: PlayerTargetFocus = $TargetFocus
 
 var _is_dead: bool = false
@@ -160,7 +161,7 @@ func _get_visual_target_facing() -> Vector2:
 func _apply_visual_rotation(facing: Vector2) -> void:
 	if facing.length_squared() < 0.01:
 		return
-	_visual.rotation = facing.angle() + PI * 0.5
+	_visual_pivot.rotation = facing.angle() + PI * 0.5
 
 
 func _get_free_facing_direction() -> Vector2:
@@ -186,7 +187,7 @@ func get_facing_direction() -> Vector2:
 		return _facing_direction.normalized()
 	if _visual_facing.length_squared() > 0.01:
 		return _visual_facing.normalized()
-	return Vector2.from_angle(_visual.rotation - PI * 0.5).normalized()
+	return Vector2.from_angle(_visual_pivot.rotation - PI * 0.5).normalized()
 
 
 func get_facing_label() -> String:

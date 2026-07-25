@@ -15,7 +15,7 @@ var _last_attack_time: float = -999.0
 
 func _ready() -> void:
 	_player = get_parent() as CharacterBody2D
-	_visual = _player.get_node_or_null("Visual") as Polygon2D
+	_visual = _player.get_node_or_null("VisualPivot/SpinLayer/Visual") as Polygon2D
 	var melee := _player.get_node_or_null("MeleeAttack")
 	if melee != null and melee.has_signal("attack_hit"):
 		melee.attack_hit.connect(_on_attack_hit)
@@ -93,5 +93,7 @@ func _get_facing_direction() -> Vector2:
 	if player != null and player.velocity.length_squared() > 16.0:
 		return player.velocity.normalized()
 	if _visual != null:
-		return Vector2.from_angle(_visual.rotation - PI * 0.5)
+		var pivot := _visual.get_parent() as Node2D
+		if pivot != null:
+			return Vector2.from_angle(pivot.rotation - PI * 0.5)
 	return Vector2.DOWN

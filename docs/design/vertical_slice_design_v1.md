@@ -509,7 +509,7 @@ Major gaps before the slice is **player-complete**. Ordered by [**Section 12 imp
 | **3** | Event audio (placeholders) | **Complete** — Audio Feedback Pass 1 |
 | **3** | Audio playtest validation | **Audio Feedback Pass 1A** — checklist pending |
 | **3** | Player-facing relationship feedback | **Complete** — Polish Pass 1A |
-| **3** | Animation polish (minimal) | **Player Animation Pass 1** — not started |
+| **3** | Animation polish (minimal) | **Complete** — Player Animation Pass 1 |
 | **3** | Starting weapon (formal) | Move from debug hotkeys |
 | **3** | Dev UI hidden for player builds | **Dragon Personality Pass 1** |
 | **3** | Dragon personality communication | **Dragon Personality Pass 1** |
@@ -586,7 +586,7 @@ Exact layout is implementation — beats are design requirements.
            ↓
 11. Dragon Personality — Pass 1
            ↓
-12. Player Animation — Pass 1
+12. Player Animation — Pass 1               ← COMPLETE
            ↓
 13. Structured Vertical Slice Playtest
            ↓
@@ -714,6 +714,8 @@ Detail: [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_ch
 **Pass 1A (next validation):** Playtest checklist in audio checkpoint — see [`PROJECT_STATE.md`](../PROJECT_STATE.md).
 
 **Dragon Personality Pass 1 (next implementation):** Dragon communication · hide dev UI in player builds.
+
+**Player Animation Pass 1 (complete):** Procedural idle/walk/attack presentation + per-weapon silhouettes — [`project_checkpoint_player_animation_pass1.md`](../checkpoints/project_checkpoint_player_animation_pass1.md).
 
 ### Vertical Slice UI Cleanup Pass 1 (implemented)
 

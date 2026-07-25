@@ -139,16 +139,6 @@ func _apply_quiet_grove_rest() -> void:
 		player_health.restore_full()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	if not event.pressed or event.echo:
-		return
-	if event.keycode == KEY_R and event.shift_pressed:
-		restart_slice()
-		get_viewport().set_input_as_handled()
-
-
 func restart_slice() -> void:
 	_player.global_position = SPAWN_PLAYER
 	_player.velocity = Vector2.ZERO
@@ -170,7 +160,7 @@ func restart_slice() -> void:
 	var melee := _player.get_node("MeleeAttack")
 	if melee != null:
 		melee.set_physics_process(true)
-	var visual := _player.get_node("Visual") as CanvasItem
+	var visual := _player.get_node_or_null("VisualPivot/SpinLayer/Visual") as CanvasItem
 	if visual != null:
 		visual.modulate = Color.WHITE
 
