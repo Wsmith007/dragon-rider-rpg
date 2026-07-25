@@ -124,12 +124,13 @@ func _poll_gameplay_actions() -> void:
 				_gameplay.health_debug.apply_max_health_down()
 
 	if _gameplay.spawn_debug != null:
-		if Input.is_action_just_pressed(InputActions.SPAWN_ENEMY):
-			if _gameplay.spawn_debug.has_method("spawn_random_enemy"):
-				_gameplay.spawn_debug.spawn_random_enemy()
-		elif Input.is_action_just_pressed(InputActions.SPAWN_ENEMY_PACK):
+		# Pack first + exact_match so Shift+F1 does not also fire the single-spawn action.
+		if Input.is_action_just_pressed(InputActions.SPAWN_ENEMY_PACK, true):
 			if _gameplay.spawn_debug.has_method("spawn_random_pack"):
 				_gameplay.spawn_debug.spawn_random_pack()
+		elif Input.is_action_just_pressed(InputActions.SPAWN_ENEMY, true):
+			if _gameplay.spawn_debug.has_method("spawn_random_enemy"):
+				_gameplay.spawn_debug.spawn_random_enemy()
 
 	if (
 		_gameplay.slice_level != null

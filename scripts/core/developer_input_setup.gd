@@ -40,8 +40,8 @@ static func register_playtest_actions() -> void:
 	_set_action(InputActions.HEALTH_HEAL, [_key(KEY_F5)])
 	_set_action(InputActions.HEALTH_MAX_UP, [_key(KEY_F6)])
 	_set_action(InputActions.HEALTH_MAX_DOWN, [_key(KEY_F7)])
-	_set_action(InputActions.SPAWN_ENEMY, [_key(KEY_F3)])
-	_set_action(InputActions.SPAWN_ENEMY_PACK, [_key(KEY_F3, true, false)])
+	_set_action(InputActions.SPAWN_ENEMY, [_key(KEY_F1)])
+	_set_action(InputActions.SPAWN_ENEMY_PACK, [_key(KEY_F1, true, false)])
 	_set_action(InputActions.RESTART_SLICE, [_key(KEY_R, true, false)])
 	_set_action(InputActions.RELOAD_GAMEPLAY, [_key(KEY_R, true, true)])
 

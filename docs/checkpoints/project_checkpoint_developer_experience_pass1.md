@@ -8,7 +8,7 @@
 
 **Status:** **IMPLEMENTED — stable enough for ongoing playtest**  
 **Scope:** Application shell, viewport fill, docked developer workspace — **no gameplay, combat, AI, or relationship math changes**  
-**Date:** 2026-05-29 (updated 2026-07-05)
+**Date:** 2026-05-29 (updated 2026-07-24 — spawn shortcuts F1 / Shift+F1)
 
 ---
 
@@ -31,7 +31,7 @@ This pass is considered **stable enough for now** because:
 | State | What happens |
 |-------|----------------|
 | **Startup (default)** | Developer Mode **off**. Sidebar `visible = false`, `custom_minimum_size.x = 0`. Game uses **100%** of window width. |
-| **Press F10** | Toggles Developer Mode on/off via `_unhandled_input` in `playtest_shell.gd`. Echo/repeat ignored. Input consumed so F10 does not leak to gameplay. |
+| **Press F10** | Toggles Developer Mode on/off via `DeveloperInput` (`debug_toggle_developer_mode`). Echo/repeat ignored. |
 | **Turning ON** | Sidebar width tweens **0 → 420 px** over **0.22 s** (cubic ease-out). Debug + help panels become visible. Viewport sync runs during the tween. |
 | **Turning OFF** | Sidebar width tweens **420 → 0 px**, then sidebar hidden. Game region expands back to full width. |
 | **Signal** | `developer_mode_changed(enabled: bool)` emitted on toggle (available for future player-build gating). |
@@ -39,8 +39,31 @@ This pass is considered **stable enough for now** because:
 **Not part of F10:**
 
 - In-world **F11** combat range debug (inside `SubViewport` gameplay scene).
-- **Ctrl+Shift+R** full gameplay reload on `VerticalSlice_Level_P1` only (`vertical_slice_world_shell.gd`).
+- **Ctrl+Shift+R** full gameplay reload on `VerticalSlice_Level_P1` only (`DeveloperInput` → `reload_gameplay_from_debug`).
 - Player HUD, combat floaters, and area announce — always driven inside the `SubViewport`, independent of F10.
+
+---
+
+## Developer shortcuts (DeveloperInput — authoritative)
+
+All playtest shortcuts are registered at runtime by `DeveloperInputSetup` and polled by the `DeveloperInput` autoload when `gameplay/developer_tools_enabled` is true. Help panel text in `BondTestHelpUI.tscn` matches these bindings.
+
+| Key | Action | Handler |
+|-----|--------|---------|
+| **F1** | Spawn 1 enemy | `EnemySpawnDebug.spawn_random_enemy` |
+| **Shift+F1** | Spawn 3 enemies | `EnemySpawnDebug.spawn_random_pack` (checked before F1; exact modifier match) |
+| **F5 / F6 / F7** | Heal / max HP up / max HP down | `HealthDebugControls` |
+| **F10** | Toggle developer sidebar | `PlaytestShell.toggle_developer_mode` |
+| **F11** | Combat range overlay | `CombatAttackTelegraph.toggle_debug_ranges` |
+| **F12** | Dragon navigation debug | `Dragon.toggle_navigation_debug` |
+| **1 / 2 / 3** | Weapon dagger / sword / polearm | `PlayerMeleeAttack.try_set_weapon_profile_from_debug` |
+| **Ctrl+1–6** | Bond Strength / Sync / Instability ± | `BondSystem` |
+| **Shift+R** | Restart vertical slice | `vertical_slice_level_p1.restart_slice` |
+| **Ctrl+Shift+R** | Reload slice gameplay | `vertical_slice_world_shell.reload_gameplay_from_debug` |
+
+**F3** is not assigned to spawn (or any other developer action). Legacy F3 spawn bindings were corrected to F1.
+
+**Editor and export:** Same Input Map / `physical_keycode` path; requires `developer_tools_enabled=true` in the exported project settings for player builds that keep tools on.
 
 **Removed from earlier iterations:**
 
@@ -240,7 +263,10 @@ Further polish (draggable split, player-build hide, debug log flag default-off, 
 
 | File | Role |
 |------|------|
-| `scripts/world/playtest_shell.gd` | HBox shell, F10 toggle, viewport sync, `get_bond_debug_ui()` |
+| `scripts/world/playtest_shell.gd` | HBox shell, F10 toggle via DeveloperInput, viewport sync, `get_bond_debug_ui()` |
+| `scripts/core/developer_input_service.gd` | Autoload polls developer Input Map actions |
+| `scripts/core/developer_input_setup.gd` | Runtime Input Map registration (`KEY_*` / physical keycodes) |
+| `scripts/core/developer_input_actions.gd` | Action name constants |
 | `scripts/world/test_world.gd` | `TestWorld` gameplay wiring + `bind_to_dragon` |
 | `scripts/world/vertical_slice_world_shell.gd` | Slice shell + Ctrl+Shift+R reload |
 | `scenes/world/TestWorld.tscn` | Shell scene (TestWorld) |
