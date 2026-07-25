@@ -23,6 +23,8 @@ const PLACEHOLDER_HEAVY := "res://assets/audio/placeholders/heavy_thud.wav"
 
 ## Small global trim on player attack feedback (swings + connects).
 const ATTACK_VOLUME_TRIM_DB := -1.5
+## Extra trim on weapon whoosh/swing only (impacts unchanged). Combat Stakes validation: ~-3 dB.
+const SWING_VOLUME_TRIM_DB := -3.0
 ## Extra trim on CC swing sequence only (focused attacks unchanged).
 const CC_VOLUME_TRIM_DB := -2.5
 ## Weapon impact library mix — normalized perceived loudness across profiles.
@@ -36,12 +38,19 @@ static func get_playback(event: GameAudioEvent.Event) -> Dictionary:
 	# encounter > hit / enemy feedback > dragon > swing > lock-on UI
 	match event:
 		GameAudioEvent.Event.PLAYER_SWING:
-			return _entry(PLACEHOLDER_SWING, BUS_COMBAT, -10.0 + ATTACK_VOLUME_TRIM_DB, 1.05, 1.12, true)
+			return _entry(
+				PLACEHOLDER_SWING,
+				BUS_COMBAT,
+				-10.0 + ATTACK_VOLUME_TRIM_DB + SWING_VOLUME_TRIM_DB,
+				1.05,
+				1.12,
+				true,
+			)
 		GameAudioEvent.Event.PLAYER_CC:
 			return _entry(
 				PLACEHOLDER_SWING,
 				BUS_COMBAT,
-				-8.0 + ATTACK_VOLUME_TRIM_DB + CC_VOLUME_TRIM_DB,
+				-8.0 + ATTACK_VOLUME_TRIM_DB + CC_VOLUME_TRIM_DB + SWING_VOLUME_TRIM_DB,
 				0.88,
 				0.96,
 				true,
@@ -49,13 +58,22 @@ static func get_playback(event: GameAudioEvent.Event) -> Dictionary:
 		GameAudioEvent.Event.PLAYER_HIT, GameAudioEvent.Event.ENEMY_HIT:
 			return {}
 		GameAudioEvent.Event.ATTACK_MISS:
-			return _entry(PLACEHOLDER_SWING, BUS_COMBAT, -16.0 + ATTACK_VOLUME_TRIM_DB, 0.72, 0.8, true)
+			return _entry(
+				PLACEHOLDER_SWING,
+				BUS_COMBAT,
+				-16.0 + ATTACK_VOLUME_TRIM_DB + SWING_VOLUME_TRIM_DB,
+				0.72,
+				0.8,
+				true,
+			)
 		GameAudioEvent.Event.PLAYER_DAMAGED:
 			return _entry(PLACEHOLDER_IMPACT, BUS_COMBAT, -1.0, 0.82, 0.92, true)
+		# Status warnings: non-positional UI bus. heavy_thud source peak ~0.28 — needs strong
+		# catalog lift and near-normal pitch or it is inaudible under combat swings.
 		GameAudioEvent.Event.PLAYER_CRITICAL_WARNING:
-			return _entry(PLACEHOLDER_HEAVY, BUS_COMBAT, -10.0, 0.55, 0.62, true)
+			return _entry(PLACEHOLDER_HEAVY, BUS_UI, 4.0, 0.92, 1.0, false)
 		GameAudioEvent.Event.PLAYER_NEAR_DEATH_WARNING:
-			return _entry(PLACEHOLDER_HEAVY, BUS_COMBAT, -4.0, 0.48, 0.54, true)
+			return _entry(PLACEHOLDER_HEAVY, BUS_UI, 7.0, 0.82, 0.9, false)
 		GameAudioEvent.Event.ENEMY_DEFEATED:
 			return _entry(PLACEHOLDER_DEFEAT, BUS_COMBAT, -2.0, 0.92, 1.0, true)
 		GameAudioEvent.Event.BRUTE_HEAVY:
@@ -109,7 +127,7 @@ static func get_weapon_swing_playback(
 	return _entry(
 		_weapon_swing_stream(profile_id),
 		BUS_COMBAT,
-		volume_db + ATTACK_VOLUME_TRIM_DB,
+		volume_db + ATTACK_VOLUME_TRIM_DB + SWING_VOLUME_TRIM_DB,
 		pitch_min,
 		pitch_max,
 		true,

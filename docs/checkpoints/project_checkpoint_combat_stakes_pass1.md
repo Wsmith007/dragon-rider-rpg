@@ -5,7 +5,7 @@
 **Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
 **Related:** [`project_checkpoint_combat_feel_v1.md`](./project_checkpoint_combat_feel_v1.md) · [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md)  
 **Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
-**Status:** **IMPLEMENTED — revised stakes baseline + hardened critical feedback** (live playtest validation still required)  
+**Status:** **COMPLETE — validated damage/visual stakes; audio + swing + Brute impact fixed from playtest**  
 **Date:** 2026-07-25
 
 ---
@@ -153,16 +153,54 @@ No knockout, revival, rescue, Sync, or Instability gameplay in this pass.
 
 ---
 
-## Live Validation
+## Live Validation (developer playtest)
 
-**Required from developer (not marked complete here):**
+Confirmed by developer:
 
-- [ ] Scout / Raider / Brute hit counts feel distinct and threatening as intended
-- [ ] Sword FOC TTKs ~3 / ~5 / ~9 vs Scout / Raider / Brute
-- [ ] Multi-enemy pressure can drive low health in ordinary play
-- [ ] Critical / Near Death warnings fire once on enter, not as a loop
-- [ ] Vignette clears after heal; pause stops pulse; no debugger errors
-- [ ] Dragon combat / AI unchanged; no accidental KO
+- [x] Damage baseline feels better; weapon identities remain distinct
+- [x] Critical-health **visual** feedback (color + stronger pulse as HP drops) works
+- [x] Existing dragon behavior did not regress
+- [ ] Low-health **audio** — initially **failed** (inaudible); corrected in validation fix below
+- [x] Swing whoosh felt too loud — reduced in validation fix
+- [x] Brute impact feel — small stun/knockback bump in validation fix
+
+Not claimed validated without further in-editor confirmation after this fix:
+
+- Audible Critical / Near Death transition warnings after catalog fix
+- Brute heavier hit-stun feel in multi-enemy fights
+
+---
+
+## Validation Fix — Critical Audio Root Cause
+
+**Symptom:** Vignette tiers changed, but no warning was audible.
+
+**Cause:** `PLAYER_CRITICAL_WARNING` / `PLAYER_NEAR_DEATH_WARNING` used `heavy_thud.wav` (source peak ~0.28) at **−10 / −4 dB** with pitch **~0.55 / ~0.48** on the **Combat** bus as positional SFX. Under louder weapon swings the cue was effectively silent.
+
+**Fix:**
+
+- Route warnings as **non-positional UI** bus cues (status, not world SFX).
+- Raise catalog gain (Critical **+4 dB**, Near Death **+7 dB**) with near-normal pitch so the quiet placeholder reads clearly without looping.
+- Still transition-only (no heartbeat loop).
+
+---
+
+## Validation Fix — Swing Volume
+
+Centralized `SWING_VOLUME_TRIM_DB := -3.0` on weapon whoosh / swing / miss catalog paths only. Impacts unchanged. Hits remain more prominent than empty swings.
+
+---
+
+## Validation Fix — Brute Hit Impact
+
+Archetype preset only (Scout/Raider unchanged):
+
+| | Before | After |
+|--|-------:|------:|
+| `player_hit_knockback` | 32 | **40** |
+| `player_hit_stagger` | 0.47 s | **0.62 s** |
+
+Uses existing `apply_combat_hit_reaction` — no combat redesign.
 
 ---
 
@@ -171,7 +209,7 @@ No knockout, revival, rescue, Sync, or Instability gameplay in this pass.
 | File | Role |
 |------|------|
 | `scripts/player/player.gd` | Player max HP 100 |
-| `scripts/world/vertical_slice_archetype_presets.gd` | Enemy HP/damage baseline |
+| `scripts/world/vertical_slice_archetype_presets.gd` | Enemy HP/damage + Brute hit reaction |
 | `scripts/enemies/enemy.gd` | Default enemy HP/damage |
 | `scripts/combat/weapon_profile_prototype.gd` | Weapon damage scale |
 | `scripts/player/player_melee_attack.gd` | Default melee damage |
@@ -181,11 +219,11 @@ No knockout, revival, rescue, Sync, or Instability gameplay in this pass.
 | `scripts/ui/health_debug_controls.gd` | Debug step 5 |
 | `scripts/ui/player_hud.gd` | Bar tween + shared-tier colors |
 | `scripts/ui/critical_health_feedback.gd` | Vignette + transition warnings |
-| `scripts/audio/game_audio_event.gd` / catalog / service | Critical + near-death warning events |
-| `scripts/dragon/dragon_survivability.gd` | KO foundation (inert) |
+| `scripts/audio/game_audio_event.gd` / catalog / service | Critical + near-death warning events; swing trim |
+| `scripts/dragon/dragon_survivability.gd` | KO foundation (inert until Survivability Pass 1) |
 
 ---
 
 ## Final Status
 
-**IMPLEMENTED** for Pass 1 goals after follow-up retune: readable health, distinct archetype/weapon damage, transition-based critical feedback, shared thresholds, pausable overlay, inert dragon survivability foundation. **Live developer playtest still required** before treating feel as validated.
+**IMPLEMENTED** — Combat Stakes Pass 1 complete after validation fixes. Damage/visual stakes confirmed in playtest; critical audio + swing trim + Brute impact adjusted from that feedback. Dragon survivability gameplay is a **separate** milestone.

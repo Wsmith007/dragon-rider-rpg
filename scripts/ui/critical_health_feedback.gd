@@ -95,8 +95,11 @@ func _play_transition_warning(from_tier: DangerTier, to_tier: DangerTier) -> voi
 		return
 
 	var audio := get_node_or_null("/root/GameAudio")
-	if audio != null and audio.has_method("play"):
-		audio.play(event, Vector2.ZERO)
+	if audio == null or not audio.has_method("play"):
+		push_warning("CriticalHealthFeedback: GameAudio unavailable for warning.")
+		return
+	# Non-positional UI playback — world_position ignored for these events.
+	audio.play(event, Vector2.ZERO)
 
 
 func _process(delta: float) -> void:
