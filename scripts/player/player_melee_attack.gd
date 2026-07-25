@@ -65,27 +65,14 @@ func _ready() -> void:
 	apply_weapon_profile(weapon_profile)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if _attack_active or not event is InputEventKey:
-		return
-	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo or key_event.ctrl_pressed:
-		return
-
-	match key_event.keycode:
-		KEY_1:
-			_set_weapon_profile(WeaponProfilePrototype.Id.DAGGER)
-			get_viewport().set_input_as_handled()
-		KEY_2:
-			_set_weapon_profile(WeaponProfilePrototype.Id.SWORD)
-			get_viewport().set_input_as_handled()
-		KEY_3:
-			_set_weapon_profile(WeaponProfilePrototype.Id.POLEARM)
-			get_viewport().set_input_as_handled()
-
-
 func get_weapon_profile_name() -> String:
 	return WeaponProfilePrototype.get_display_name(weapon_profile)
+
+
+func try_set_weapon_profile_from_debug(profile_id: WeaponProfilePrototype.Id) -> void:
+	if _attack_active:
+		return
+	_set_weapon_profile(profile_id)
 
 
 func get_weapon_profile_summary() -> String:

@@ -9,16 +9,12 @@ var _game_root: Node2D
 
 func _ready() -> void:
 	super._ready()
+	set_developer_reload_enabled(true)
+	call_deferred("_wire_when_ready")
+
+
+func _wire_when_ready() -> void:
 	_wire_game_scene(get_game_root())
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_R and event.shift_pressed and event.ctrl_pressed:
-			_restart_gameplay()
-			get_viewport().set_input_as_handled()
-			return
-	super._unhandled_input(event)
 
 
 func _wire_game_scene(game_root: Node2D) -> void:
@@ -62,8 +58,17 @@ func _wire_game_scene(game_root: Node2D) -> void:
 	if game_audio != null:
 		game_audio.bind_game_root(game_root)
 
+	configure_developer_input(build_developer_input_bindings(game_root, game_root))
+
+
+func reload_gameplay_from_debug() -> void:
+	_restart_gameplay()
+
 
 func _restart_gameplay() -> void:
+	var game_audio := get_node_or_null("/root/GameAudio") as GameAudioService
+	if game_audio != null:
+		game_audio.unbind_game_root()
 	for child in get_game_viewport().get_children():
 		child.queue_free()
 	await get_tree().process_frame

@@ -7,6 +7,7 @@ signal developer_mode_changed(enabled: bool)
 
 const DEVELOPER_SIDEBAR_WIDTH := 420.0
 const DEV_TRANSITION_DURATION := 0.22
+const DeveloperInputScript := preload("res://scripts/core/developer_input_service.gd")
 ## Set false after confirming viewport sizes in the Output panel.
 const DEBUG_VIEWPORT_LAYOUT := true
 
@@ -24,10 +25,22 @@ var _viewport_sync_queued := false
 var _last_debug_signature := ""
 
 
+func _developer_input() -> Node:
+	return get_node_or_null("/root/DeveloperInput")
+
+
 func _ready() -> void:
+	# Gameplay runs in a SubViewport; positional AudioStreamPlayer2D nodes need a 2D listener here.
+	_game_viewport.audio_listener_enable_2d = true
 	_developer_sidebar.visible = false
 	_developer_sidebar.custom_minimum_size = Vector2.ZERO
 	_viewport_container.stretch = true
+	var dev_input := _developer_input()
+	if dev_input != null:
+		dev_input.ensure_actions_registered()
+		dev_input.bind_shell(self)
+	else:
+		push_error("PlaytestShell: DeveloperInput autoload is missing from project.godot.")
 	get_viewport().size_changed.connect(_request_viewport_sync)
 	_shell_row.resized.connect(_request_viewport_sync)
 	_game_region.resized.connect(_request_viewport_sync)
@@ -76,15 +89,43 @@ func set_developer_mode(enabled: bool) -> void:
 	developer_mode_changed.emit(_developer_mode_enabled)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	if not event.pressed or event.echo:
-		return
-	if event.keycode != KEY_F10:
-		return
-	toggle_developer_mode()
-	get_viewport().set_input_as_handled()
+func configure_developer_input(bindings: DeveloperInputScript.GameplayBindings) -> void:
+	var dev_input := _developer_input()
+	if dev_input != null:
+		dev_input.bind_gameplay(bindings)
+
+
+func build_developer_input_bindings(
+	game_root: Node2D,
+	slice_level: Node = null
+) -> DeveloperInputScript.GameplayBindings:
+	var player := game_root.get_node("Entities/Player") as CharacterBody2D
+	var bindings := DeveloperInputScript.GameplayBindings.new()
+	bindings.melee_attack = player.get_node("MeleeAttack")
+	bindings.telegraph = player.get_node("MeleeAttack/Telegraph")
+	bindings.dragon = game_root.get_node("Entities/Dragon")
+	bindings.health_debug = game_root.get_node("UI/HealthDebugControls")
+	bindings.spawn_debug = game_root.get_node("UI/EnemySpawnDebug")
+	bindings.slice_level = slice_level
+	return bindings
+
+
+func set_developer_reload_enabled(enabled: bool) -> void:
+	var dev_input := _developer_input()
+	if dev_input != null:
+		dev_input.set_reload_gameplay_enabled(enabled)
+
+
+func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed(PlaytestNavigation.RETURN_MENU_ACTION):
+		call_deferred("_return_to_launch_menu")
+
+
+func _return_to_launch_menu() -> void:
+	var dev_input := _developer_input()
+	if dev_input != null:
+		dev_input.clear_gameplay_bindings()
+	PlaytestNavigation.return_to_launch_menu(get_tree(), "PlaytestShell")
 
 
 func _notification(what: int) -> void:
@@ -134,6 +175,10 @@ func _apply_developer_workspace(enabled: bool) -> void:
 	_developer_sidebar.visible = enabled
 	_debug_panel.visible = enabled
 	_help_panel.visible = enabled
+	if not enabled:
+		var viewport := get_viewport()
+		if viewport != null:
+			viewport.gui_release_focus()
 	_request_viewport_sync()
 
 

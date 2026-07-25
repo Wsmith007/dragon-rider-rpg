@@ -76,22 +76,6 @@ func spawn_random_pack(count: int = PACK_SIZE) -> void:
 		spawn_random_enemy()
 
 
-func _input(event: InputEvent) -> void:
-	if _player == null or _enemies_container == null:
-		return
-	if not event is InputEventKey:
-		return
-	if not event.pressed or event.echo:
-		return
-
-	if event.is_action("debug_spawn_enemy"):
-		spawn_random_enemy()
-		get_viewport().set_input_as_handled()
-	elif event.is_action("debug_spawn_enemy_pack"):
-		spawn_random_pack()
-		get_viewport().set_input_as_handled()
-
-
 func _pick_random_spawn_position() -> Vector2:
 	var origin := _player.global_position
 

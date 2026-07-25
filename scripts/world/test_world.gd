@@ -4,6 +4,10 @@ extends "res://scripts/world/playtest_shell.gd"
 
 func _ready() -> void:
 	super._ready()
+	call_deferred("_wire_when_ready")
+
+
+func _wire_when_ready() -> void:
 	_wire_game_scene(get_game_root())
 
 
@@ -46,3 +50,5 @@ func _wire_game_scene(game_root: Node2D) -> void:
 	var game_audio := get_node_or_null("/root/GameAudio") as GameAudioService
 	if game_audio != null:
 		game_audio.bind_game_root(game_root)
+
+	configure_developer_input(build_developer_input_bindings(game_root))

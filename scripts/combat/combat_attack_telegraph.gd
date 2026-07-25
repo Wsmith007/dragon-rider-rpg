@@ -68,15 +68,7 @@ func _ready() -> void:
 	_melee_attack = get_parent() as Node2D
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo:
-		return
-	if key_event.keycode != KEY_F11:
-		return
-
+func toggle_debug_ranges() -> void:
 	debug_ranges_enabled = not debug_ranges_enabled
 	debug_ranges_toggled.emit(debug_ranges_enabled)
 	print("[DEBUG] Combat range overlay: %s (F11)" % ("ON" if debug_ranges_enabled else "OFF"))

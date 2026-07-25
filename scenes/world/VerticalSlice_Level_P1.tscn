@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cex78sj2ajnwq"]
 
-[ext_resource type="Script" path="res://scripts/world/vertical_slice_world_shell.gd" id="1_shell"]
-[ext_resource type="PackedScene" uid="uid://cverticalslicegame01" path="res://scenes/world/VerticalSliceLevelP1Game.tscn" id="2_game"]
+[ext_resource type="Script" uid="uid://cvsworldshell" path="res://scripts/world/vertical_slice_world_shell.gd" id="1_shell"]
+[ext_resource type="PackedScene" uid="uid://i66r6p4nvlp1" path="res://scenes/world/VerticalSliceLevelP1Game.tscn" id="2_game"]
 [ext_resource type="PackedScene" uid="uid://bbonddebugui" path="res://scenes/ui/BondDebugUI.tscn" id="3_debug"]
 [ext_resource type="PackedScene" uid="uid://bbondtesthelp" path="res://scenes/ui/BondTestHelpUI.tscn" id="4_help"]
 
@@ -13,7 +13,7 @@ border_color = Color(0.32, 0.36, 0.4, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_help_panel"]
 bg_color = Color(0.93, 0.95, 0.97, 1)
 
-[node name="VerticalSlice_Level_P1" type="Control"]
+[node name="VerticalSlice_Level_P1" type="Control" unique_id=1105207477]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_shell")
 
-[node name="ShellRow" type="HBoxContainer" parent="."]
+[node name="ShellRow" type="HBoxContainer" parent="." unique_id=1548276165]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,13 +31,13 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
 
-[node name="GameRegion" type="Control" parent="ShellRow"]
+[node name="GameRegion" type="Control" parent="ShellRow" unique_id=1681212229]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="GameBackdrop" type="ColorRect" parent="ShellRow/GameRegion"]
+[node name="GameBackdrop" type="ColorRect" parent="ShellRow/GameRegion" unique_id=1389280458]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,7 +47,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.14, 0.2, 0.11, 1)
 
-[node name="GameplayViewportContainer" type="SubViewportContainer" parent="ShellRow/GameRegion"]
+[node name="GameplayViewportContainer" type="SubViewportContainer" parent="ShellRow/GameRegion" unique_id=969713874]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -56,39 +56,38 @@ grow_horizontal = 2
 grow_vertical = 2
 stretch = true
 
-[node name="GameplayViewport" type="SubViewport" parent="ShellRow/GameRegion/GameplayViewportContainer"]
-handle_input_locally = true
-size = Vector2i(2, 2)
+[node name="GameplayViewport" type="SubViewport" parent="ShellRow/GameRegion/GameplayViewportContainer" unique_id=1515920701]
+handle_input_locally = false
+audio_listener_enable_2d = true
+size = Vector2i(2560, 1440)
 render_target_update_mode = 4
 
-[node name="VerticalSliceLevelP1Game" parent="ShellRow/GameRegion/GameplayViewportContainer/GameplayViewport" instance=ExtResource("2_game")]
+[node name="VerticalSliceLevelP1Game" parent="ShellRow/GameRegion/GameplayViewportContainer/GameplayViewport" unique_id=872069829 instance=ExtResource("2_game")]
 
-[node name="DeveloperSidebar" type="VBoxContainer" parent="ShellRow"]
+[node name="DeveloperSidebar" type="VBoxContainer" parent="ShellRow" unique_id=410742249]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="DebugPanel" type="PanelContainer" parent="ShellRow/DeveloperSidebar"]
+[node name="DebugPanel" type="PanelContainer" parent="ShellRow/DeveloperSidebar" unique_id=1939604623]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.15
 theme_override_styles/panel = SubResource("StyleBoxFlat_debug_panel")
 
-[node name="BondDebugUI" parent="ShellRow/DeveloperSidebar/DebugPanel" instance=ExtResource("3_debug")]
-layout_mode = 2
+[node name="BondDebugUI" parent="ShellRow/DeveloperSidebar/DebugPanel" unique_id=652521273 instance=ExtResource("3_debug")]
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="HelpPanel" type="PanelContainer" parent="ShellRow/DeveloperSidebar"]
+[node name="HelpPanel" type="PanelContainer" parent="ShellRow/DeveloperSidebar" unique_id=688916024]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.85
 theme_override_styles/panel = SubResource("StyleBoxFlat_help_panel")
 
-[node name="BondTestHelpUI" parent="ShellRow/DeveloperSidebar/HelpPanel" instance=ExtResource("4_help")]
-layout_mode = 2
+[node name="BondTestHelpUI" parent="ShellRow/DeveloperSidebar/HelpPanel" unique_id=1620696343 instance=ExtResource("4_help")]
 size_flags_horizontal = 3
 size_flags_vertical = 3

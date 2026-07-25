@@ -95,16 +95,9 @@ func handle_command_toggle() -> void:
 	command_behavior.request_toggle(global_position)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo:
-		return
-	if key_event.keycode == KEY_F12:
-		_nav_debug_enabled = not _nav_debug_enabled
-		print("[DEBUG] Dragon navigation: %s (F12)" % ("ON" if _nav_debug_enabled else "OFF"))
-		get_viewport().set_input_as_handled()
+func toggle_navigation_debug() -> void:
+	_nav_debug_enabled = not _nav_debug_enabled
+	print("[DEBUG] Dragon navigation: %s (F12)" % ("ON" if _nav_debug_enabled else "OFF"))
 
 
 func _on_command_wait_applied(_wait_pos: Vector2) -> void:
