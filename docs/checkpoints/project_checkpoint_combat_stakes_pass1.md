@@ -5,7 +5,7 @@
 **Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
 **Related:** [`project_checkpoint_combat_feel_v1.md`](./project_checkpoint_combat_feel_v1.md) · [`project_checkpoint_vertical_slice_polish_1A.md`](./project_checkpoint_vertical_slice_polish_1A.md)  
 **Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
-**Status:** **IMPLEMENTED — baseline stakes + critical feedback + dragon survivability foundation**  
+**Status:** **IMPLEMENTED — revised stakes baseline + hardened critical feedback** (live playtest validation still required)  
 **Date:** 2026-07-25
 
 ---
@@ -21,27 +21,63 @@ Enemy role redesign and broad combat rebalancing are **out of scope**. This pass
 
 ---
 
-## Health Philosophy (Pass 1)
+## Initial ÷10 Experiment (first commit)
 
-Prefer **small, readable integers** while preserving approximate relative ratios (~÷10).
+The first implementation scaled most combat numbers by approximately ÷10 for readable integers:
 
-### Proposed then implemented baseline
-
-| Stat | Before | After |
-|------|--------|-------|
+| Stat | Pre-pass | ÷10 experiment |
+|------|----------|----------------|
 | Player max HP | 1000 | **100** |
 | Scout HP / damage | 85 / 8 | **9 / 1** |
 | Raider HP / damage | 150 / 12 | **15 / 1** |
 | Brute HP / damage | 280 / 18 | **28 / 2** |
-| Sword focused / CC | 29 / 12 | **3 / 1** |
-| Dagger focused / CC | 18 / 8 | **2 / 1** |
-| Polearm focused / CC | 19 / 10 | **2 / 1** |
+| Weapon focused / CC | 18–29 / 8–12 | **2–3 / 1** |
 | Dragon strike | 22 | **2** |
-| Encounter `REFERENCE_MAX_HP` | 1000 | **100** |
-| Encounter `MEANINGFUL_DAMAGE` | 20 | **2** |
-| Debug F5–F7 step | 10 | **5** |
 
-Hits to empty player HP (no heal): Scout **100**, Raider **100**, Brute **50**. Individual hits are now ~1–2% of pool and visually obvious.
+### Observed role-collapse
+
+- Scout and Raider both dealt **1** → identical threat per hit (~100 hits to empty player HP).
+- Brute only **2** → still ~50 hits; not an immediate threat.
+- All crowd-control attacks collapsed to **1**.
+- Dagger and polearm focused both **2**.
+- Critical warning audio looped while remaining critical; HUD thresholds were hardcoded separately; feedback used `PROCESS_MODE_ALWAYS`.
+
+The ÷10 pass kept numbers readable but did **not** create meaningful combat stakes.
+
+---
+
+## Revised Stakes Baseline (follow-up)
+
+Keep player HP at **100**. Re-expand damage (and enemy HP) so roles are distinct. Do not blindly preserve old ratios if the old fight was too easy.
+
+| Stat | Revised Pass 1 |
+|------|----------------|
+| Player max HP | **100** |
+| Scout HP / damage | **24 / 6** |
+| Raider HP / damage | **40 / 10** |
+| Brute HP / damage | **72 / 18** |
+| Default enemy HP / damage | **40 / 10** |
+| Dagger focused / CC | **5 / 2** |
+| Sword focused / CC | **8 / 4** |
+| Polearm focused / CC | **6 / 3** |
+| Dragon strike | **7** |
+| Dragon survivability foundation HP | **40** (inert) |
+| Encounter `REFERENCE_MAX_HP` | **100** |
+| Encounter `MEANINGFUL_DAMAGE` | **6** |
+| Debug F5–F7 step | **5** |
+
+### Expected hits-to-defeat (code math; every hit lands; no heal)
+
+| Matchup | Approx hits |
+|---------|-------------|
+| Scout → player (100 HP) | **~17** (100 / 6) |
+| Raider → player | **10** (100 / 10) |
+| Brute → player | **~6** (100 / 18) |
+| Sword focused → Scout | **3** (24 / 8) |
+| Sword focused → Raider | **5** (40 / 8) |
+| Sword focused → Brute | **9** (72 / 8) |
+
+Attack cadence / multi-enemy pressure still use existing timings and slice encounter layouts — this follow-up is numeric only.
 
 Relationship critical ratio remains **≤ 25%** of max (`RELATIONSHIP_CRITICAL_HP_RATIO`).
 
@@ -49,20 +85,28 @@ Relationship critical ratio remains **≤ 25%** of max (`RELATIONSHIP_CRITICAL_H
 
 ## Critical Health Feedback
 
-`CriticalHealthFeedback` (`scripts/ui/critical_health_feedback.gd`) — full-screen vignette CanvasLayer.
+`CriticalHealthFeedback` is the **authoritative threshold source** (`wounded_ratio` / `critical_ratio` / `near_death_ratio`). `PlayerHud` calls `tier_for_ratio()` when bound.
 
 | Tier | Ratio (of max) | Presentation |
 |------|----------------|--------------|
 | Healthy | > 50% | No vignette |
-| Wounded | ≤ 50% | Soft red edge |
-| Critical | ≤ 25% | Stronger pulsing vignette + soft warning cue |
-| Near Death | ≤ 12% | Maximum vignette pulse + faster cue |
+| Wounded | ≤ 50% | Soft red edge pulse |
+| Critical | ≤ 25% | Stronger pulsing vignette + **one** transition warning |
+| Near Death | ≤ 12% | Maximum vignette pulse + **one** stronger transition warning |
 
-Thresholds are `@export` on the overlay (not magic numbers buried in HUD).
+### Audio (transition-based)
 
-Audio: `GameAudioEvent.Event.PLAYER_CRITICAL_WARNING` uses placeholder `heavy_thud.wav` at low volume / pitch as a temporary heartbeat stand-in until a dedicated asset exists.
+- Enter Critical (from Healthy/Wounded): `PLAYER_CRITICAL_WARNING` once.
+- Enter Near Death: `PLAYER_NEAR_DEATH_WARNING` once (distinct / louder placeholder).
+- No continuous heartbeat timer while remaining in a tier.
+- Re-entry after healing above a tier may play the warning again.
+- Cooldown on GameAudio still prevents accidental stacking.
 
-HUD bar: color shifts by the same ratio bands; fill width tweens on change (~0.14 s).
+### Pause
+
+`process_mode = PROCESS_MODE_PAUSABLE` — vignette pulse stops while the tree is paused. Overlay remains in the scene tree for visibility when appropriate.
+
+HUD bar: color follows shared tiers; fill width tweens on change (~0.14 s); prior tween killed before a new one.
 
 ---
 
@@ -75,26 +119,26 @@ HUD bar: color shifts by the same ratio bands; fill width tweens on change (~0.1
 
 ---
 
-## Dragon Survivability Foundation (no knockout gameplay yet)
+## Dragon Survivability Foundation (inert)
 
-`DragonSurvivability` node on `Dragon.tscn` (`scripts/dragon/dragon_survivability.gd`):
+`DragonSurvivability` on `Dragon.tscn` remains **config + stubs only**:
 
 | Concept | Pass 1 |
 |---------|--------|
 | `max_health` / `current_health` | Config present (default **40**) |
 | States `ACTIVE` / `KNOCKED_OUT` | Enum + signal; no auto transition |
-| `receive_damage` / `begin_rescue` | Stubs for future wiring |
-| Sync penalty / instability on KO | Exported amounts; **not applied** yet |
+| `receive_damage` / `begin_rescue` | Stubs — **no callers** in current gameplay |
+| Sync / Instability on KO | Exported; **not applied** |
+
+No knockout, revival, rescue, Sync, or Instability gameplay in this pass.
 
 ### Future dragon survivability roadmap
 
 1. Route selected enemy / hazard damage into `DragonSurvivability.receive_damage`.
 2. At zero HP → `KNOCKED_OUT`: pause aggressive assist/protect; apply Sync penalty + Instability bump.
-3. Player-initiated rescue interaction (approach + hold / interact) → revive with partial HP.
+3. Player-initiated rescue interaction → revive with partial HP.
 4. HUD chip shows dragon HP / KO state.
 5. Optional Bond-gated revive speed / KO resistance.
-
-**Not in this pass:** revival gameplay, rescue prompts, Sync/Instability application, dragon HP HUD.
 
 ---
 
@@ -106,6 +150,19 @@ HUD bar: color shifts by the same ratio bands; fill width tweens on change (~0.1
 - Dragon knockout + rescue loop
 - Death / retry flow
 - Inventory, dialogue, menus
+
+---
+
+## Live Validation
+
+**Required from developer (not marked complete here):**
+
+- [ ] Scout / Raider / Brute hit counts feel distinct and threatening as intended
+- [ ] Sword FOC TTKs ~3 / ~5 / ~9 vs Scout / Raider / Brute
+- [ ] Multi-enemy pressure can drive low health in ordinary play
+- [ ] Critical / Near Death warnings fire once on enter, not as a loop
+- [ ] Vignette clears after heal; pause stops pulse; no debugger errors
+- [ ] Dragon combat / AI unchanged; no accidental KO
 
 ---
 
@@ -122,26 +179,13 @@ HUD bar: color shifts by the same ratio bands; fill width tweens on change (~0.1
 | `scripts/relationship/encounter_quality_classifier.gd` | Reference HP |
 | `scripts/relationship/relationship_encounter_summary.gd` | Meaningful damage |
 | `scripts/ui/health_debug_controls.gd` | Debug step 5 |
-| `scripts/ui/player_hud.gd` | Bar tween + danger colors |
-| `scripts/ui/critical_health_feedback.gd` | Vignette + warning pulse |
-| `scenes/ui/CriticalHealthFeedback.tscn` | Overlay scene |
-| `scripts/dragon/dragon_survivability.gd` | KO foundation |
-| `scenes/dragon/Dragon.tscn` | Survivability node |
-| `scenes/world/TestWorldGame.tscn` / `VerticalSliceLevelP1Game.tscn` | Overlay instance |
-| Audio event/catalog/service | `PLAYER_CRITICAL_WARNING` |
-
----
-
-## Playtest Checklist
-
-- [ ] Scout / Raider / Brute hits visibly move the HP bar
-- [ ] At ≤50% / ≤25% / ≤12% vignette intensity steps correctly
-- [ ] Healing / F5 clears vignette when above thresholds
-- [ ] Combat, dragon AI, and developer shortcuts still work
-- [ ] No knockout / revival behavior appears yet
+| `scripts/ui/player_hud.gd` | Bar tween + shared-tier colors |
+| `scripts/ui/critical_health_feedback.gd` | Vignette + transition warnings |
+| `scripts/audio/game_audio_event.gd` / catalog / service | Critical + near-death warning events |
+| `scripts/dragon/dragon_survivability.gd` | KO foundation (inert) |
 
 ---
 
 ## Final Status
 
-**IMPLEMENTED** for Pass 1 goals: readable health baseline, critical feedback, damage readability, dragon survivability foundation. Further enemy balance waits until these systems are felt in play.
+**IMPLEMENTED** for Pass 1 goals after follow-up retune: readable health, distinct archetype/weapon damage, transition-based critical feedback, shared thresholds, pausable overlay, inert dragon survivability foundation. **Live developer playtest still required** before treating feel as validated.

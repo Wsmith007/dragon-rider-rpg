@@ -16,7 +16,7 @@ enum ResolvedOutcome {
 }
 
 
-const MEANINGFUL_DAMAGE := 2.0
+const MEANINGFUL_DAMAGE := 6.0
 
 
 var encounter_id: String = ""

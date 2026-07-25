@@ -13,7 +13,7 @@ signal weapon_profile_changed(profile_name: String)
 
 
 @export_group("Focused Attack")
-@export var focused_damage: float = 3.0
+@export var focused_damage: float = 8.0
 @export var focused_knockback: float = 15.0
 @export var focused_stagger: float = 0.3
 @export var focused_cooldown: float = 0.35
@@ -32,7 +32,7 @@ signal weapon_profile_changed(profile_name: String)
 @export var soft_assist_strength: float = 0.2
 
 @export_group("Crowd Control Attack")
-@export var crowd_control_damage: float = 1.0
+@export var crowd_control_damage: float = 4.0
 @export var crowd_control_knockback: float = 22.0
 @export var crowd_control_stagger: float = 0.6
 @export var crowd_control_cooldown: float = 0.9

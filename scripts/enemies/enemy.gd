@@ -11,12 +11,12 @@ enum State { IDLE, CHASE, ENGAGE, DISENGAGE, RECOVER }
 enum AttackPhase { NONE, WINDUP, LUNGE }
 
 
-@export var max_health: float = 15.0
+@export var max_health: float = 40.0
 @export var detection_radius: float = 220.0
 @export var lose_radius: float = 320.0
 @export var chase_speed: float = 100.0
 @export var attack_range: float = 36.0
-@export var attack_damage: float = 1.0
+@export var attack_damage: float = 10.0
 @export var attack_cooldown: float = 1.0
 @export var engage_windup: float = 0.45
 @export var engage_reposition_speed: float = 48.0

@@ -332,6 +332,8 @@ func _cooldown_for_event(event: GameAudioEvent.Event) -> float:
 			return 0.12
 		GameAudioEvent.Event.PLAYER_CRITICAL_WARNING:
 			return 0.7
+		GameAudioEvent.Event.PLAYER_NEAR_DEATH_WARNING:
+			return 0.7
 		GameAudioEvent.Event.BRUTE_HEAVY:
 			return 0.2
 		GameAudioEvent.Event.BRUTE_RESIST:

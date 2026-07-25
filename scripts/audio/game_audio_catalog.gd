@@ -54,6 +54,8 @@ static func get_playback(event: GameAudioEvent.Event) -> Dictionary:
 			return _entry(PLACEHOLDER_IMPACT, BUS_COMBAT, -1.0, 0.82, 0.92, true)
 		GameAudioEvent.Event.PLAYER_CRITICAL_WARNING:
 			return _entry(PLACEHOLDER_HEAVY, BUS_COMBAT, -10.0, 0.55, 0.62, true)
+		GameAudioEvent.Event.PLAYER_NEAR_DEATH_WARNING:
+			return _entry(PLACEHOLDER_HEAVY, BUS_COMBAT, -4.0, 0.48, 0.54, true)
 		GameAudioEvent.Event.ENEMY_DEFEATED:
 			return _entry(PLACEHOLDER_DEFEAT, BUS_COMBAT, -2.0, 0.92, 1.0, true)
 		GameAudioEvent.Event.BRUTE_HEAVY:

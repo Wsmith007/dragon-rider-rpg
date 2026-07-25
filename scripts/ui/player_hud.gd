@@ -1,5 +1,6 @@
 extends Control
 ## Permanent top-left HUD: player HP and dragon status.
+## Health-band colors use CriticalHealthFeedback thresholds when bound.
 
 
 const COLOR_HEALTHY := Color(0.25, 0.65, 0.95, 1.0)
@@ -40,6 +41,9 @@ func bind(game_root: Node2D) -> void:
 	_critical_feedback = game_root.get_node_or_null("CriticalHealthFeedback") as CriticalHealthFeedback
 	if _critical_feedback != null and player != null:
 		_critical_feedback.bind_to_player(player)
+		var health := player.get_node_or_null("Health") as Health
+		if health != null:
+			_update_display(health.current_health, health.max_health, true)
 
 
 func bind_to_player(player: CharacterBody2D) -> void:
@@ -84,10 +88,24 @@ func _update_display(current: float, maximum: float, instant: bool) -> void:
 
 
 func _color_for_ratio(ratio: float) -> Color:
-	if ratio <= 0.12:
-		return COLOR_NEAR_DEATH
-	if ratio <= 0.25:
-		return COLOR_CRITICAL
-	if ratio <= 0.50:
-		return COLOR_WOUNDED
-	return COLOR_HEALTHY
+	var tier := CriticalHealthFeedback.DangerTier.HEALTHY
+	if _critical_feedback != null:
+		tier = _critical_feedback.tier_for_ratio(ratio)
+	else:
+		# Fallback matches CriticalHealthFeedback defaults if overlay is missing.
+		if ratio <= 0.12:
+			tier = CriticalHealthFeedback.DangerTier.NEAR_DEATH
+		elif ratio <= 0.25:
+			tier = CriticalHealthFeedback.DangerTier.CRITICAL
+		elif ratio <= 0.50:
+			tier = CriticalHealthFeedback.DangerTier.WOUNDED
+
+	match tier:
+		CriticalHealthFeedback.DangerTier.NEAR_DEATH:
+			return COLOR_NEAR_DEATH
+		CriticalHealthFeedback.DangerTier.CRITICAL:
+			return COLOR_CRITICAL
+		CriticalHealthFeedback.DangerTier.WOUNDED:
+			return COLOR_WOUNDED
+		_:
+			return COLOR_HEALTHY

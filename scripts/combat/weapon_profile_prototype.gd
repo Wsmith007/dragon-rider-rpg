@@ -14,7 +14,7 @@ enum Id { DAGGER, SWORD, POLEARM }
 const PROFILES: Dictionary = {
 	Id.DAGGER: {
 		"display_name": "Dagger",
-		"focused_damage": 2.0,
+		"focused_damage": 5.0,
 		"focused_knockback": 15.0,
 		"focused_stagger": 0.3,
 		"focused_cooldown": 0.36,
@@ -30,7 +30,7 @@ const PROFILES: Dictionary = {
 		"soft_assist_range": 36.0,
 		"soft_assist_half_angle_deg": 40.0,
 		"soft_assist_strength": 0.2,
-		"crowd_control_damage": 1.0,
+		"crowd_control_damage": 2.0,
 		"crowd_control_knockback": 14.0,
 		"crowd_control_stagger": 0.5,
 		"crowd_control_cooldown": 0.75,
@@ -42,7 +42,7 @@ const PROFILES: Dictionary = {
 	},
 	Id.SWORD: {
 		"display_name": "Sword",
-		"focused_damage": 3.0,
+		"focused_damage": 8.0,
 		"focused_knockback": 21.0,
 		"focused_stagger": 0.3,
 		"focused_cooldown": 0.52,
@@ -58,7 +58,7 @@ const PROFILES: Dictionary = {
 		"soft_assist_range": 44.0,
 		"soft_assist_half_angle_deg": 48.0,
 		"soft_assist_strength": 0.2,
-		"crowd_control_damage": 1.0,
+		"crowd_control_damage": 4.0,
 		"crowd_control_knockback": 24.0,
 		"crowd_control_stagger": 0.6,
 		"crowd_control_cooldown": 0.95,
@@ -70,7 +70,7 @@ const PROFILES: Dictionary = {
 	},
 	Id.POLEARM: {
 		"display_name": "Polearm",
-		"focused_damage": 2.0,
+		"focused_damage": 6.0,
 		"focused_knockback": 35.0,
 		"focused_stagger": 0.3,
 		"focused_cooldown": 0.82,
@@ -86,7 +86,7 @@ const PROFILES: Dictionary = {
 		"soft_assist_range": 58.0,
 		"soft_assist_half_angle_deg": 55.0,
 		"soft_assist_strength": 0.15,
-		"crowd_control_damage": 1.0,
+		"crowd_control_damage": 3.0,
 		"crowd_control_knockback": 35.0,
 		"crowd_control_stagger": 0.7,
 		"crowd_control_cooldown": 1.35,

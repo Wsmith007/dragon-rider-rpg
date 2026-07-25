@@ -13,7 +13,7 @@ enum StrikeKind { PROTECTION, ASSIST }
 enum Phase { IDLE, APPROACH, LUNGE, RETURN }
 
 
-@export var strike_damage: float = 2.0
+@export var strike_damage: float = 7.0
 @export var strike_range: float = 130.0
 @export var protection_cooldown: float = 4.5
 @export var assist_cooldown: float = 2.75
