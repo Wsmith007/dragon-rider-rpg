@@ -50,4 +50,4 @@ color = Color(0.25, 0.65, 0.95, 1)
 
 [node name="ValueLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
-text = "1000 / 1000 HP"
+text = "100 / 100 HP"

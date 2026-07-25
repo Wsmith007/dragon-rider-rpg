@@ -386,16 +386,16 @@ text = "Health test"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
 theme_override_font_sizes/font_size = 14
-text = "F5 — Current HP +10"
+text = "F5 — Current HP +5"
 
 [node name="F6Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
 theme_override_font_sizes/font_size = 14
-text = "F6 — Max HP +10 (and heal)"
+text = "F6 — Max HP +5 (and heal)"
 
 [node name="F7Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
 theme_override_font_sizes/font_size = 14
-text = "F7 — Max HP -10"
+text = "F7 — Max HP -5"

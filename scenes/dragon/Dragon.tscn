@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/dragon/dragon_communication_behavior.gd" id="8_communication"]
 [ext_resource type="PackedScene" uid="uid://bdragoncommbubble" path="res://scenes/dragon/DragonCommunicationBubble.tscn" id="9_comm_bubble"]
 [ext_resource type="Script" path="res://scripts/dragon/dragon_status_visual.gd" id="10_status_visual"]
+[ext_resource type="Script" path="res://scripts/dragon/dragon_survivability.gd" id="11_survivability"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dragon"]
 radius = 16.0
@@ -58,3 +59,6 @@ display_enabled = false
 
 [node name="StatusVisual" type="Node2D" parent="."]
 script = ExtResource("10_status_visual")
+
+[node name="Survivability" type="Node" parent="."]
+script = ExtResource("11_survivability")

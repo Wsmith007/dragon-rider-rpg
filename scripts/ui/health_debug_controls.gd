@@ -2,7 +2,7 @@ extends Node
 ## Player health testers invoked by DeveloperInputRouter.
 
 
-const HEALTH_STEP: float = 10.0
+const HEALTH_STEP: float = 5.0
 const MIN_MAX_HEALTH: float = 10.0
 
 var _player: CharacterBody2D

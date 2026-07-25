@@ -26,11 +26,11 @@ static func _brute_polygon() -> PackedVector2Array:
 
 const PRESETS: Dictionary = {
 	Archetype.SCOUT: {
-		"max_health": 85.0,
+		"max_health": 9.0,
 		"chase_speed": 235.0,
 		"engage_reposition_speed": 105.0,
 		"attack_range": 36.0,
-		"attack_damage": 8.0,
+		"attack_damage": 1.0,
 		"attack_cooldown": 0.62,
 		"engage_windup": 0.24,
 		"attack_lunge_distance": 26.0,
@@ -51,11 +51,11 @@ const PRESETS: Dictionary = {
 		"accent_scale": Vector2(1.35, 1.35),
 	},
 	Archetype.RAIDER: {
-		"max_health": 150.0,
+		"max_health": 15.0,
 		"chase_speed": 108.0,
 		"engage_reposition_speed": 50.0,
 		"attack_range": 36.0,
-		"attack_damage": 12.0,
+		"attack_damage": 1.0,
 		"attack_cooldown": 1.0,
 		"engage_windup": 0.45,
 		"attack_lunge_distance": 20.0,
@@ -76,11 +76,11 @@ const PRESETS: Dictionary = {
 		"accent_scale": Vector2(1.08, 1.08),
 	},
 	Archetype.BRUTE: {
-		"max_health": 280.0,
+		"max_health": 28.0,
 		"chase_speed": 68.0,
 		"engage_reposition_speed": 34.0,
 		"attack_range": 50.0,
-		"attack_damage": 18.0,
+		"attack_damage": 2.0,
 		"attack_cooldown": 0.72,
 		"engage_windup": 0.72,
 		"attack_lunge_distance": 28.0,

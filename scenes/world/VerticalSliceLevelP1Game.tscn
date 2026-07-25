@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/world/vertical_slice_graybox_geometry.gd" id="6_geometry"]
 [ext_resource type="Script" path="res://scripts/world/vertical_slice_encounter.gd" id="7_encounter"]
 [ext_resource type="PackedScene" uid="uid://bplayerhud01" path="res://scenes/ui/PlayerHud.tscn" id="8_player_hud"]
+[ext_resource type="PackedScene" uid="uid://bcriticalhealth01" path="res://scenes/ui/CriticalHealthFeedback.tscn" id="8b_critical_health"]
 [ext_resource type="Script" path="res://scripts/ui/bond_test_controls.gd" id="9_bond_test_controls"]
 [ext_resource type="Script" path="res://scripts/ui/health_debug_controls.gd" id="11_health_debug"]
 [ext_resource type="Script" path="res://scripts/world/enemy_spawn_debug.gd" id="12_enemy_spawn"]
@@ -148,6 +149,8 @@ shape = SubResource("RectangleShape2D_laststand")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 script = ExtResource("2_camera")
+
+[node name="CriticalHealthFeedback" parent="." instance=ExtResource("8b_critical_health")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 

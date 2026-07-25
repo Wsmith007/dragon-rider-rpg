@@ -10,7 +10,7 @@ signal movement_state_changed(state_name: String)
 enum MovementState { RUNNING, COMBAT_STANCE, TARGET_FOCUS, ATTACKING, STAGGERED, DEAD }
 
 @export var move_speed: float = 220.0
-@export var max_health: float = 1000.0
+@export var max_health: float = 100.0
 @export var visual_facing_lerp_speed: float = 14.0
 
 const PLAYER_BODY_RADIUS := 14.0

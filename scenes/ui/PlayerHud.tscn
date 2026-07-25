@@ -65,7 +65,7 @@ color = Color(0.25, 0.65, 0.95, 1)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.93, 0.96, 1)
 theme_override_font_sizes/font_size = 14
-text = "1000 / 1000 HP"
+text = "100 / 100 HP"
 
 [node name="DragonStatusLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2

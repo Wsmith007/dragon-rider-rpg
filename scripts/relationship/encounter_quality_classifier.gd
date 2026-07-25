@@ -18,7 +18,7 @@ enum Quality {
 }
 
 
-const REFERENCE_MAX_HP := 1000.0
+const REFERENCE_MAX_HP := 100.0
 const DAMAGE_GOOD_RATIO := 0.30
 const DAMAGE_POOR_RATIO := 0.35
 
