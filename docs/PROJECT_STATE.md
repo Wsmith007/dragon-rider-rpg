@@ -6,7 +6,7 @@
 |--|--|
 | **Engine** | Godot 4.6 · GDScript |
 | **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-25 (Combat Stakes Pass 1) |
+| **Last updated** | 2026-07-25 (Dragon Survivability Pass 1) |
 
 **New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
 
@@ -16,7 +16,7 @@
 
 ## Current Project Revision
 
-**Combat Stakes Pass 1 — complete (baseline)**
+**Dragon Survivability Pass 1 — complete (baseline)**
 
 ---
 
@@ -24,7 +24,7 @@
 
 **Vertical Slice — polish and validation**
 
-Core systems are implemented. Work focuses on **Structured Vertical Slice Playtest** readiness after Combat Stakes Pass 1.
+Core systems are implemented. Work focuses on **Structured Vertical Slice Playtest** readiness after Dragon Survivability Pass 1.
 
 Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md)
 
@@ -34,7 +34,7 @@ Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1
 
 **Structured Vertical Slice Playtest** — formal fifteen-minute arc evaluation
 
-**Previous:** Combat Stakes Pass 1 — [`project_checkpoint_combat_stakes_pass1.md`](./checkpoints/project_checkpoint_combat_stakes_pass1.md)
+**Previous:** Dragon Survivability Pass 1 — [`project_checkpoint_dragon_survivability_pass1.md`](./checkpoints/project_checkpoint_dragon_survivability_pass1.md)
 
 ---
 
@@ -90,6 +90,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Dragon communication + behavioral personality | [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) |
 | Player combat animation | [`project_checkpoint_player_animation_pass1.md`](./checkpoints/project_checkpoint_player_animation_pass1.md) |
 | **Combat stakes (HP / critical feedback)** | [`project_checkpoint_combat_stakes_pass1.md`](./checkpoints/project_checkpoint_combat_stakes_pass1.md) |
+| **Dragon survivability** | [`project_checkpoint_dragon_survivability_pass1.md`](./checkpoints/project_checkpoint_dragon_survivability_pass1.md) |
 | **Combat audio (swing + impact)** | [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md) |
 | Event audio architecture | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
 | F10 sidebar + viewport | [`project_checkpoint_developer_experience_pass1.md`](./checkpoints/project_checkpoint_developer_experience_pass1.md) |
@@ -114,7 +115,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Player combat animation | **Pass 1 complete** | Player Animation Pass 1 |
 | Dragon personality (behavioral) | **Pass 1 complete** — ambient bubbles rejected | Dragon Personality Pass 1 |
 | **Combat stakes (readable HP + critical feedback)** | **Pass 1 complete** | Combat Stakes Pass 1 |
-| Dragon survivability (KO foundation) | **Foundation only** | Combat Stakes Pass 1 |
+| **Dragon survivability (HP / KO / revival)** | **Pass 1 complete** | Dragon Survivability Pass 1 |
 | Dev UI hidden (player build) | **Pass 1 complete** | `developer_tools_enabled` / DeveloperInput |
 | Bond Strength progression | Deferred | Milestone 9A |
 | Death/retry, save | Deferred | Design §8 |
@@ -123,7 +124,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 
 ## Recently completed
 
-Combat Stakes Pass 1 · Combat Audio Pass 1 · Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
+Dragon Survivability Pass 1 · Combat Stakes Pass 1 · Combat Audio Pass 1 · Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
 
 Dates: see individual checkpoint headers.
 

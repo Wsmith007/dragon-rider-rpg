@@ -48,6 +48,8 @@ func _wire_game_scene(game_root: Node2D) -> void:
 		bond_debug_ui.bind_to_dragon(dragon)
 	if health_debug.has_method("bind_to_player"):
 		health_debug.bind_to_player(player)
+	if health_debug.has_method("bind_to_dragon"):
+		health_debug.bind_to_dragon(dragon)
 	if enemy_spawn_debug.has_method("bind"):
 		enemy_spawn_debug.bind(player, enemies_container)
 	if enemy_indicators != null and enemy_indicators.has_method("bind_to_player"):

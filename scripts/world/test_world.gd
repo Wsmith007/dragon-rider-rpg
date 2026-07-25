@@ -40,6 +40,8 @@ func _wire_game_scene(game_root: Node2D) -> void:
 		bond_debug_ui.bind_to_dragon(dragon)
 	if health_debug_controls.has_method("bind_to_player"):
 		health_debug_controls.bind_to_player(player)
+	if health_debug_controls.has_method("bind_to_dragon"):
+		health_debug_controls.bind_to_dragon(dragon)
 	if enemy_spawn_debug.has_method("bind"):
 		enemy_spawn_debug.bind(player, enemies_container)
 	var enemy_indicators := game_root.get_node_or_null("UI/EnemyOffscreenIndicators") as Control

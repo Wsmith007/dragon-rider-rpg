@@ -14,6 +14,7 @@ enum MovementOwner { NORMAL, HESITATION, STRIKE }
 @onready var protection_behavior: DragonProtectionBehavior = $ProtectionBehavior
 @onready var strike_behavior: DragonStrikeBehavior = $StrikeBehavior
 @onready var cooperation_behavior: DragonCooperationBehavior = $CooperationBehavior
+@onready var survivability: DragonSurvivability = $Survivability
 @onready var _visual: Polygon2D = $Visual
 @onready var _attack_flash: Polygon2D = $AttackFlash
 
@@ -34,6 +35,10 @@ var _last_reported_state: DragonState.State = DragonState.State.FOLLOWING
 var _base_modulate: Color = Color.WHITE
 var _nav_debug_enabled: bool = false
 var _nav_debug_timer: float = 0.0
+var _damage_flash_remaining: float = 0.0
+const DAMAGE_FLASH_DURATION := 0.14
+const KO_MODULATE := Color(0.45, 0.48, 0.55, 0.85)
+const DAMAGE_FLASH_MODULATE := Color(1.35, 0.55, 0.5, 1.0)
 
 
 func _ready() -> void:
@@ -49,7 +54,46 @@ func _ready() -> void:
 	command_behavior.wait_position_set.connect(_on_command_wait_applied)
 	command_behavior.recalled.connect(_on_command_recall_applied)
 	_attack_flash.visible = false
+	if survivability != null:
+		if not survivability.damaged.is_connected(_on_survivability_damaged):
+			survivability.damaged.connect(_on_survivability_damaged)
 	call_deferred("_connect_enemy_death_signals")
+
+
+func is_valid_enemy_target() -> bool:
+	return survivability != null and survivability.is_valid_enemy_target()
+
+
+func is_combat_participating() -> bool:
+	return (
+		state == DragonState.State.ASSISTING
+		or state == DragonState.State.PROTECTING
+	)
+
+
+func on_survivability_knocked_out() -> void:
+	strike_behavior.cancel_strike(false)
+	cooperation_behavior.cancel_cooperative_assist("knocked_out")
+	follow_behavior.exit_alert()
+	_navigation.reset()
+	_movement_owner = MovementOwner.NORMAL
+	velocity = Vector2.ZERO
+	_attack_flash.visible = false
+	_damage_flash_remaining = 0.0
+	_visual.modulate = KO_MODULATE
+	_emit_state_if_changed()
+
+
+func on_survivability_revived() -> void:
+	_set_following_state()
+	_emit_state_if_changed()
+
+
+func _on_survivability_damaged(_amount: float, _current: float) -> void:
+	_damage_flash_remaining = DAMAGE_FLASH_DURATION
+	var audio := get_node_or_null("/root/GameAudio")
+	if audio != null and audio.has_method("play"):
+		audio.play(GameAudioEvent.Event.PLAYER_DAMAGED, global_position)
 
 
 func _connect_enemy_death_signals() -> void:
@@ -92,6 +136,8 @@ func set_follow_target(target: Node2D) -> void:
 
 
 func handle_command_toggle() -> void:
+	if survivability != null and survivability.is_knocked_out():
+		return
 	command_behavior.request_toggle(global_position)
 
 
@@ -122,6 +168,13 @@ func _on_command_recall_applied() -> void:
 
 func _physics_process(delta: float) -> void:
 	if _follow_target == null:
+		return
+
+	if _damage_flash_remaining > 0.0:
+		_damage_flash_remaining = maxf(_damage_flash_remaining - delta, 0.0)
+
+	if survivability != null and survivability.is_knocked_out():
+		_process_knocked_out_frame(delta)
 		return
 
 	strike_behavior.update_cooldown(delta)
@@ -163,6 +216,16 @@ func _physics_process(delta: float) -> void:
 
 	_update_facing()
 	_update_visual_modulate()
+	_emit_state_if_changed()
+
+
+func _process_knocked_out_frame(_delta: float) -> void:
+	_movement_owner = MovementOwner.NORMAL
+	velocity = Vector2.ZERO
+	move_and_slide()
+	_visual.position = Vector2.ZERO
+	_visual.modulate = KO_MODULATE
+	_attack_flash.visible = false
 	_emit_state_if_changed()
 
 
@@ -461,6 +524,14 @@ func _update_facing() -> void:
 
 
 func _update_visual_modulate() -> void:
+	if survivability != null and survivability.is_knocked_out():
+		_visual.modulate = KO_MODULATE
+		return
+
+	if _damage_flash_remaining > 0.0:
+		_visual.modulate = DAMAGE_FLASH_MODULATE
+		return
+
 	var base := _base_modulate
 	match state:
 		DragonState.State.ASSISTING:

@@ -399,3 +399,33 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
 theme_override_font_sizes/font_size = 14
 text = "F7 — Max HP -5"
+
+[node name="DragonHealthTitle" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.1, 1)
+theme_override_font_sizes/font_size = 15
+text = "Dragon survivability test"
+
+[node name="F8Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
+theme_override_font_sizes/font_size = 14
+text = "F8 — Dragon HP -10"
+
+[node name="ShiftF8Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
+theme_override_font_sizes/font_size = 14
+text = "Shift+F8 — Dragon HP +10"
+
+[node name="F9Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
+theme_override_font_sizes/font_size = 14
+text = "F9 — Force dragon knockout"
+
+[node name="ShiftF9Label" type="Label" parent="Panel/Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.24, 0.18, 1)
+theme_override_font_sizes/font_size = 14
+text = "Shift+F9 — Force dragon revive"

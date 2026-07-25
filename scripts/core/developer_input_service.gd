@@ -122,6 +122,19 @@ func _poll_gameplay_actions() -> void:
 		elif Input.is_action_just_pressed(InputActions.HEALTH_MAX_DOWN):
 			if _gameplay.health_debug.has_method("apply_max_health_down"):
 				_gameplay.health_debug.apply_max_health_down()
+		# Shift variants first with exact_match so they do not also fire the unshifted action.
+		elif Input.is_action_just_pressed(InputActions.DRAGON_HEAL, true):
+			if _gameplay.health_debug.has_method("apply_dragon_heal_step"):
+				_gameplay.health_debug.apply_dragon_heal_step()
+		elif Input.is_action_just_pressed(InputActions.DRAGON_DAMAGE, true):
+			if _gameplay.health_debug.has_method("apply_dragon_damage_step"):
+				_gameplay.health_debug.apply_dragon_damage_step()
+		elif Input.is_action_just_pressed(InputActions.DRAGON_FORCE_REVIVE, true):
+			if _gameplay.health_debug.has_method("force_dragon_revive"):
+				_gameplay.health_debug.force_dragon_revive()
+		elif Input.is_action_just_pressed(InputActions.DRAGON_FORCE_KO, true):
+			if _gameplay.health_debug.has_method("force_dragon_knockout"):
+				_gameplay.health_debug.force_dragon_knockout()
 
 	if _gameplay.spawn_debug != null:
 		# Pack first + exact_match so Shift+F1 does not also fire the single-spawn action.

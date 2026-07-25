@@ -28,6 +28,11 @@ enum AttackPhase { NONE, WINDUP, LUNGE }
 @export var player_hit_stagger: float = 0.0
 @export var steer_smoothing: float = 10.0
 @export var facing_smoothing: float = 14.0
+## Soft dragon peel weight (player remains primary detection / bias).
+@export var dragon_target_weight: float = 0.55
+@export var player_target_weight: float = 1.0
+@export var target_switch_hysteresis: float = 1.25
+@export var retarget_interval: float = 0.45
 
 ## Scout — probe / disengage after each strike.
 @export var disengage_duration: float = 0.0
@@ -48,6 +53,9 @@ enum AttackPhase { NONE, WINDUP, LUNGE }
 
 var _state: State = State.IDLE
 var _player: Node2D
+var _dragon: Node2D
+var _combat_target: Node2D
+var _retarget_remaining: float = 0.0
 var _attack_cooldown_remaining: float = 0.0
 var _stagger_remaining: float = 0.0
 var _disengage_remaining: float = 0.0
@@ -81,6 +89,8 @@ func _ready() -> void:
 	_health.died.connect(_on_died)
 	_base_visual_color = _visual.color
 	_find_player()
+	_find_dragon()
+	_combat_target = _player
 
 
 func _physics_process(delta: float) -> void:
@@ -91,6 +101,7 @@ func _physics_process(delta: float) -> void:
 	_disengage_remaining = maxf(_disengage_remaining - delta, 0.0)
 	_recover_remaining = maxf(_recover_remaining - delta, 0.0)
 	_knockback_immunity_remaining = maxf(_knockback_immunity_remaining - delta, 0.0)
+	_retarget_remaining = maxf(_retarget_remaining - delta, 0.0)
 
 	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
 		if _attack_phase == AttackPhase.NONE and _state != State.DISENGAGE:
@@ -115,6 +126,9 @@ func _physics_process(delta: float) -> void:
 
 	if _player == null or not is_instance_valid(_player):
 		_find_player()
+	if _dragon == null or not is_instance_valid(_dragon):
+		_find_dragon()
+	_refresh_combat_target()
 
 	_update_state()
 	_apply_movement(delta)
@@ -230,12 +244,34 @@ func _get_body_radius() -> float:
 
 
 func _direction_to_player() -> Vector2:
-	if _player == null:
+	return _direction_to_focus()
+
+
+func _direction_to_focus() -> Vector2:
+	var focus := _get_focus_target()
+	if focus == null:
 		return Vector2.RIGHT
-	var offset := _player.global_position - global_position
+	var offset := focus.global_position - global_position
 	if offset.length_squared() >= 1.0:
 		return offset.normalized()
 	return Vector2.from_angle(_visual.rotation - PI * 0.5).normalized()
+
+
+func _get_focus_target() -> Node2D:
+	if _is_valid_combat_target(_combat_target):
+		return _combat_target
+	if _is_valid_combat_target(_player):
+		return _player
+	return null
+
+
+func _get_focus_position() -> Vector2:
+	var focus := _get_focus_target()
+	if focus != null:
+		return focus.global_position
+	if _player != null:
+		return _player.global_position
+	return global_position
 
 
 func _get_player_combat_distance() -> float:
@@ -244,10 +280,84 @@ func _get_player_combat_distance() -> float:
 	return global_position.distance_to(_player.global_position)
 
 
+func _get_focus_combat_distance() -> float:
+	var focus := _get_focus_target()
+	if focus == null:
+		return INF
+	return global_position.distance_to(focus.global_position)
+
+
 func _is_player_in_attack_range() -> bool:
-	var distance := _get_player_combat_distance()
+	return _is_focus_in_attack_range()
+
+
+func _is_focus_in_attack_range() -> bool:
+	var distance := _get_focus_combat_distance()
 	var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
 	return distance <= attack_range * 1.35 or distance <= overlap_reach
+
+
+func _is_valid_combat_target(target: Node2D) -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	if target == _player:
+		return not _is_player_untargetable()
+	if target == _dragon:
+		return _dragon != null and _dragon.has_method("is_valid_enemy_target") and _dragon.is_valid_enemy_target()
+	return false
+
+
+func _refresh_combat_target() -> void:
+	if not _is_valid_combat_target(_combat_target):
+		_combat_target = _player if _is_valid_combat_target(_player) else null
+		_retarget_remaining = 0.0
+
+	if _retarget_remaining > 0.0:
+		return
+	_retarget_remaining = retarget_interval
+
+	var player_valid := _is_valid_combat_target(_player)
+	var dragon_valid := _is_valid_combat_target(_dragon)
+	if not player_valid and not dragon_valid:
+		_combat_target = null
+		return
+	if player_valid and not dragon_valid:
+		_combat_target = _player
+		return
+	if dragon_valid and not player_valid:
+		_combat_target = _dragon
+		return
+
+	var player_score := _score_target(_player, player_target_weight, false)
+	var dragon_participating := (
+		_dragon != null
+		and _dragon.has_method("is_combat_participating")
+		and _dragon.is_combat_participating()
+	)
+	var dragon_score := _score_target(_dragon, dragon_target_weight, dragon_participating)
+
+	var preferred: Node2D = _player if player_score >= dragon_score else _dragon
+	if _combat_target == null:
+		_combat_target = preferred
+		return
+
+	var current_score := player_score if _combat_target == _player else dragon_score
+	var other_score := dragon_score if _combat_target == _player else player_score
+	if other_score > current_score * target_switch_hysteresis:
+		_combat_target = preferred
+
+
+func _score_target(target: Node2D, weight: float, participating: bool) -> float:
+	if target == null:
+		return -INF
+	var distance := maxf(global_position.distance_to(target.global_position), 1.0)
+	var score := weight / distance
+	if participating:
+		score *= 1.75
+	# Mild proximity bonus when already within strike range.
+	if distance <= attack_range * 1.6:
+		score *= 1.2
+	return score
 
 
 func _resolve_player_body_overlap() -> void:
@@ -292,7 +402,7 @@ func _process_attack_phase(delta: float) -> void:
 		AttackPhase.LUNGE:
 			var step := attack_lunge_distance / maxf(attack_lunge_duration, 0.001) * delta
 			var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
-			if _get_player_combat_distance() > overlap_reach * 0.92:
+			if _get_focus_combat_distance() > overlap_reach * 0.92:
 				var move := _attack_lunge_dir * step
 				var collision := move_and_collide(move)
 				if collision:
@@ -310,13 +420,13 @@ func _process_attack_phase(delta: float) -> void:
 
 
 func _begin_attack_windup() -> void:
-	if _player == null:
+	if _get_focus_target() == null:
 		return
 	_attack_phase = AttackPhase.WINDUP
 	_attack_phase_remaining = engage_windup
 	_attack_resolved = false
 	_attack_lunge_traveled = 0.0
-	_attack_lunge_dir = _direction_to_player()
+	_attack_lunge_dir = _direction_to_focus()
 	if _attack_lunge_dir.length_squared() < 0.01:
 		_attack_lunge_dir = Vector2.RIGHT
 
@@ -324,7 +434,7 @@ func _begin_attack_windup() -> void:
 func _begin_attack_lunge() -> void:
 	_attack_phase = AttackPhase.LUNGE
 	_attack_phase_remaining = attack_lunge_duration
-	_attack_lunge_dir = _direction_to_player()
+	_attack_lunge_dir = _direction_to_focus()
 
 
 func _resolve_attack_hit() -> void:
@@ -333,8 +443,9 @@ func _resolve_attack_hit() -> void:
 		return
 	_attack_resolved = true
 
-	if _player != null and is_instance_valid(_player):
-		if _is_player_in_attack_range() and not _is_player_untargetable():
+	var focus := _get_focus_target()
+	if focus != null and _is_focus_in_attack_range():
+		if focus == _player and not _is_player_untargetable():
 			var player_health := _player.get_node_or_null("Health") as Health
 			if player_health != null and player_health.is_alive():
 				player_health.take_damage(attack_damage)
@@ -345,6 +456,10 @@ func _resolve_attack_hit() -> void:
 						player_hit_stagger
 					)
 				attacked_player.emit()
+		elif focus == _dragon and _is_valid_combat_target(_dragon):
+			var survivability := _dragon.get_node_or_null("Survivability") as DragonSurvivability
+			if survivability != null:
+				survivability.receive_damage(attack_damage)
 
 	_visual.modulate = Color(1.4, 0.35, 0.3, 1.0)
 	_finish_attack()
@@ -461,7 +576,7 @@ func _compute_chase_velocity(archetype: VerticalSliceArchetypePresets.Archetype)
 		return _compute_scout_probe_velocity()
 	return EnemyCombatSteering.compute_chase_velocity(
 		self,
-		_player.global_position,
+		_get_focus_position(),
 		chase_speed,
 		slot_standoff,
 	)
@@ -474,7 +589,7 @@ func _compute_engage_velocity(archetype: VerticalSliceArchetypePresets.Archetype
 		return _compute_scout_probe_velocity()
 	return EnemyCombatSteering.compute_engage_velocity(
 		self,
-		_player.global_position,
+		_get_focus_position(),
 		attack_range,
 		engage_reposition_speed,
 		slot_standoff,
@@ -487,7 +602,7 @@ func _compute_scout_probe_velocity() -> Vector2:
 		probe_speed = maxf(chase_speed, engage_reposition_speed * 1.08)
 	var result := EnemyCombatSteering.compute_scout_probe_velocity(
 		self,
-		_player.global_position,
+		_get_focus_position(),
 		attack_range,
 		probe_speed,
 		_scout_probe_burst_remaining,
@@ -502,7 +617,7 @@ func _compute_scout_probe_velocity() -> Vector2:
 func _try_begin_attack() -> void:
 	if _attack_phase != AttackPhase.NONE:
 		return
-	if _stagger_remaining > 0.0 or _player == null:
+	if _stagger_remaining > 0.0 or _get_focus_target() == null:
 		return
 	if _state == State.DISENGAGE or _state == State.RECOVER:
 		return
@@ -522,18 +637,23 @@ func _try_begin_attack() -> void:
 	if not cooldown_ok:
 		return
 
-	if global_position.distance_to(_player.global_position) > range_limit:
+	var focus_pos := _get_focus_position()
+	if global_position.distance_to(focus_pos) > range_limit:
 		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
-		if _get_player_combat_distance() > overlap_reach:
+		if _get_focus_combat_distance() > overlap_reach:
 			return
 
-	if not EnemyCombatSteering.has_clear_attack_line(self, _player.global_position):
+	if not EnemyCombatSteering.has_clear_attack_line(self, focus_pos):
 		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
-		if _get_player_combat_distance() > overlap_reach:
+		if _get_focus_combat_distance() > overlap_reach:
 			return
 
-	var player_health := _player.get_node_or_null("Health") as Health
-	if player_health == null or not player_health.is_alive():
+	var focus := _get_focus_target()
+	if focus == _player:
+		var player_health := _player.get_node_or_null("Health") as Health
+		if player_health == null or not player_health.is_alive():
+			return
+	elif focus == _dragon and not _is_valid_combat_target(_dragon):
 		return
 
 	_begin_attack_windup()
@@ -559,17 +679,19 @@ func _set_state(new_state: State) -> void:
 
 func _update_facing(delta: float) -> void:
 	var face_dir := Vector2.ZERO
+	var focus := _get_focus_target()
+	var look_at := focus if focus != null else _player
 
-	if _player != null:
+	if look_at != null:
 		if _attack_phase != AttackPhase.NONE or _state == State.ENGAGE or _stagger_remaining > 0.0:
-			face_dir = _player.global_position - global_position
-		elif _state == State.DISENGAGE:
+			face_dir = look_at.global_position - global_position
+		elif _state == State.DISENGAGE and _player != null:
 			face_dir = -(_player.global_position - global_position)
 		elif _smoothed_velocity.length_squared() > 16.0:
 			face_dir = _smoothed_velocity
 
-	if face_dir.length_squared() < 1.0 and _player != null and _state != State.DISENGAGE:
-		face_dir = _player.global_position - global_position
+	if face_dir.length_squared() < 1.0 and look_at != null and _state != State.DISENGAGE:
+		face_dir = look_at.global_position - global_position
 
 	if face_dir.length_squared() <= 1.0:
 		return
@@ -592,9 +714,9 @@ func is_engaging_player() -> bool:
 
 
 func _is_in_attack_range() -> bool:
-	if _player == null:
+	var distance := _get_focus_combat_distance()
+	if distance == INF:
 		return false
-	var distance := _get_player_combat_distance()
 	var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
 	return distance <= attack_range * 1.05 or distance <= overlap_reach
 
@@ -605,6 +727,14 @@ func _find_player() -> void:
 		_player = null
 		return
 	_player = players[0] as Node2D
+
+
+func _find_dragon() -> void:
+	var dragons := get_tree().get_nodes_in_group("dragon")
+	if dragons.is_empty():
+		_dragon = null
+		return
+	_dragon = dragons[0] as Node2D
 
 
 func _is_player_untargetable() -> bool:

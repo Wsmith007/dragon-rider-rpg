@@ -24,7 +24,7 @@ anchors_preset = 0
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 272.0
-offset_bottom = 96.0
+offset_bottom = 136.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -46,7 +46,7 @@ mouse_filter = 2
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 4
 mouse_filter = 2
 
 [node name="BarBackground" type="ColorRect" parent="Panel/Margin/VBox"]
@@ -66,6 +66,24 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.93, 0.96, 1)
 theme_override_font_sizes/font_size = 14
 text = "100 / 100 HP"
+
+[node name="DragonBarBackground" type="ColorRect" parent="Panel/Margin/VBox"]
+custom_minimum_size = Vector2(220, 8)
+layout_mode = 2
+color = Color(0.1, 0.1, 0.1, 0.75)
+
+[node name="DragonBarFill" type="ColorRect" parent="Panel/Margin/VBox/DragonBarBackground"]
+layout_mode = 0
+offset_right = 220.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.55, 0.78, 0.42, 1)
+
+[node name="DragonValueLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.72, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "Dragon 50 / 50"
 
 [node name="DragonStatusLabel" type="Label" parent="Panel/Margin/VBox"]
 layout_mode = 2
