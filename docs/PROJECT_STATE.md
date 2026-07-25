@@ -6,7 +6,7 @@
 |--|--|
 | **Engine** | Godot 4.6 · GDScript |
 | **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-24 (Player Animation Pass 1 validated & committed) |
+| **Last updated** | 2026-07-24 (Dragon Personality Pass 1 — behavioral communication) |
 
 **New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
 
@@ -87,7 +87,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Combat Stance + Target Focus | [`project_checkpoint_combat_depth_1B.md`](./checkpoints/project_checkpoint_combat_depth_1B.md) |
 | Sync / Instability / encounters | [`project_checkpoint_milestone9A.md`](./checkpoints/project_checkpoint_milestone9A.md) |
 | Player HUD without F10 | [`project_checkpoint_vertical_slice_polish_1A.md`](./checkpoints/project_checkpoint_vertical_slice_polish_1A.md) |
-| Dragon communication + dev UI gating | [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) |
+| Dragon communication + behavioral personality | [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) |
 | Player combat animation | [`project_checkpoint_player_animation_pass1.md`](./checkpoints/project_checkpoint_player_animation_pass1.md) |
 | **Combat audio (swing + impact)** | [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md) |
 | Event audio architecture | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
@@ -107,12 +107,12 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | Sync + Instability at resolve | Live | Milestone 9A |
 | Handcrafted slice level | Live | `level/vertical_slice_level_p1.md` |
 | Player feedback (no F10) | Live | Polish 1A |
-| F10 dev shell | Live (gated) | Developer Experience · Dragon Personality Pass 1 |
+| F10 dev shell | Live (gated) | Developer Experience |
 | Placeholder event audio | **Pass 1A complete** | Audio Feedback Pass 1 |
 | **Combat audio (swing + impact)** | **Pass 1 complete** | Combat Audio Pass 1 |
 | Player combat animation | **Pass 1 complete** | Player Animation Pass 1 |
-| Dragon situational communication | **Pass 1 complete** | Dragon Personality Pass 1 |
-| Dev UI hidden (player build) | **Pass 1 complete** | `GameBuildConfig` |
+| Dragon personality (behavioral) | **Pass 1 complete** — ambient bubbles rejected | Dragon Personality Pass 1 |
+| Dev UI hidden (player build) | **Pass 1 complete** | `developer_tools_enabled` / DeveloperInput |
 | Bond Strength progression | Deferred | Milestone 9A |
 | Death/retry, save | Deferred | Design §8 |
 

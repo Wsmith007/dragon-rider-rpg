@@ -511,8 +511,8 @@ Major gaps before the slice is **player-complete**. Ordered by [**Section 12 imp
 | **3** | Player-facing relationship feedback | **Complete** — Polish Pass 1A |
 | **3** | Animation polish (minimal) | **Complete** — Player Animation Pass 1 |
 | **3** | Starting weapon (formal) | Move from debug hotkeys |
-| **3** | Dev UI hidden for player builds | **Dragon Personality Pass 1** |
-| **3** | Dragon personality communication | **Dragon Personality Pass 1** |
+| **3** | Dev UI hidden for player builds | **Complete** - developer_tools_enabled / DeveloperInput |
+| **3** | Dragon personality communication | **Complete** - behavioral body language; ambient bubbles rejected |
 | **Later** | Death / retry flow | Game over → retry segment |
 | **Later** | Basic save at slice end | Optional |
 | **Later** | Final audio assets | Replace catalog placeholders |
@@ -584,7 +584,7 @@ Exact layout is implementation — beats are design requirements.
            ↓
 10. Informal Playtest
            ↓
-11. Dragon Personality — Pass 1
+11. Dragon Personality — Pass 1             ← COMPLETE
            ↓
 12. Player Animation — Pass 1               ← COMPLETE
            ↓
@@ -713,7 +713,7 @@ Detail: [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_ch
 
 **Pass 1A (next validation):** Playtest checklist in audio checkpoint — see [`PROJECT_STATE.md`](../PROJECT_STATE.md).
 
-**Dragon Personality Pass 1 (next implementation):** Dragon communication · hide dev UI in player builds.
+**Dragon Personality Pass 1 (complete - behavioral):** Ambient thought bubbles rejected; personality communicated through stance, facing, proximity, and action. Player-initiated dialogue deferred - [project_checkpoint_dragon_personality_pass1.md](../checkpoints/project_checkpoint_dragon_personality_pass1.md).
 
 **Player Animation Pass 1 (complete):** Procedural idle/walk/attack presentation + per-weapon silhouettes — [`project_checkpoint_player_animation_pass1.md`](../checkpoints/project_checkpoint_player_animation_pass1.md).
 

@@ -1,9 +1,9 @@
 extends Node2D
 class_name DragonCommunicationBubble
-## Temporary in-world display for dragon communication lines.
+## In-world text bubble for dragon lines.
 ##
-## Listens to DragonCommunicationBehavior.message_changed only — no message selection here.
-## Future: swap panel style, add emotion icons, race themes, or a hide-bubbles option.
+## Ambient combat/exploration bubbles are disabled (Pass 1 design decision).
+## Kept as presentation infrastructure for a future player-initiated dialogue system.
 
 
 @export var anchor_offset: Vector2 = Vector2(0.0, -44.0)
@@ -32,6 +32,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if not display_enabled:
+		return
 	if not _bubble_root.visible or _is_fading:
 		return
 
@@ -58,7 +60,7 @@ func _bind_communication() -> void:
 
 
 func _on_message_changed(message: String) -> void:
-	if message.is_empty():
+	if not display_enabled or message.is_empty():
 		return
 
 	_cancel_fade()

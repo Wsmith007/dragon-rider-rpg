@@ -78,7 +78,7 @@ Checkpoints describe **live or recently shipped behavior**. Each checkpoint owns
 
 | Document | Owns |
 |----------|------|
-| [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) | Dragon situational communication, anti-spam timing, `GameBuildConfig` developer UI gating |
+| [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) | Behavioral personality (ambient bubbles rejected); future player-initiated dialogue deferred |
 
 | Document | Owns |
 |----------|------|
@@ -176,7 +176,7 @@ When two documents disagree, apply in order:
 | Weapon swing / impact / audio profiles | `checkpoints/project_checkpoint_combat_audio_pass1.md` |
 | Where is F10 / viewport? | `checkpoints/project_checkpoint_developer_experience_pass1.md` |
 | What does the player see without F10? | `checkpoints/project_checkpoint_vertical_slice_polish_1A.md` |
-| Dragon communication / player build dev flag | `checkpoints/project_checkpoint_dragon_personality_pass1.md` |
+| Dragon communication / behavioral personality | `checkpoints/project_checkpoint_dragon_personality_pass1.md` |
 | Player attack animation | `checkpoints/project_checkpoint_player_animation_pass1.md` |
 | What's the graybox route? | `level/vertical_slice_level_p1.md` |
 | What was true in Milestone 8? | `historical/project_checkpoint_milestone8.md` (historical only) |
