@@ -24,7 +24,7 @@ anchors_preset = 0
 offset_left = 12.0
 offset_top = 12.0
 offset_right = 272.0
-offset_bottom = 136.0
+offset_bottom = 158.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -90,4 +90,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.86, 0.92, 0.95)
 theme_override_font_sizes/font_size = 13
 text = "Dragon: Following"
+autowrap_mode = 2
+
+[node name="RevivePromptLabel" type="Label" parent="Panel/Margin/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.55, 0.98)
+theme_override_font_sizes/font_size = 12
+text = "Hold E — Revive Dragon"
 autowrap_mode = 2

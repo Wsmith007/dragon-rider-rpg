@@ -1,89 +1,93 @@
-[gd_scene load_steps=14 format=3 uid="uid://bplayer001"]
-
-[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
-[ext_resource type="Script" path="res://scripts/systems/health.gd" id="2_health"]
-[ext_resource type="Script" path="res://scripts/player/player_melee_attack.gd" id="3_melee"]
-[ext_resource type="Script" path="res://scripts/player/player_dragon_command.gd" id="4_command"]
-[ext_resource type="Script" path="res://scripts/player/player_engagement.gd" id="5_engagement"]
-[ext_resource type="Script" path="res://scripts/combat/combat_visual_feedback.gd" id="6_feedback"]
-[ext_resource type="Script" path="res://scripts/combat/combat_attack_telegraph.gd" id="7_telegraph"]
-[ext_resource type="Script" path="res://scripts/combat/combat_focused_target_preview.gd" id="8_preview"]
-[ext_resource type="Script" path="res://scripts/player/player_target_focus.gd" id="9_target_focus"]
-[ext_resource type="Script" path="res://scripts/combat/combat_target_focus_indicator.gd" id="10_focus_indicator"]
-[ext_resource type="Script" path="res://scripts/player/player_combat_animation.gd" id="11_combat_anim"]
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_player"]
-radius = 14.0
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_hitbox"]
-radius = 28.0
-
-[node name="Player" type="CharacterBody2D"]
-collision_layer = 1
-collision_mask = 5
-motion_mode = 1
-script = ExtResource("1_player")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_player")
-
-[node name="VisualPivot" type="Node2D" parent="."]
-
-[node name="SpinLayer" type="Node2D" parent="VisualPivot"]
-
-[node name="Visual" type="Polygon2D" parent="VisualPivot/SpinLayer"]
-color = Color(0.25, 0.55, 0.95, 1)
-polygon = PackedVector2Array(-12, -16, 12, -16, 14, 8, 0, 18, -14, 8)
-
-[node name="WeaponPivot" type="Node2D" parent="VisualPivot/SpinLayer"]
-z_index = 2
-
-[node name="WeaponBlade" type="Polygon2D" parent="VisualPivot/SpinLayer/WeaponPivot"]
-z_index = 2
-color = Color(0.92, 0.94, 0.98, 1)
-polygon = PackedVector2Array(-3, 4, 3, 4, 2.2, -24, -2.2, -24)
-
-[node name="FollowAnchor" type="Marker2D" parent="."]
-position = Vector2(0, 38)
-
-[node name="Health" type="Node" parent="."]
-script = ExtResource("2_health")
-
-[node name="MeleeAttack" type="Node2D" parent="."]
-script = ExtResource("3_melee")
-
-[node name="Telegraph" type="Node2D" parent="MeleeAttack"]
-script = ExtResource("7_telegraph")
-
-[node name="TargetPreview" type="Node2D" parent="MeleeAttack"]
-script = ExtResource("8_preview")
-
-[node name="TargetFocusIndicator" type="Node2D" parent="MeleeAttack"]
-script = ExtResource("10_focus_indicator")
-
-[node name="Hitbox" type="Area2D" parent="MeleeAttack"]
-collision_layer = 8
-collision_mask = 4
-monitoring = false
-monitorable = false
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack/Hitbox"]
-shape = SubResource("CircleShape2D_hitbox")
-
-[node name="DragonCommand" type="Node" parent="."]
-script = ExtResource("4_command")
-
-[node name="Engagement" type="Node" parent="."]
-script = ExtResource("5_engagement")
-
-[node name="TargetFocus" type="Node" parent="."]
-script = ExtResource("9_target_focus")
-
-[node name="CombatVisualFeedback" type="Node" parent="."]
-script = ExtResource("6_feedback")
-visual_path = NodePath("../VisualPivot/SpinLayer/Visual")
-hit_flash_color = Color(1.35, 0.55, 0.55, 1)
-nudge_distance = 0.0
-
-[node name="CombatAnimation" type="Node" parent="."]
-script = ExtResource("11_combat_anim")
+[gd_scene load_steps=15 format=3 uid="uid://bplayer001"]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/systems/health.gd" id="2_health"]
+[ext_resource type="Script" path="res://scripts/player/player_melee_attack.gd" id="3_melee"]
+[ext_resource type="Script" path="res://scripts/player/player_dragon_command.gd" id="4_command"]
+[ext_resource type="Script" path="res://scripts/player/player_engagement.gd" id="5_engagement"]
+[ext_resource type="Script" path="res://scripts/combat/combat_visual_feedback.gd" id="6_feedback"]
+[ext_resource type="Script" path="res://scripts/combat/combat_attack_telegraph.gd" id="7_telegraph"]
+[ext_resource type="Script" path="res://scripts/combat/combat_focused_target_preview.gd" id="8_preview"]
+[ext_resource type="Script" path="res://scripts/player/player_target_focus.gd" id="9_target_focus"]
+[ext_resource type="Script" path="res://scripts/combat/combat_target_focus_indicator.gd" id="10_focus_indicator"]
+[ext_resource type="Script" path="res://scripts/player/player_combat_animation.gd" id="11_combat_anim"]
+[ext_resource type="Script" path="res://scripts/player/player_dragon_revive.gd" id="12_dragon_revive"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_player"]
+radius = 14.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hitbox"]
+radius = 28.0
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 5
+motion_mode = 1
+script = ExtResource("1_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_player")
+
+[node name="VisualPivot" type="Node2D" parent="."]
+
+[node name="SpinLayer" type="Node2D" parent="VisualPivot"]
+
+[node name="Visual" type="Polygon2D" parent="VisualPivot/SpinLayer"]
+color = Color(0.25, 0.55, 0.95, 1)
+polygon = PackedVector2Array(-12, -16, 12, -16, 14, 8, 0, 18, -14, 8)
+
+[node name="WeaponPivot" type="Node2D" parent="VisualPivot/SpinLayer"]
+z_index = 2
+
+[node name="WeaponBlade" type="Polygon2D" parent="VisualPivot/SpinLayer/WeaponPivot"]
+z_index = 2
+color = Color(0.92, 0.94, 0.98, 1)
+polygon = PackedVector2Array(-3, 4, 3, 4, 2.2, -24, -2.2, -24)
+
+[node name="FollowAnchor" type="Marker2D" parent="."]
+position = Vector2(0, 38)
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="MeleeAttack" type="Node2D" parent="."]
+script = ExtResource("3_melee")
+
+[node name="Telegraph" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("7_telegraph")
+
+[node name="TargetPreview" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("8_preview")
+
+[node name="TargetFocusIndicator" type="Node2D" parent="MeleeAttack"]
+script = ExtResource("10_focus_indicator")
+
+[node name="Hitbox" type="Area2D" parent="MeleeAttack"]
+collision_layer = 8
+collision_mask = 4
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack/Hitbox"]
+shape = SubResource("CircleShape2D_hitbox")
+
+[node name="DragonCommand" type="Node" parent="."]
+script = ExtResource("4_command")
+
+[node name="Engagement" type="Node" parent="."]
+script = ExtResource("5_engagement")
+
+[node name="TargetFocus" type="Node" parent="."]
+script = ExtResource("9_target_focus")
+
+[node name="CombatVisualFeedback" type="Node" parent="."]
+script = ExtResource("6_feedback")
+visual_path = NodePath("../VisualPivot/SpinLayer/Visual")
+hit_flash_color = Color(1.35, 0.55, 0.55, 1)
+nudge_distance = 0.0
+
+[node name="CombatAnimation" type="Node" parent="."]
+script = ExtResource("11_combat_anim")
+
+[node name="DragonRevive" type="Node" parent="."]
+script = ExtResource("12_dragon_revive")

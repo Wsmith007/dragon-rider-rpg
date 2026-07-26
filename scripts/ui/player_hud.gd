@@ -17,6 +17,7 @@ const COLOR_DRAGON_KO := Color(0.55, 0.45, 0.48, 1.0)
 @onready var _dragon_bar_fill: ColorRect = $Panel/Margin/VBox/DragonBarBackground/DragonBarFill
 @onready var _dragon_value_label: Label = $Panel/Margin/VBox/DragonValueLabel
 @onready var _dragon_status_label: Label = $Panel/Margin/VBox/DragonStatusLabel
+@onready var _revive_prompt_label: Label = $Panel/Margin/VBox/RevivePromptLabel
 
 var _bar_width: float = 0.0
 var _dragon_bar_width: float = 0.0
@@ -31,6 +32,9 @@ func _ready() -> void:
 	_bar_width = _bar_background.custom_minimum_size.x
 	_dragon_bar_width = _dragon_bar_background.custom_minimum_size.x
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _revive_prompt_label != null:
+		_revive_prompt_label.visible = false
+		_revive_prompt_label.text = ""
 
 
 func bind(game_root: Node2D) -> void:
@@ -73,18 +77,45 @@ func _bind_dragon_survivability(survivability: DragonSurvivability) -> void:
 			_survivability.health_changed.disconnect(_on_dragon_health_changed)
 		if _survivability.survivability_state_changed.is_connected(_on_dragon_survivability_state_changed):
 			_survivability.survivability_state_changed.disconnect(_on_dragon_survivability_state_changed)
+		if _survivability.revive_prompt_changed.is_connected(_on_revive_prompt_changed):
+			_survivability.revive_prompt_changed.disconnect(_on_revive_prompt_changed)
 
 	_survivability = survivability
 	if _survivability == null:
 		_dragon_value_label.text = "Dragon: —"
+		_set_revive_prompt(false, 0.0, "")
 		return
 
 	if not _survivability.health_changed.is_connected(_on_dragon_health_changed):
 		_survivability.health_changed.connect(_on_dragon_health_changed)
 	if not _survivability.survivability_state_changed.is_connected(_on_dragon_survivability_state_changed):
 		_survivability.survivability_state_changed.connect(_on_dragon_survivability_state_changed)
+	if not _survivability.revive_prompt_changed.is_connected(_on_revive_prompt_changed):
+		_survivability.revive_prompt_changed.connect(_on_revive_prompt_changed)
 	_update_dragon_health(_survivability.current_health, _survivability.max_health, true)
 	_on_dragon_survivability_state_changed(_survivability.state)
+	_set_revive_prompt(false, 0.0, "")
+
+
+func _on_revive_prompt_changed(visible: bool, progress: float, blocked_reason: String) -> void:
+	_set_revive_prompt(visible, progress, blocked_reason)
+
+
+func _set_revive_prompt(visible: bool, progress: float, blocked_reason: String) -> void:
+	if _revive_prompt_label == null:
+		return
+	if not visible:
+		_revive_prompt_label.visible = false
+		_revive_prompt_label.text = ""
+		return
+	_revive_prompt_label.visible = true
+	if blocked_reason == "danger":
+		_revive_prompt_label.text = "Clear nearby enemies to revive"
+		return
+	if progress > 0.02:
+		_revive_prompt_label.text = "Reviving… %d%%" % int(round(progress * 100.0))
+	else:
+		_revive_prompt_label.text = "Hold E — Revive Dragon"
 
 
 func _on_health_changed(current: float, maximum: float) -> void:

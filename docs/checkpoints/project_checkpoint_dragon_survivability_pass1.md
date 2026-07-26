@@ -5,14 +5,26 @@
 **Design constitution:** [`vertical_slice_design_v1.md`](../design/vertical_slice_design_v1.md)  
 **Related:** [`project_checkpoint_combat_stakes_pass1.md`](./project_checkpoint_combat_stakes_pass1.md) · [`project_checkpoint_milestone9A.md`](./project_checkpoint_milestone9A.md)  
 **Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
-**Status:** **IMPLEMENTED — source validated; live playtest required**  
+**Status:** **REFINED after playtest — interact revive + Sync 60s + stronger dragon pressure**  
 **Date:** 2026-07-25
+
+---
+
+## Playtest Validation (original Pass 1)
+
+Developer confirmed:
+
+- [x] Dragon health, knockout, HUD, penalties, and original auto-revival worked
+- [x] No major regressions observed
+- [x] Sync penalty at **12 s** felt too short → extended to **60 s**
+- [x] Automatic revival rejected → replaced with **hold E** interact revive
+- [x] Enemies rarely hit the dragon → targeting pressure + dragon hit radius tuned
 
 ---
 
 ## Goals
 
-The dragon should feel like a partner with stakes: take damage, draw some attention, knock out without permanent death, revive after danger clears, and apply Sync/Instability consequences — without becoming a fragile escort quest.
+The dragon should feel like a partner with stakes: take damage, draw some attention, knock out without permanent death, and require the player to clear nearby danger and interact to revive — without becoming a fragile escort quest.
 
 Bond strength is **not** changed by knockout.
 
@@ -27,28 +39,32 @@ Bond strength is **not** changed by knockout.
 | Hits vs Raider (10) | 5 | Clear chip |
 | Hits vs Brute (18) | ~3 | Heavy threat |
 
-Configurable on `DragonSurvivability` (`max_health`, invuln, grace, revive ratio).
-
 - Brief hit invulnerability: **0.15 s**
 - Post-revive grace: **2.0 s**
 - HP clamped to `[0, max]`; never permanently dies
 
 ---
 
-## Enemy Targeting Model
+## Enemy Targeting Model (refined)
 
 Conservative extension of existing player-centric AI (`enemy.gd`):
 
 1. **Detection / lose aggro** still keyed off the **player**.
 2. Soft `_combat_target` = player **or** dragon.
-3. Retarget at most every **~0.45 s** with **hysteresis** (`target_switch_hysteresis = 1.25`).
-4. Scores: `player_target_weight` (1.0) vs `dragon_target_weight` (0.55); dragon score ×1.75 when ASSISTING/PROTECTING.
-5. Chase / engage / attack aim at the current focus.
-6. Attack resolve: player `Health.take_damage` **or** `DragonSurvivability.receive_damage`.
-7. Knocked-out dragon is **invalid**; invalid focus falls back to player.
-8. Player combat safe zone still idles enemies (no farming dragon in Quiet Grove).
+3. Retarget every **~0.35 s** with hysteresis **1.18**.
+4. Base weights: player **1.05**, dragon **0.9** (was 1.0 / 0.55).
+5. Score multipliers:
+   - Assist/protect participation ×**2.0**
+   - Dragon within **80** units ×**1.65**
+   - Dragon clearly closer than player ×**1.35**
+   - Dragon blocking line to player ×**1.4**
+   - Recently damaged by dragon (3.5 s) ×**1.55**
+   - Commitment sticky ×**1.15** on current focus
+6. Archetype lean: Scout prefers player; Brute prefers closer/blocking dragon; Raider balanced.
+7. Attack reach uses **dragon_body_radius 22** (was player 14) so lunges can connect.
+8. Knocked-out dragon is **invalid**.
 
-Not every enemy peels to the dragon — player bias remains primary.
+Player remains primary; dragon must draw meaningful hits in ordinary multi-enemy fights.
 
 ---
 
@@ -62,54 +78,52 @@ At zero HP (once):
 - Stay in scene with muted KO modulate
 - Not a valid enemy target
 - No game over if the player lives
-- Penalties applied **once** per KO (`_knockout_penalties_applied`)
+- Penalties applied **once** per KO
 
 ---
 
 ## Instability Consequence
 
-On KO: `BondSystem.apply_instability_delta(+25)` once.
-
-Does **not** auto-clear on revival. Existing encounter/relationship recovery rules still apply elsewhere.
+On KO: `BondSystem.apply_instability_delta(+25)` once. Not auto-cleared on revival.
 
 ---
 
 ## Temporary Sync Consequence
 
-No modifier stack exists. Pass 1 representation:
-
 1. On KO: `BondSystem.apply_sync_delta(-10)` once.
-2. Store `_sync_penalty_active_amount = 10` and `_sync_penalty_remaining = 12 s`.
-3. When the timer expires (even if still KO or already revived): `apply_sync_delta(+10)` once to restore.
-4. Scene reset / `reset_to_full()` restores any outstanding penalty before clearing state.
+2. Timer **60 s** (first-pass tuning; was 12 s — too short in playtest).
+3. On expiry: `apply_sync_delta(+10)` once. Re-KO while active refreshes the timer only (no stack).
+4. Encounter restart / `reset_to_full()` clears outstanding penalty correctly.
 
-Bond strength is never touched.
+Bond strength never touched.
 
 ---
 
-## Revival Flow
+## Revival Flow (player interaction)
 
-Automatic (no interact UI / inventory):
+Automatic post-combat revival **removed** after playtest rejection.
 
-1. While KO, if **immediate danger is clear** for `revive_delay_after_clear` (2.5 s):
-   - Player in combat safe zone, **or**
-   - No living enemies within `danger_clear_radius` (300) of the player (fallback: dragon)
-2. Revive at **35%** max HP
-3. Apply post-revive grace (2 s) so instant re-KO loops are harder
-4. Resume follow / normal AI
+1. Dragon reaches 0 HP → `KNOCKED_OUT` and stays down.
+2. Player approaches within `revive_interact_range` (**56**).
+3. HUD prompt: **Hold E — Revive Dragon** (or “Clear nearby enemies…” if blocked).
+4. Hold `interact` (**E**) for `revive_hold_duration` (**2.5 s**).
+5. Revive at **35%** HP + **2 s** grace.
 
-`begin_rescue()` remains a no-op stub for a future interact rescue.
+### Safety / cancel rules
+
+- Hostile enemy within `revive_danger_radius` (**220**) of the dragon **blocks** revive (prompt shows danger).
+- Leaving range cancels progress.
+- Player taking damage cancels progress.
+- Active dragon never shows revive prompt.
+- Cannot double-revive from one KO.
+- Debug **Shift+F9** still force-revives.
 
 ---
 
 ## HUD Behavior
 
-`PlayerHud` adds a secondary dragon bar + label under player HP:
-
-- Shows `Dragon N / M` while active
-- Shows `KO` + status “Knocked Out” while KO
-- Signal-driven (`health_changed`, `survivability_state_changed`)
-- Visually secondary (thinner green bar)
+- Secondary dragon HP bar + KO label
+- Revive prompt line under status (progress % while holding)
 
 ---
 
@@ -121,14 +135,12 @@ Automatic (no interact UI / inventory):
 | **Shift+F8** | Dragon HP +10 |
 | **F9** | Force knockout |
 | **Shift+F9** | Force revive |
-
-Existing F1 / F5–F7 / F10–F12 / weapon / bond keys unchanged. Documented in `BondTestHelpUI`.
+| **E** | Hold to revive (gameplay) |
 
 ---
 
 ## Deferred Systems
 
-- Player interact / hold-to-rescue revival
 - Dedicated dragon hurt / KO audio assets
 - Full aggro table / taunt skills
 - Dragon HP on a future RPG menu
@@ -137,20 +149,13 @@ Existing F1 / F5–F7 / F10–F12 / weapon / bond keys unchanged. Documented in 
 
 ---
 
-## Manual Validation Checklist
+## Remaining Manual Validation
 
-- [ ] Scout / Raider / Brute can damage the dragon; hits apply once
-- [ ] Dragon HP never goes below 0 or above max
-- [ ] Enemies sometimes peel to an assisting/protecting or closer dragon without all abandoning the player
-- [ ] No frame-to-frame target jitter
-- [ ] KO dragon ignored; enemies recover to player
-- [ ] On KO: assist/protect/strike stop; Instability +25 once; Sync −10 once
-- [ ] Sync restores +10 after ~12 s
-- [ ] After danger clears ~2.5 s, dragon revives at ~35% with grace
-- [ ] HUD updates; KO label clear
-- [ ] F8 / Shift+F8 / F9 / Shift+F9 work; other developer keys unchanged
-- [ ] Player combat, follow/wait/recall, critical-health feedback still work
-- [ ] No thought bubbles; no debugger errors
+- [ ] Hold E revive works; danger radius blocks; damage/range cancel progress
+- [ ] Sync −10 lasts ~60 s then restores
+- [ ] Enemies land real hits on dragon in multi-enemy fights
+- [ ] Soft peel without all enemies abandoning player; no target jitter
+- [ ] KO still stops assist/protect; F8/F9 still work
 
 ---
 
@@ -158,17 +163,16 @@ Existing F1 / F5–F7 / F10–F12 / weapon / bond keys unchanged. Documented in 
 
 | File | Role |
 |------|------|
-| `scripts/dragon/dragon_survivability.gd` | HP / KO / revival / bond penalties |
-| `scripts/dragon/dragon.gd` | KO gate, flash, callbacks |
-| `scripts/enemies/enemy.gd` | Soft combat target |
-| `scripts/ui/player_hud.gd` + `PlayerHud.tscn` | Dragon HP chip |
-| `scripts/ui/health_debug_controls.gd` | F8/F9 dragon testers |
-| `scripts/core/developer_input_*.gd` | Shortcut wiring |
-| `scripts/world/test_world.gd` / `vertical_slice_world_shell.gd` | Bind dragon debug |
-| `scenes/ui/BondTestHelpUI.tscn` | Help text |
+| `scripts/dragon/dragon_survivability.gd` | HP / KO / interact revive / Sync 60s |
+| `scripts/player/player_dragon_revive.gd` | Hold-E interaction |
+| `scripts/enemies/enemy.gd` | Soft target + pressure tuning |
+| `scripts/dragon/dragon_strike_behavior.gd` | Notify peel threat on hit |
+| `scripts/ui/player_hud.gd` + `PlayerHud.tscn` | Prompt + HP chip |
+| `scenes/player/Player.tscn` | DragonRevive node |
+| `project.godot` | `interact` (E) |
 
 ---
 
 ## Final Status
 
-**IMPLEMENTED** for Pass 1. Live developer playtest still required before treating feel as validated.
+**REFINED** after playtest. Interact revival + Sync duration + targeting pressure implemented. Further live validation still recommended for feel.

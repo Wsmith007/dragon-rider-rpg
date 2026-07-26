@@ -435,6 +435,8 @@ func _apply_damage() -> void:
 	var health := _target.get_node_or_null("Health") as Health
 	if health != null and health.is_alive():
 		health.take_damage(strike_damage)
+		if _target.has_method("notify_damaged_by_dragon"):
+			_target.notify_damaged_by_dragon()
 		strike_hit.emit(_target, _active_strike_kind)
 
 

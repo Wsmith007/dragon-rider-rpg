@@ -1,7 +1,7 @@
 extends Node
 class_name DragonSurvivability
-## Dragon HP, knockout, revival, and KO bond consequences (Survivability Pass 1).
-## Never permanently dies — KNOCKED_OUT until danger clears and recovery completes.
+## Dragon HP, knockout, player-interact revival, and KO bond consequences.
+## Never permanently dies — remains KNOCKED_OUT until the player revives it.
 
 
 enum SurvivabilityState {
@@ -14,30 +14,36 @@ signal survivability_state_changed(state: SurvivabilityState)
 signal damaged(amount: float, current_health: float)
 signal knocked_out
 signal revived
+## progress 0–1; blocked_reason empty when ready ("danger" | "range" | "").
+signal revive_prompt_changed(visible: bool, progress: float, blocked_reason: String)
 
 ## Evaluated vs Scout 6 / Raider 10 / Brute 18 → ~8 / 5 / ~3 hits.
 @export var max_health: float = 50.0
 @export var knockout_at_zero: bool = true
 ## Applied once per knockout via BondSystem.apply_sync_delta(-value). Restored after duration.
 @export var sync_penalty_on_knockout: float = 10.0
-@export var sync_penalty_duration: float = 12.0
+## First-pass tuning: temporary Sync penalty lasts 60s (was 12s — too short in playtest).
+@export var sync_penalty_duration: float = 60.0
 ## Applied once per knockout via BondSystem.apply_instability_delta(+value). Not auto-cleared.
 @export var instability_on_knockout: float = 25.0
 @export var revive_health_ratio: float = 0.35
-@export var revive_delay_after_clear: float = 2.5
+@export var revive_hold_duration: float = 2.5
+@export var revive_interact_range: float = 56.0
+## Hostile enemies inside this radius of the dragon block revival.
+@export var revive_danger_radius: float = 220.0
 @export var post_revive_grace_duration: float = 2.0
 @export var hit_invulnerability_duration: float = 0.15
-@export var danger_clear_radius: float = 300.0
 
 var current_health: float = 50.0
 var state: SurvivabilityState = SurvivabilityState.ACTIVE
 var _initialized: bool = false
 var _hit_invuln_remaining: float = 0.0
 var _grace_remaining: float = 0.0
-var _revive_clear_timer: float = 0.0
+var _revive_hold_progress: float = 0.0
 var _sync_penalty_remaining: float = 0.0
 var _sync_penalty_active_amount: float = 0.0
 var _knockout_penalties_applied: bool = false
+var _prompt_visible: bool = false
 var _dragon: CharacterBody2D
 
 
@@ -54,9 +60,6 @@ func _process(delta: float) -> void:
 	_hit_invuln_remaining = maxf(_hit_invuln_remaining - delta, 0.0)
 	_grace_remaining = maxf(_grace_remaining - delta, 0.0)
 	_tick_sync_penalty(delta)
-
-	if state == SurvivabilityState.KNOCKED_OUT:
-		_tick_knockout_recovery(delta)
 
 
 func get_health_ratio() -> float:
@@ -81,17 +84,24 @@ func is_in_grace() -> bool:
 	return _grace_remaining > 0.0
 
 
+func get_revive_hold_progress() -> float:
+	if revive_hold_duration <= 0.0:
+		return 0.0
+	return clampf(_revive_hold_progress / revive_hold_duration, 0.0, 1.0)
+
+
 func reset_to_full() -> void:
 	_clear_sync_penalty_if_active()
 	_hit_invuln_remaining = 0.0
 	_grace_remaining = 0.0
-	_revive_clear_timer = 0.0
+	_cancel_revive_hold()
 	_knockout_penalties_applied = false
 	current_health = max_health
 	if state != SurvivabilityState.ACTIVE:
 		state = SurvivabilityState.ACTIVE
 		survivability_state_changed.emit(state)
 	health_changed.emit(current_health, max_health)
+	_emit_prompt(false, 0.0, "")
 
 
 func receive_damage(amount: float) -> void:
@@ -134,9 +144,55 @@ func force_revive() -> void:
 	_complete_revive()
 
 
-## Pass 1: unused interact rescue — revival is automatic after danger clears.
-func begin_rescue(_rescuer: Node) -> void:
-	pass
+## Player hold-to-revive. Call each frame from the revive interaction component.
+func update_revive_interaction(rescuer: Node2D, holding: bool, delta: float) -> void:
+	if state != SurvivabilityState.KNOCKED_OUT:
+		_cancel_revive_hold()
+		_emit_prompt(false, 0.0, "")
+		return
+	if rescuer == null or not is_instance_valid(rescuer) or _dragon == null:
+		_cancel_revive_hold()
+		_emit_prompt(false, 0.0, "")
+		return
+
+	var in_range := rescuer.global_position.distance_to(_dragon.global_position) <= revive_interact_range
+	if not in_range:
+		_cancel_revive_hold()
+		_emit_prompt(false, 0.0, "")
+		return
+
+	if _has_nearby_hostile_danger():
+		_cancel_revive_hold()
+		_emit_prompt(true, 0.0, "danger")
+		return
+
+	_emit_prompt(true, get_revive_hold_progress(), "")
+	if not holding:
+		_cancel_revive_hold()
+		_emit_prompt(true, 0.0, "")
+		return
+
+	_revive_hold_progress += delta
+	_emit_prompt(true, get_revive_hold_progress(), "")
+	if _revive_hold_progress >= revive_hold_duration:
+		_complete_revive()
+
+
+func cancel_revive_interaction() -> void:
+	_cancel_revive_hold()
+	if state == SurvivabilityState.KNOCKED_OUT and _dragon != null:
+		var player := _find_player()
+		if player != null and player.global_position.distance_to(_dragon.global_position) <= revive_interact_range:
+			var reason := "danger" if _has_nearby_hostile_danger() else ""
+			_emit_prompt(true, 0.0, reason)
+			return
+	_emit_prompt(false, 0.0, "")
+
+
+## Legacy stub name — prefer update_revive_interaction.
+func begin_rescue(rescuer: Node) -> void:
+	if rescuer is Node2D:
+		update_revive_interaction(rescuer as Node2D, true, 0.0)
 
 
 func _enter_knocked_out() -> void:
@@ -145,11 +201,12 @@ func _enter_knocked_out() -> void:
 
 	state = SurvivabilityState.KNOCKED_OUT
 	current_health = 0.0
-	_revive_clear_timer = 0.0
+	_cancel_revive_hold()
 	_hit_invuln_remaining = 0.0
 	survivability_state_changed.emit(state)
 	knocked_out.emit()
 	_apply_knockout_penalties_once()
+	_emit_prompt(false, 0.0, "")
 
 	if _dragon != null and _dragon.has_method("on_survivability_knocked_out"):
 		_dragon.on_survivability_knocked_out()
@@ -196,38 +253,13 @@ func _clear_sync_penalty_if_active() -> void:
 		bond.apply_sync_delta(restore)
 
 
-func _tick_knockout_recovery(delta: float) -> void:
-	if _is_immediate_danger_clear():
-		_revive_clear_timer += delta
-	else:
-		_revive_clear_timer = 0.0
-
-	if _revive_clear_timer >= revive_delay_after_clear:
-		_complete_revive()
-
-
-func _is_immediate_danger_clear() -> bool:
+func _has_nearby_hostile_danger() -> bool:
 	if _dragon == null or not is_instance_valid(_dragon):
-		return false
-
-	var player := _find_player()
-	if player != null and player.has_method("is_in_combat_safe_zone") and player.is_in_combat_safe_zone():
 		return true
-
-	var relationship := get_node_or_null("/root/RelationshipSystem")
-	if relationship != null and relationship.has_method("is_encounter_active"):
-		if not relationship.is_encounter_active():
-			# Still require no nearby living enemies so ambient spawns don't soft-lock revival.
-			pass
-
-	var origin := _dragon.global_position
-	if player != null and is_instance_valid(player):
-		origin = player.global_position
-
 	var tree := get_tree()
 	if tree == null:
-		return false
-
+		return true
+	var origin := _dragon.global_position
 	for node in tree.get_nodes_in_group("enemy"):
 		if not is_instance_valid(node):
 			continue
@@ -236,9 +268,9 @@ func _is_immediate_danger_clear() -> bool:
 		var health := node.get_node_or_null("Health") as Health
 		if health != null and not health.is_alive():
 			continue
-		if node is Node2D and origin.distance_to((node as Node2D).global_position) <= danger_clear_radius:
-			return false
-	return true
+		if node is Node2D and origin.distance_to((node as Node2D).global_position) <= revive_danger_radius:
+			return true
+	return false
 
 
 func _complete_revive() -> void:
@@ -249,14 +281,24 @@ func _complete_revive() -> void:
 	state = SurvivabilityState.ACTIVE
 	_knockout_penalties_applied = false
 	_grace_remaining = post_revive_grace_duration
-	_revive_clear_timer = 0.0
+	_cancel_revive_hold()
 	_hit_invuln_remaining = hit_invulnerability_duration
 	survivability_state_changed.emit(state)
 	health_changed.emit(current_health, max_health)
 	revived.emit()
+	_emit_prompt(false, 0.0, "")
 
 	if _dragon != null and _dragon.has_method("on_survivability_revived"):
 		_dragon.on_survivability_revived()
+
+
+func _cancel_revive_hold() -> void:
+	_revive_hold_progress = 0.0
+
+
+func _emit_prompt(visible: bool, progress: float, blocked_reason: String) -> void:
+	_prompt_visible = visible
+	revive_prompt_changed.emit(visible, progress, blocked_reason)
 
 
 func _find_player() -> Node2D:
