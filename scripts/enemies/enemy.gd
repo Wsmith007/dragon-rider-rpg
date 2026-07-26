@@ -35,19 +35,21 @@ const RUSH_COMMIT_RATIO := 0.55
 @export var player_hit_stagger: float = 0.0
 @export var steer_smoothing: float = 10.0
 @export var facing_smoothing: float = 14.0
-## Soft dragon peel — player remains primary; dragon draws pressure when meaningful.
-@export var dragon_target_weight: float = 0.75
-@export var player_target_weight: float = 1.25
+## Soft dragon peel — player primary overall; dragon must still draw ordinary pressure.
+@export var dragon_target_weight: float = 0.95
+@export var player_target_weight: float = 1.10
 ## Score margin required to abandon current target (1.0 = any higher score).
-@export var target_switch_hysteresis: float = 1.22
+@export var target_switch_hysteresis: float = 1.18
 @export var retarget_interval: float = 0.40
 ## Soft distance falloff scale — avoids "closest body always wins".
 @export var distance_softness: float = 70.0
-@export var dragon_close_bonus_distance: float = 55.0
+@export var dragon_close_bonus_distance: float = 60.0
 @export var dragon_body_radius: float = 22.0
 @export var dragon_hit_recent_window: float = 3.5
 ## Minimum time to keep a chosen target before a score-based switch (invalid targets ignore this).
-@export var min_target_commitment: float = 0.55
+@export var min_target_commitment: float = 0.45
+## While committed, switch margin is at least this (was 1.35 — too resistant with player bias).
+@export var committed_switch_margin: float = 1.26
 ## Force reassess if current target stays outside useful range this long.
 @export var max_stale_out_of_range: float = 2.2
 ## Force reassess if distance to current target fails to improve for this long.
@@ -464,9 +466,9 @@ func _refresh_combat_target() -> void:
 
 	# Mild sticky bonus — enough to stop jitter, not enough to permanently tunnel.
 	if _combat_target == _player:
-		player_score *= 1.08
+		player_score *= 1.06
 	elif _combat_target == _dragon:
-		dragon_score *= 1.08
+		dragon_score *= 1.06
 
 	var preferred: Node2D = _player if player_score >= dragon_score else _dragon
 	if _combat_target == null:
@@ -478,7 +480,7 @@ func _refresh_combat_target() -> void:
 	var other_score := dragon_score if _combat_target == _player else player_score
 	var margin := target_switch_hysteresis
 	if _target_commitment_remaining > 0.0:
-		margin = maxf(margin, 1.35)
+		margin = maxf(margin, committed_switch_margin)
 	if other_score > current_score * margin:
 		_set_combat_target(preferred)
 
@@ -494,68 +496,75 @@ func _score_candidate(target: Node2D, participating: bool) -> float:
 
 	var archetype := _get_archetype()
 
-	# Assist/protect participation — meaningful for Raider/Brute, weak for Scout.
+	# Assist/protect participation — must be strong enough to matter in ordinary combat.
 	if participating and target == _dragon:
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				score *= 1.12
+				score *= 1.22
 			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				score *= 1.35
+				score *= 1.42
 			_:
-				score *= 1.28
+				score *= 1.35
 
-	# Extreme close dragon obstruction only (Scout almost never peels on proximity alone).
+	# Close dragon — Scout can peel when very close; Raider/Brute more readily.
 	if target == _dragon and distance <= dragon_close_bonus_distance:
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				if distance <= 28.0:
-					score *= 1.15
+				score *= 1.22 if distance <= 36.0 else 1.10
 			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				score *= 1.28
+				score *= 1.38
 			_:
-				score *= 1.18
+				score *= 1.26
 
 	# Mild attack-range bonus for whoever is already in striking distance.
 	if distance <= attack_range * 1.35:
 		score *= 1.12
 
-	# Dragon clearly much closer than player — Raider/Brute only.
-	if target == _dragon and _player != null and archetype != VerticalSliceArchetypePresets.Archetype.SCOUT:
+	# Dragon clearly closer than player.
+	if target == _dragon and _player != null:
 		var player_dist := global_position.distance_to(_player.global_position)
-		if distance + 28.0 < player_dist:
-			score *= 1.2 if archetype == VerticalSliceArchetypePresets.Archetype.BRUTE else 1.12
+		if distance + 24.0 < player_dist:
+			match archetype:
+				VerticalSliceArchetypePresets.Archetype.SCOUT:
+					score *= 1.12
+				VerticalSliceArchetypePresets.Archetype.BRUTE:
+					score *= 1.28
+				_:
+					score *= 1.18
 
-	# Recent direct dragon damage — all archetypes, Scout included.
+	# Recent direct dragon damage — primary peel signal (must beat sticky+hysteresis alone).
 	if target == _dragon and _dragon_hit_recent_remaining > 0.0:
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				score *= 1.55
+				score *= 2.15
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.45
 			_:
-				score *= 1.4
+				score *= 1.52
 
-	# Dragon blocking the path to the player — Brute/Raider care, Scout barely.
+	# Dragon blocking the path to the player.
 	if target == _dragon and _is_actor_blocking_path(_dragon, _player):
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				score *= 1.08
-			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				score *= 1.32
-			_:
 				score *= 1.18
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.42
+			_:
+				score *= 1.28
 
 	# Player intercepting a dragon focus / standing in the approach corridor.
 	if target == _player and _is_player_intercepting():
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				score *= 1.35
+				score *= 1.32
 			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				score *= 1.75
+				score *= 1.7
 			_:
-				score *= 1.45
+				score *= 1.42
 
-	# Immediate attackable player always gets a floor bump.
+	# Immediate attackable player floor bump (keep below interception).
 	if target == _player and distance <= attack_range * 1.25:
-		score *= 1.2
+		score *= 1.14
 
 	return score
 
@@ -565,19 +574,19 @@ func _base_weight_for(target: Node2D) -> float:
 	if target == _player:
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				return player_target_weight * 1.45
+				return player_target_weight * 1.20
 			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				return player_target_weight * 1.05
+				return player_target_weight * 1.00
 			_:
-				return player_target_weight * 1.15
+				return player_target_weight * 1.05
 	if target == _dragon:
 		match archetype:
 			VerticalSliceArchetypePresets.Archetype.SCOUT:
-				return dragon_target_weight * 0.45
+				return dragon_target_weight * 0.82
 			VerticalSliceArchetypePresets.Archetype.BRUTE:
-				return dragon_target_weight * 1.05
+				return dragon_target_weight * 1.15
 			_:
-				return dragon_target_weight * 0.85
+				return dragon_target_weight * 1.05
 	return 0.0
 
 
