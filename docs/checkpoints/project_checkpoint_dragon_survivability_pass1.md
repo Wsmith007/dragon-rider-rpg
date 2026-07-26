@@ -45,26 +45,49 @@ Bond strength is **not** changed by knockout.
 
 ---
 
-## Enemy Targeting Model (refined)
+## Enemy Targeting Model (refined again after live playtest)
 
-Conservative extension of existing player-centric AI (`enemy.gd`):
+### Playtest problems (after first pressure tune)
 
-1. **Detection / lose aggro** still keyed off the **player**.
-2. Soft `_combat_target` = player **or** dragon.
-3. Retarget every **~0.35 s** with hysteresis **1.18**.
-4. Base weights: player **1.05**, dragon **0.9** (was 1.0 / 0.55).
-5. Score multipliers:
-   - Assist/protect participation ×**2.0**
-   - Dragon within **80** units ×**1.65**
-   - Dragon clearly closer than player ×**1.35**
-   - Dragon blocking line to player ×**1.4**
-   - Recently damaged by dragon (3.5 s) ×**1.55**
-   - Commitment sticky ×**1.15** on current focus
-6. Archetype lean: Scout prefers player; Brute prefers closer/blocking dragon; Raider balanced.
-7. Attack reach uses **dragon_body_radius 22** (was player 14) so lunges can connect.
-8. Knocked-out dragon is **invalid**.
+- Enemies felt like “last body that passed close wins.”
+- Scouts preferred the dragon too often.
+- Brutes tunneled onto the dragon and ignored an intervening player.
+- Target commitment felt like fixation, not tactics.
 
-Player remains primary; dragon must draw meaningful hits in ordinary multi-enemy fights.
+### Root causes (code)
+
+1. Score used `weight / distance` → closest actor dominated.
+2. Universal dragon close bonus ×1.65 within 80u applied even to Scouts.
+3. Assist participation ×2.0 stacked with proximity.
+4. Brute base weights already favored dragon (`player×0.92` vs `dragon×1.2`).
+5. Sticky ×1.15 + hysteresis 1.18 made abandoning dragon hard.
+6. No player-interception term; only dragon-blocking-path.
+7. No max stale / no-progress escape from a bad focus.
+
+### Current model
+
+Detection / lose aggro still keyed off the **player**. Soft `_combat_target` = player or dragon.
+
+| Factor | Behavior |
+|--------|----------|
+| Soft distance | `1 / (1 + d / 70)` — proximity helps, does not overwrite |
+| Base Scout | Player weight ×**1.45**, dragon ×**0.45** |
+| Base Raider | Player ×**1.15**, dragon ×**0.85** |
+| Base Brute | Player ×**1.05**, dragon ×**1.05** |
+| Scout proximity peel | Only if dragon ≤ **28** (tiny); no generic 80u peel |
+| Raider/Brute close dragon | Mild bonus ≤ **55** |
+| Assist participation | Scout ×1.12 · Raider ×1.28 · Brute ×1.35 |
+| Recent dragon damage | Scout ×1.55 · others ×1.4 (still meaningful) |
+| Player interception | Corridor / melee reach; Brute ×**1.75**, Raider ×1.45, Scout ×1.35 |
+| Switch | Retarget **0.40 s**, hysteresis **1.22**, sticky ×1.08 |
+| Min commitment | **0.55 s** (invalid targets ignore; margin rises to 1.35 while committed) |
+| Stale recovery | Out of useful range **2.2 s** or no distance progress **1.8 s** → force reassess |
+| Active rush | Still skips retarget (attack phase) |
+| KO dragon | Immediately invalid → fallback player |
+
+Player remains primary. Dragon draws pressure from damage, blocking, and Brute obstruction — not from walking past.
+
+**Feel not re-validated** until developer retests.
 
 ---
 
@@ -153,9 +176,11 @@ Automatic post-combat revival **removed** after playtest rejection.
 
 - [ ] Hold E revive works; danger radius blocks; damage/range cancel progress
 - [ ] Sync −10 lasts ~60 s then restores
-- [ ] Enemies land real hits on dragon in multi-enemy fights
-- [ ] Soft peel without all enemies abandoning player; no target jitter
-- [ ] KO still stops assist/protect; F8/F9 still work
+- [ ] Scout prefers player; proximity alone rarely peels to dragon
+- [ ] Raider balanced; brief pass-by does not steal target
+- [ ] Brute respects player interception; does not permanently tunnel dragon
+- [ ] Stale/unreachable focus reassesses; KO dragon ignored; no frame jitter
+- [ ] F8/F9 still work; rush commitment unchanged during active rush
 
 ---
 

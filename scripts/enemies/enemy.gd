@@ -1,6 +1,8 @@
 extends CharacterBody2D
 ## Enemy AI with slice archetype behaviors: Scout (skirmish), Raider (baseline), Brute (control check).
 
+const EnemyWeaponStyle := preload("res://scripts/enemies/enemy_weapon_visual_style.gd")
+
 signal player_detected
 signal player_lost
 signal attacked_player
@@ -9,6 +11,11 @@ signal enemy_died(enemy: Node)
 
 enum State { IDLE, CHASE, ENGAGE, DISENGAGE, RECOVER }
 enum AttackPhase { NONE, WINDUP, LUNGE, RUSH_WINDUP, RUSH }
+
+const BODY_RADIUS := 14.0
+const PLAYER_BODY_RADIUS := 14.0
+const KNOCKBACK_IMMUNITY_DURATION := 0.20
+const RUSH_COMMIT_RATIO := 0.55
 
 
 @export var max_health: float = 40.0
@@ -28,14 +35,24 @@ enum AttackPhase { NONE, WINDUP, LUNGE, RUSH_WINDUP, RUSH }
 @export var player_hit_stagger: float = 0.0
 @export var steer_smoothing: float = 10.0
 @export var facing_smoothing: float = 14.0
-## Soft dragon peel — tuned so dragon draws meaningful hits without tanking all aggro.
-@export var dragon_target_weight: float = 0.9
-@export var player_target_weight: float = 1.05
-@export var target_switch_hysteresis: float = 1.18
-@export var retarget_interval: float = 0.35
-@export var dragon_close_bonus_distance: float = 80.0
+## Soft dragon peel — player remains primary; dragon draws pressure when meaningful.
+@export var dragon_target_weight: float = 0.75
+@export var player_target_weight: float = 1.25
+## Score margin required to abandon current target (1.0 = any higher score).
+@export var target_switch_hysteresis: float = 1.22
+@export var retarget_interval: float = 0.40
+## Soft distance falloff scale — avoids "closest body always wins".
+@export var distance_softness: float = 70.0
+@export var dragon_close_bonus_distance: float = 55.0
 @export var dragon_body_radius: float = 22.0
 @export var dragon_hit_recent_window: float = 3.5
+## Minimum time to keep a chosen target before a score-based switch (invalid targets ignore this).
+@export var min_target_commitment: float = 0.55
+## Force reassess if current target stays outside useful range this long.
+@export var max_stale_out_of_range: float = 2.2
+## Force reassess if distance to current target fails to improve for this long.
+@export var max_stale_no_progress: float = 1.8
+@export var progress_epsilon: float = 8.0
 
 ## Scout — probe / disengage after each strike.
 @export var disengage_duration: float = 0.0
@@ -73,6 +90,10 @@ var _dragon: Node2D
 var _combat_target: Node2D
 var _retarget_remaining: float = 0.0
 var _dragon_hit_recent_remaining: float = 0.0
+var _target_commitment_remaining: float = 0.0
+var _stale_out_of_range_time: float = 0.0
+var _stale_no_progress_time: float = 0.0
+var _last_focus_distance: float = INF
 var _attack_cooldown_remaining: float = 0.0
 var _rush_cooldown_remaining: float = 0.0
 var _stagger_remaining: float = 0.0
@@ -98,10 +119,6 @@ var _scout_probe_burst_dir: Vector2 = Vector2.RIGHT
 var _scout_time_since_attack: float = 0.0
 var _knockback_immunity_remaining: float = 0.0
 var _wall_stuck_timer: float = 0.0
-
-const BODY_RADIUS := 14.0
-const PLAYER_BODY_RADIUS := 14.0
-const KNOCKBACK_IMMUNITY_DURATION := 0.20
 
 
 func _ready() -> void:
@@ -137,7 +154,9 @@ func _physics_process(delta: float) -> void:
 	_knockback_immunity_remaining = maxf(_knockback_immunity_remaining - delta, 0.0)
 	_retarget_remaining = maxf(_retarget_remaining - delta, 0.0)
 	_dragon_hit_recent_remaining = maxf(_dragon_hit_recent_remaining - delta, 0.0)
+	_target_commitment_remaining = maxf(_target_commitment_remaining - delta, 0.0)
 	_rush_cooldown_remaining = maxf(_rush_cooldown_remaining - delta, 0.0)
+	_tick_target_staleness(delta)
 
 	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
 		if _attack_phase == AttackPhase.NONE and _state != State.DISENGAGE:
@@ -346,9 +365,9 @@ func _get_focus_body_radius() -> float:
 ## Called when the dragon successfully damages this enemy — raises temporary peel threat.
 func notify_damaged_by_dragon() -> void:
 	_dragon_hit_recent_remaining = dragon_hit_recent_window
-	# Prefer peeling toward the dragon soon after being struck by it.
-	if _is_valid_combat_target(_dragon) and _retarget_remaining > 0.15:
-		_retarget_remaining = 0.15
+	# Allow a fresh evaluation soon, but keep a short commitment so we don't thrash.
+	_retarget_remaining = minf(_retarget_remaining, 0.12)
+	_target_commitment_remaining = minf(_target_commitment_remaining, 0.2)
 
 
 func _is_valid_combat_target(target: Node2D) -> bool:
@@ -361,9 +380,52 @@ func _is_valid_combat_target(target: Node2D) -> bool:
 	return false
 
 
-func _refresh_combat_target() -> void:
+func _tick_target_staleness(delta: float) -> void:
+	if _attack_phase != AttackPhase.NONE:
+		return
 	if not _is_valid_combat_target(_combat_target):
-		_combat_target = _player if _is_valid_combat_target(_player) else null
+		_stale_out_of_range_time = 0.0
+		_stale_no_progress_time = 0.0
+		_last_focus_distance = INF
+		return
+
+	var dist := global_position.distance_to(_combat_target.global_position)
+	var useful_range := maxf(attack_range * 1.8, rush_max_distance * 0.55)
+	if dist > useful_range:
+		_stale_out_of_range_time += delta
+	else:
+		_stale_out_of_range_time = 0.0
+
+	if _last_focus_distance < INF and dist > _last_focus_distance - progress_epsilon:
+		_stale_no_progress_time += delta
+	else:
+		_stale_no_progress_time = 0.0
+	_last_focus_distance = dist
+
+	if _stale_out_of_range_time >= max_stale_out_of_range or _stale_no_progress_time >= max_stale_no_progress:
+		_retarget_remaining = 0.0
+		_target_commitment_remaining = 0.0
+		_stale_out_of_range_time = 0.0
+		_stale_no_progress_time = 0.0
+
+
+func _set_combat_target(next: Node2D) -> void:
+	if next == _combat_target:
+		return
+	_combat_target = next
+	_target_commitment_remaining = min_target_commitment
+	_stale_out_of_range_time = 0.0
+	_stale_no_progress_time = 0.0
+	_last_focus_distance = INF if next == null else global_position.distance_to(next.global_position)
+
+
+func _refresh_combat_target() -> void:
+	# Invalid target (KO dragon, safe-zone player, etc.) always clears immediately.
+	if not _is_valid_combat_target(_combat_target):
+		var fallback: Node2D = _player if _is_valid_combat_target(_player) else null
+		if fallback == null and _is_valid_combat_target(_dragon):
+			fallback = _dragon
+		_set_combat_target(fallback)
 		_retarget_remaining = 0.0
 
 	if _retarget_remaining > 0.0:
@@ -373,110 +435,187 @@ func _refresh_combat_target() -> void:
 	var player_valid := _is_valid_combat_target(_player)
 	var dragon_valid := _is_valid_combat_target(_dragon)
 	if not player_valid and not dragon_valid:
-		_combat_target = null
+		_set_combat_target(null)
 		return
 	if player_valid and not dragon_valid:
-		_combat_target = _player
+		_set_combat_target(_player)
 		return
 	if dragon_valid and not player_valid:
-		_combat_target = _dragon
+		_set_combat_target(_dragon)
 		return
 
-	var player_score := _score_target(_player, _effective_player_weight(), false)
+	# Player physically intercepting a dragon focus: strong immediate pull (except active rush,
+	# which never reaches here because attack phases skip retarget).
+	if (
+		_combat_target == _dragon
+		and player_valid
+		and _is_player_intercepting()
+	):
+		_set_combat_target(_player)
+		return
+
+	var player_score := _score_candidate(_player, false)
 	var dragon_participating: bool = (
 		_dragon != null
 		and _dragon.has_method("is_combat_participating")
 		and _dragon.is_combat_participating()
 	)
-	var dragon_score := _score_target(_dragon, _effective_dragon_weight(), dragon_participating)
+	var dragon_score := _score_candidate(_dragon, dragon_participating)
 
-	# Commitment bonus keeps current target sticky without freezing forever.
+	# Mild sticky bonus — enough to stop jitter, not enough to permanently tunnel.
 	if _combat_target == _player:
-		player_score *= 1.15
+		player_score *= 1.08
 	elif _combat_target == _dragon:
-		dragon_score *= 1.15
+		dragon_score *= 1.08
 
 	var preferred: Node2D = _player if player_score >= dragon_score else _dragon
 	if _combat_target == null:
-		_combat_target = preferred
+		_set_combat_target(preferred)
 		return
 
+	# Hold current target through min commitment unless the challenger is clearly better.
 	var current_score := player_score if _combat_target == _player else dragon_score
 	var other_score := dragon_score if _combat_target == _player else player_score
-	if other_score > current_score * target_switch_hysteresis:
-		_combat_target = preferred
+	var margin := target_switch_hysteresis
+	if _target_commitment_remaining > 0.0:
+		margin = maxf(margin, 1.35)
+	if other_score > current_score * margin:
+		_set_combat_target(preferred)
 
 
-func _effective_player_weight() -> float:
-	match _get_archetype():
-		VerticalSliceArchetypePresets.Archetype.SCOUT:
-			return player_target_weight * 1.15
-		VerticalSliceArchetypePresets.Archetype.BRUTE:
-			return player_target_weight * 0.92
-		_:
-			return player_target_weight
-
-
-func _effective_dragon_weight() -> float:
-	match _get_archetype():
-		VerticalSliceArchetypePresets.Archetype.SCOUT:
-			return dragon_target_weight * 0.72
-		VerticalSliceArchetypePresets.Archetype.BRUTE:
-			return dragon_target_weight * 1.2
-		_:
-			return dragon_target_weight
-
-
-func _score_target(target: Node2D, weight: float, participating: bool) -> float:
+func _score_candidate(target: Node2D, participating: bool) -> float:
 	if target == null or not _is_valid_combat_target(target):
 		return -INF
+
 	var distance := maxf(global_position.distance_to(target.global_position), 1.0)
-	var score := weight / distance
+	# Soft falloff: closer helps, but does not dominate like weight/distance.
+	var proximity := 1.0 / (1.0 + distance / maxf(distance_softness, 1.0))
+	var score := _base_weight_for(target) * (0.55 + 0.45 * proximity)
 
-	if participating:
-		score *= 2.0
+	var archetype := _get_archetype()
 
+	# Assist/protect participation — meaningful for Raider/Brute, weak for Scout.
+	if participating and target == _dragon:
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				score *= 1.12
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.35
+			_:
+				score *= 1.28
+
+	# Extreme close dragon obstruction only (Scout almost never peels on proximity alone).
 	if target == _dragon and distance <= dragon_close_bonus_distance:
-		score *= 1.65
-	elif distance <= attack_range * 1.6:
-		score *= 1.2
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				if distance <= 28.0:
+					score *= 1.15
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.28
+			_:
+				score *= 1.18
 
-	if target == _dragon and _player != null:
+	# Mild attack-range bonus for whoever is already in striking distance.
+	if distance <= attack_range * 1.35:
+		score *= 1.12
+
+	# Dragon clearly much closer than player — Raider/Brute only.
+	if target == _dragon and _player != null and archetype != VerticalSliceArchetypePresets.Archetype.SCOUT:
 		var player_dist := global_position.distance_to(_player.global_position)
-		if distance + 18.0 < player_dist:
-			score *= 1.35
+		if distance + 28.0 < player_dist:
+			score *= 1.2 if archetype == VerticalSliceArchetypePresets.Archetype.BRUTE else 1.12
 
-	if (
-		_get_archetype() == VerticalSliceArchetypePresets.Archetype.BRUTE
-		and _player != null
-		and target == _dragon
-	):
-		var player_dist2 := global_position.distance_to(_player.global_position)
-		if distance <= player_dist2:
-			score *= 1.25
-
+	# Recent direct dragon damage — all archetypes, Scout included.
 	if target == _dragon and _dragon_hit_recent_remaining > 0.0:
-		score *= 1.55
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				score *= 1.55
+			_:
+				score *= 1.4
 
-	if target == _dragon and _player != null and _is_dragon_blocking_path():
-		score *= 1.4
+	# Dragon blocking the path to the player — Brute/Raider care, Scout barely.
+	if target == _dragon and _is_actor_blocking_path(_dragon, _player):
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				score *= 1.08
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.32
+			_:
+				score *= 1.18
+
+	# Player intercepting a dragon focus / standing in the approach corridor.
+	if target == _player and _is_player_intercepting():
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				score *= 1.35
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				score *= 1.75
+			_:
+				score *= 1.45
+
+	# Immediate attackable player always gets a floor bump.
+	if target == _player and distance <= attack_range * 1.25:
+		score *= 1.2
 
 	return score
 
 
-func _is_dragon_blocking_path() -> bool:
-	if _dragon == null or _player == null:
+func _base_weight_for(target: Node2D) -> float:
+	var archetype := _get_archetype()
+	if target == _player:
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				return player_target_weight * 1.45
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				return player_target_weight * 1.05
+			_:
+				return player_target_weight * 1.15
+	if target == _dragon:
+		match archetype:
+			VerticalSliceArchetypePresets.Archetype.SCOUT:
+				return dragon_target_weight * 0.45
+			VerticalSliceArchetypePresets.Archetype.BRUTE:
+				return dragon_target_weight * 1.05
+			_:
+				return dragon_target_weight * 0.85
+	return 0.0
+
+
+## True when the player stands in the enemy→dragon approach corridor or is the nearer body in that lane.
+func _is_player_intercepting() -> bool:
+	if _player == null or _dragon == null:
 		return false
-	var to_player := _player.global_position - global_position
-	var player_dist := to_player.length()
-	if player_dist < 8.0:
+	if not _is_valid_combat_target(_player):
 		return false
-	var to_dragon := _dragon.global_position - global_position
-	var dragon_dist := to_dragon.length()
-	if dragon_dist < 8.0 or dragon_dist > player_dist:
+	# Always count as intercept if the player is in immediate melee reach.
+	var player_dist := global_position.distance_to(_player.global_position)
+	if player_dist <= attack_range * 1.25:
+		return true
+	if not _is_valid_combat_target(_dragon):
 		return false
-	var alignment := to_player.normalized().dot(to_dragon.normalized())
-	return alignment > 0.72
+	return _is_actor_blocking_path(_player, _dragon)
+
+
+func _is_actor_blocking_path(blocker: Node2D, behind: Node2D) -> bool:
+	if blocker == null or behind == null:
+		return false
+	var to_behind := behind.global_position - global_position
+	var behind_dist := to_behind.length()
+	if behind_dist < 10.0:
+		return false
+	var to_blocker := blocker.global_position - global_position
+	var blocker_dist := to_blocker.length()
+	if blocker_dist < 6.0:
+		return true
+	# Blocker must be closer than the destination and aligned with the approach.
+	if blocker_dist > behind_dist - 4.0:
+		return false
+	var alignment := to_behind.normalized().dot(to_blocker.normalized())
+	if alignment < 0.78:
+		return false
+	# Lateral distance from the approach ray must be small.
+	var lateral := absf(to_blocker.x * to_behind.y - to_blocker.y * to_behind.x) / behind_dist
+	return lateral <= 28.0
 
 
 func _resolve_player_body_overlap() -> void:
@@ -1024,7 +1163,7 @@ func _apply_weapon_style_for_archetype(archetype: VerticalSliceArchetypePresets.
 	_ensure_weapon_visual()
 	if _weapon_blade == null or _weapon_pivot == null:
 		return
-	_weapon_style = EnemyWeaponVisualStyle.style_for_archetype(archetype)
+	_weapon_style = EnemyWeaponStyle.style_for_archetype(int(archetype))
 	_weapon_blade.polygon = _weapon_style.get("blade_polygon", PackedVector2Array())
 	_weapon_blade.color = _weapon_style.get("blade_color", Color.WHITE)
 	_weapon_blade.scale = _weapon_style.get("blade_scale", Vector2.ONE)

@@ -1,13 +1,13 @@
-class_name EnemyWeaponVisualStyle
 extends RefCounted
 ## Placeholder procedural weapons for Scout / Raider / Brute. Presentation only.
+## Takes archetype as int (0=Scout, 1=Raider, 2=Brute) to avoid script resolve cycles.
 
 
-static func style_for_archetype(archetype: VerticalSliceArchetypePresets.Archetype) -> Dictionary:
+static func style_for_archetype(archetype: int) -> Dictionary:
 	match archetype:
-		VerticalSliceArchetypePresets.Archetype.SCOUT:
+		0: # Scout
 			return _dagger()
-		VerticalSliceArchetypePresets.Archetype.BRUTE:
+		2: # Brute
 			return _warhammer()
 		_:
 			return _sword()
