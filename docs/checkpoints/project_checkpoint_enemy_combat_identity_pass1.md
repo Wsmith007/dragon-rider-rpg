@@ -4,7 +4,7 @@
 **Playtest:** LaunchMenu · `TestWorld.tscn` · `VerticalSlice_Level_P1.tscn`  
 **Related:** [`project_checkpoint_dragon_survivability_pass1.md`](./project_checkpoint_dragon_survivability_pass1.md) · [`project_checkpoint_enemy_archetype_pass1.md`](./project_checkpoint_enemy_archetype_pass1.md)  
 **Documentation:** [`DOCUMENTATION_HIERARCHY.md`](../DOCUMENTATION_HIERARCHY.md) · [`PROJECT_STATE.md`](../PROJECT_STATE.md)  
-**Status:** **IMPLEMENTED — source validated; live playtest required**  
+**Status:** **COMPLETE — developer playtest validated (Combat Foundation)**  
 **Date:** 2026-07-25
 
 ---
@@ -94,13 +94,15 @@ Does **not** change player `SWING_VOLUME_TRIM_DB = -3.0`.
 
 ## Manual Validation Checklist
 
-- [ ] Scout dagger / Raider sword / Brute warhammer visible and face correctly
-- [ ] Weapons animate on windup/lunge; cleanup on death
-- [ ] Brute rush only at medium range; readable charge; dodgeable
-- [ ] Hit applies once; miss recovers; cooldown respected
-- [ ] Dragon can be rush target; KO dragon ignored
-- [ ] Scout/Raider unchanged; soft targeting + interact revive still work
-- [ ] No debugger errors
+- [x] Scout dagger / Raider sword / Brute warhammer visible and face correctly
+- [x] Weapons animate on windup/lunge; cleanup on death
+- [x] Brute rush only at medium range; readable charge; dodgeable
+- [x] Hit applies once; miss recovers; cooldown respected
+- [x] Dragon can be rush target; KO dragon ignored
+- [x] Scout/Raider unchanged; soft targeting + interact revive still work
+- [x] No debugger errors
+
+Follow-on target-selection / pressure-distribution retunes are recorded in [`project_checkpoint_dragon_survivability_pass1.md`](./project_checkpoint_dragon_survivability_pass1.md).
 
 ---
 
@@ -116,4 +118,4 @@ Does **not** change player `SWING_VOLUME_TRIM_DB = -3.0`.
 
 ## Final Status
 
-**IMPLEMENTED** for Pass 1 identity goals. Live developer playtest still required.
+**COMPLETE** for Pass 1 identity goals. Developer playtesting for the Combat Foundation chapter has concluded.

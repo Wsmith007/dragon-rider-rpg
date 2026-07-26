@@ -6,7 +6,7 @@
 |--|--|
 | **Engine** | Godot 4.6 · GDScript |
 | **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-25 (Enemy Combat Identity Pass 1) |
+| **Last updated** | 2026-07-25 (Combat Foundation wrap-up) |
 
 **New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
 
@@ -16,15 +16,17 @@
 
 ## Current Project Revision
 
-**Enemy Combat Identity Pass 1 — complete (baseline)**
+**Combat Foundation — complete**
+
+Developer playtesting for Combat Stakes, Dragon Survivability, Enemy Combat Identity, target selection, and pressure distribution has concluded.
 
 ---
 
 ## Current Development Phase
 
-**Vertical Slice — polish and validation**
+**Vertical Slice — post–Combat Foundation**
 
-Core systems are implemented. Work focuses on **Structured Vertical Slice Playtest** readiness after Enemy Combat Identity Pass 1.
+Core combat stakes, dragon partner survivability, and enemy combat identity are implemented and developer-validated. Next work is formal slice evaluation — not new gameplay pillars (exploration, loot, progression, bosses).
 
 Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md)
 
@@ -34,7 +36,7 @@ Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1
 
 **Structured Vertical Slice Playtest** — formal fifteen-minute arc evaluation
 
-**Previous:** Enemy Combat Identity Pass 1 — [`project_checkpoint_enemy_combat_identity_pass1.md`](./checkpoints/project_checkpoint_enemy_combat_identity_pass1.md)
+**Previous chapter:** Combat Foundation (Combat Stakes · Dragon Survivability · Enemy Combat Identity · target/pressure retunes)
 
 ---
 
@@ -105,7 +107,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 |------|--------|-----------|
 | Rider melee + weapon profiles | Live | Combat Feel v1 · Combat Stakes Pass 1 |
 | Combat Stance + Target Focus | Live | Combat Depth 1B |
-| Scout / Raider / Brute | Live on slice | Level doc · design §3 · Combat Stakes Pass 1 |
+| Scout / Raider / Brute | Live on slice | Level doc · design §3 · Combat Stakes Pass 1 · Enemy Combat Identity |
 | Dragon assist / protection | Live | Milestone 9A · `dragon_ai.md` |
 | Sync + Instability at resolve | Live | Milestone 9A |
 | Handcrafted slice level | Live | `level/vertical_slice_level_p1.md` |
@@ -118,6 +120,7 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 | **Combat stakes (readable HP + critical feedback)** | **Pass 1 complete** | Combat Stakes Pass 1 |
 | **Dragon survivability (HP / KO / interact revive)** | **Pass 1 refined** | Dragon Survivability Pass 1 |
 | **Enemy combat identity (weapons + Brute rush)** | **Pass 1 complete** | Enemy Combat Identity Pass 1 |
+| **Enemy target selection / pressure distribution** | **Live (retuned)** | Dragon Survivability checkpoint |
 | Dev UI hidden (player build) | **Pass 1 complete** | `developer_tools_enabled` / DeveloperInput |
 | Bond Strength progression | Deferred | Milestone 9A |
 | Death/retry, save | Deferred | Design §8 |
@@ -126,7 +129,9 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 
 ## Recently completed
 
-Dragon Survivability Pass 1 · Combat Stakes Pass 1 · Combat Audio Pass 1 · Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
+**Combat Foundation chapter:** Enemy Combat Identity Pass 1 · Dragon Survivability Pass 1 (refined) · Combat Stakes Pass 1 · Combat Audio Pass 1
+
+Earlier: Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
 
 Dates: see individual checkpoint headers.
 

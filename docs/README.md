@@ -60,6 +60,7 @@ docs/
 | Audio system | [`checkpoints/project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
 | Slice level layout | [`level/vertical_slice_level_p1.md`](./level/vertical_slice_level_p1.md) |
 | Combat pass journal | [`notes/combat_feel_notes.md`](./notes/combat_feel_notes.md) |
+| Playtest observations | [`notes/playtest_observation_log.md`](./notes/playtest_observation_log.md) |
 
 ---
 

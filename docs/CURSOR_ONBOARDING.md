@@ -25,6 +25,7 @@
 | Dev shell / F10 / viewport | `checkpoints/project_checkpoint_developer_experience_pass1.md` |
 | Audio | `checkpoints/project_checkpoint_audio_feedback_pass1.md`, `audio/audio_placeholder_assets.md` |
 | Slice level / encounters | `level/vertical_slice_level_p1.md` |
+| Informal playtest | `notes/playtest_observation_log.md` |
 
 ### Supporting context (as needed)
 
@@ -220,19 +221,18 @@ Begin next milestone in a fresh Cursor chat (recommended for large passes)
 Authoritative sequence lives in [`PROJECT_STATE.md`](./PROJECT_STATE.md) → **Next Planned Milestones**. Do not invent beyond:
 
 ```
-Documentation Cleanup Pass 1     ← complete
+Audio Feedback Pass 1A           ← complete
         ↓
-Documentation Organization Pass 1 ← complete
+Informal Playtest                ← complete
         ↓
-Audio Feedback Pass 1A           ← next
+Dragon Personality Pass 1        ← complete
         ↓
-Informal Playtest
+Player Animation Pass 1          ← complete
         ↓
-Dragon Personality Pass 1
+Combat Foundation chapter        ← complete
+  (Combat Audio · Combat Stakes · Dragon Survivability · Enemy Combat Identity)
         ↓
-Player Animation Pass 1
-        ↓
-Structured Vertical Slice Playtest
+Structured Vertical Slice Playtest ← next
         ↓
 Documentation Cleanup Pass 2     (future)
 ```

@@ -507,12 +507,13 @@ Major gaps before the slice is **player-complete**. Ordered by [**Section 12 imp
 | **2** | Scout / Raider / Brute prototypes | **Complete** — playtest validation pending |
 | **2** | Mixed-encounter tuning | **Complete** on slice — playtest validation pending |
 | **3** | Event audio (placeholders) | **Complete** — Audio Feedback Pass 1 |
-| **3** | Audio playtest validation | **Audio Feedback Pass 1A** — checklist pending |
+| **3** | Audio playtest validation | **Complete** — Audio Feedback Pass 1A |
+| **3** | Informal playtest / observation log | **Complete** — [`playtest_observation_log.md`](../notes/playtest_observation_log.md) |
 | **3** | Player-facing relationship feedback | **Complete** — Polish Pass 1A |
 | **3** | Animation polish (minimal) | **Complete** — Player Animation Pass 1 |
 | **3** | Starting weapon (formal) | Move from debug hotkeys |
-| **3** | Dev UI hidden for player builds | **Complete** - developer_tools_enabled / DeveloperInput |
-| **3** | Dragon personality communication | **Complete** - behavioral body language; ambient bubbles rejected |
+| **3** | Dev UI hidden for player builds | **Complete** — `developer_tools_enabled` / DeveloperInput |
+| **3** | Dragon personality communication | **Complete** — behavioral body language; ambient bubbles rejected |
 | **Later** | Death / retry flow | Game over → retry segment |
 | **Later** | Basic save at slice end | Optional |
 | **Later** | Final audio assets | Replace catalog placeholders |
@@ -580,15 +581,18 @@ Exact layout is implementation — beats are design requirements.
            ↓
 8b. Documentation Organization — Pass 1  ← COMPLETE
            ↓
-9. Audio Feedback — Pass 1A               ← NEXT (playtest validation)
+9. Audio Feedback — Pass 1A               ← COMPLETE
            ↓
-10. Informal Playtest
+10. Informal Playtest                       ← COMPLETE
            ↓
 11. Dragon Personality — Pass 1             ← COMPLETE
            ↓
 12. Player Animation — Pass 1               ← COMPLETE
            ↓
-13. Structured Vertical Slice Playtest
+12b. Combat Foundation chapter              ← COMPLETE
+     (Combat Audio · Combat Stakes · Dragon Survivability · Enemy Combat Identity)
+           ↓
+13. Structured Vertical Slice Playtest      ← NEXT
            ↓
 14. Documentation Cleanup — Pass 2        ← future
 ```
@@ -711,11 +715,15 @@ Detail: [`project_checkpoint_vertical_slice_polish_1A.md`](../checkpoints/projec
 
 Detail: [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md) · [`audio_placeholder_assets.md`](../audio/audio_placeholder_assets.md)
 
-**Pass 1A (next validation):** Playtest checklist in audio checkpoint — see [`PROJECT_STATE.md`](../PROJECT_STATE.md).
+**Pass 1A:** Playtest validation complete — see [`project_checkpoint_audio_feedback_pass1.md`](../checkpoints/project_checkpoint_audio_feedback_pass1.md).
 
-**Dragon Personality Pass 1 (complete - behavioral):** Ambient thought bubbles rejected; personality communicated through stance, facing, proximity, and action. Player-initiated dialogue deferred - [project_checkpoint_dragon_personality_pass1.md](../checkpoints/project_checkpoint_dragon_personality_pass1.md).
+**Dragon Personality Pass 1 (complete — behavioral):** Ambient thought bubbles rejected; personality communicated through stance, facing, proximity, and action. Player-initiated dialogue deferred — [`project_checkpoint_dragon_personality_pass1.md`](../checkpoints/project_checkpoint_dragon_personality_pass1.md).
 
 **Player Animation Pass 1 (complete):** Procedural idle/walk/attack presentation + per-weapon silhouettes — [`project_checkpoint_player_animation_pass1.md`](../checkpoints/project_checkpoint_player_animation_pass1.md).
+
+**Combat Foundation (complete):** Combat Stakes · Dragon Survivability · Enemy Combat Identity · target/pressure retunes — developer playtesting concluded. See checkpoints under [`PROJECT_STATE.md`](../PROJECT_STATE.md).
+
+**Structured Vertical Slice Playtest (next):** Formal fifteen-minute arc evaluation.
 
 ### Vertical Slice UI Cleanup Pass 1 (implemented)
 
