@@ -8,7 +8,7 @@ signal enemy_died(enemy: Node)
 
 
 enum State { IDLE, CHASE, ENGAGE, DISENGAGE, RECOVER }
-enum AttackPhase { NONE, WINDUP, LUNGE }
+enum AttackPhase { NONE, WINDUP, LUNGE, RUSH_WINDUP, RUSH }
 
 
 @export var max_health: float = 40.0
@@ -46,6 +46,19 @@ enum AttackPhase { NONE, WINDUP, LUNGE }
 @export var post_attack_recovery: float = 0.0
 @export var post_attack_cooldown_bonus: float = 0.0
 
+## Brute charged rush (Combat Identity Pass 1).
+@export var rush_min_distance: float = 88.0
+@export var rush_max_distance: float = 195.0
+@export var rush_windup_duration: float = 0.78
+@export var rush_speed: float = 340.0
+@export var rush_max_duration: float = 0.48
+@export var rush_cooldown: float = 5.5
+@export var rush_damage_multiplier: float = 1.15
+@export var rush_knockback: float = 58.0
+@export var rush_stagger: float = 0.78
+@export var rush_recovery: float = 0.9
+@export var rush_turn_rate: float = 1.1
+
 ## Pass 1B — wind-up progress (0–1) after which the current swing cannot be cancelled.
 @export var attack_commit_ratio: float = 0.45
 ## Pass 1B — multiplier applied to incoming hit stagger (Scout > 1, Brute < 1).
@@ -61,6 +74,7 @@ var _combat_target: Node2D
 var _retarget_remaining: float = 0.0
 var _dragon_hit_recent_remaining: float = 0.0
 var _attack_cooldown_remaining: float = 0.0
+var _rush_cooldown_remaining: float = 0.0
 var _stagger_remaining: float = 0.0
 var _disengage_remaining: float = 0.0
 var _recover_remaining: float = 0.0
@@ -71,7 +85,12 @@ var _attack_lunge_dir: Vector2 = Vector2.RIGHT
 var _attack_lunge_traveled: float = 0.0
 var _attack_resolved: bool = false
 var _base_visual_color: Color = Color.WHITE
+var _base_visual_scale: Vector2 = Vector2.ONE
 var is_dead: bool = false
+var _weapon_pivot: Node2D
+var _weapon_blade: Polygon2D
+var _weapon_style: Dictionary = {}
+var _weapon_rest_angle: float = 0.0
 
 # Scout probe — short bursts while searching for openings.
 var _scout_probe_burst_remaining: float = 0.0
@@ -92,9 +111,20 @@ func _ready() -> void:
 	_health.current_health = max_health
 	_health.died.connect(_on_died)
 	_base_visual_color = _visual.color
+	_base_visual_scale = _visual.scale
 	_find_player()
 	_find_dragon()
 	_combat_target = _player
+	_ensure_weapon_visual()
+	_apply_weapon_style_for_archetype(_get_archetype())
+
+
+func apply_weapon_visual_for_archetype(archetype: VerticalSliceArchetypePresets.Archetype) -> void:
+	_ensure_weapon_visual()
+	_apply_weapon_style_for_archetype(archetype)
+	if _visual != null:
+		_base_visual_scale = _visual.scale
+		_base_visual_color = _visual.color
 
 
 func _physics_process(delta: float) -> void:
@@ -107,6 +137,7 @@ func _physics_process(delta: float) -> void:
 	_knockback_immunity_remaining = maxf(_knockback_immunity_remaining - delta, 0.0)
 	_retarget_remaining = maxf(_retarget_remaining - delta, 0.0)
 	_dragon_hit_recent_remaining = maxf(_dragon_hit_recent_remaining - delta, 0.0)
+	_rush_cooldown_remaining = maxf(_rush_cooldown_remaining - delta, 0.0)
 
 	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
 		if _attack_phase == AttackPhase.NONE and _state != State.DISENGAGE:
@@ -221,8 +252,11 @@ func _is_attack_committed() -> bool:
 		return false
 	if _get_archetype() == VerticalSliceArchetypePresets.Archetype.SCOUT:
 		return false
-	if _attack_phase == AttackPhase.LUNGE:
+	if _attack_phase == AttackPhase.LUNGE or _attack_phase == AttackPhase.RUSH:
 		return true
+	if _attack_phase == AttackPhase.RUSH_WINDUP:
+		var rush_progress := 1.0 - (_attack_phase_remaining / maxf(rush_windup_duration, 0.001))
+		return rush_progress >= RUSH_COMMIT_RATIO
 	if _attack_phase == AttackPhase.WINDUP:
 		var progress := 1.0 - (_attack_phase_remaining / maxf(engage_windup, 0.001))
 		return progress >= attack_commit_ratio
@@ -482,6 +516,7 @@ func _process_attack_phase(delta: float) -> void:
 			var windup_ratio := 1.0 - (_attack_phase_remaining / maxf(engage_windup, 0.001))
 			var flash := 1.0 + sin(windup_ratio * PI * 4.0) * 0.18
 			_visual.modulate = Color(flash, flash * 0.85, flash * 0.75, 1.0)
+			_update_weapon_attack_pose(windup_ratio, false)
 			if _attack_phase_remaining <= 0.0:
 				_begin_attack_lunge()
 		AttackPhase.LUNGE:
@@ -500,8 +535,117 @@ func _process_attack_phase(delta: float) -> void:
 			velocity = _attack_lunge_dir * (step / maxf(delta, 0.0001))
 			move_and_slide()
 			_visual.modulate = Color(1.25, 0.55, 0.45, 1.0)
+			_update_weapon_attack_pose(1.0, true)
 			if _attack_phase_remaining <= 0.0 or _attack_lunge_traveled >= attack_lunge_distance:
 				_resolve_attack_hit()
+		AttackPhase.RUSH_WINDUP:
+			_process_rush_windup(delta)
+		AttackPhase.RUSH:
+			_process_rush_move(delta)
+
+
+func _process_rush_windup(_delta: float) -> void:
+	velocity = Vector2.ZERO
+	_smoothed_velocity = Vector2.ZERO
+	move_and_slide()
+	var ratio := 1.0 - (_attack_phase_remaining / maxf(rush_windup_duration, 0.001))
+	# Crouch / telegraph: darken + slight scale pulse + weapon pull-back.
+	var crouch := 1.0 - ratio * 0.08
+	_visual.scale = _base_visual_scale * Vector2(crouch, crouch + ratio * 0.06)
+	_visual.modulate = Color(0.55 + ratio * 0.2, 0.12, 0.08, 1.0)
+	_update_weapon_rush_pose(ratio)
+	if _attack_phase_remaining <= 0.0:
+		_begin_rush_move()
+
+
+func _process_rush_move(delta: float) -> void:
+	# Limited turn correction toward focus during rush.
+	var desired := _direction_to_focus()
+	if desired.length_squared() > 0.01:
+		_attack_lunge_dir = _attack_lunge_dir.lerp(desired, clampf(rush_turn_rate * delta, 0.0, 1.0)).normalized()
+
+	var move := _attack_lunge_dir * rush_speed * delta
+	var collision := move_and_collide(move)
+	_attack_lunge_traveled += move.length()
+	velocity = _attack_lunge_dir * rush_speed
+	_visual.modulate = Color(1.35, 0.4, 0.25, 1.0)
+	_visual.scale = _base_visual_scale
+	_update_weapon_attack_pose(1.0, true)
+
+	if collision != null:
+		_resolve_rush_hit()
+		return
+
+	var overlap_reach := _get_body_radius() + _get_focus_body_radius() + 6.0
+	if _get_focus_combat_distance() <= overlap_reach:
+		_resolve_rush_hit()
+		return
+
+	if _attack_phase_remaining <= 0.0 or _attack_lunge_traveled >= rush_speed * rush_max_duration:
+		_finish_rush(false)
+
+
+func _begin_rush_windup() -> void:
+	if _get_focus_target() == null:
+		return
+	_attack_phase = AttackPhase.RUSH_WINDUP
+	_attack_phase_remaining = rush_windup_duration
+	_attack_resolved = false
+	_attack_lunge_traveled = 0.0
+	_attack_lunge_dir = _direction_to_focus()
+	if _attack_lunge_dir.length_squared() < 0.01:
+		_attack_lunge_dir = Vector2.RIGHT
+	var audio := get_node_or_null("/root/GameAudio")
+	if audio != null and audio.has_method("play"):
+		audio.play(GameAudioEvent.Event.BRUTE_HEAVY, global_position)
+
+
+func _begin_rush_move() -> void:
+	_attack_phase = AttackPhase.RUSH
+	_attack_phase_remaining = rush_max_duration
+	_attack_lunge_dir = _direction_to_focus()
+	var audio := get_node_or_null("/root/GameAudio")
+	if audio != null and audio.has_method("play"):
+		audio.play(GameAudioEvent.Event.PLAYER_SWING, global_position)
+
+
+func _resolve_rush_hit() -> void:
+	if _attack_resolved:
+		_finish_rush(true)
+		return
+	_attack_resolved = true
+
+	var focus := _get_focus_target()
+	var damage := attack_damage * rush_damage_multiplier
+	if focus != null and _get_focus_combat_distance() <= _get_body_radius() + _get_focus_body_radius() + 10.0:
+		if focus == _player and not _is_player_untargetable():
+			var player_health := _player.get_node_or_null("Health") as Health
+			if player_health != null and player_health.is_alive():
+				player_health.take_damage(damage)
+				if _player.has_method("apply_combat_hit_reaction"):
+					_player.apply_combat_hit_reaction(global_position, rush_knockback, rush_stagger)
+				attacked_player.emit()
+		elif focus == _dragon and _is_valid_combat_target(_dragon):
+			var survivability := _dragon.get_node_or_null("Survivability") as DragonSurvivability
+			if survivability != null:
+				survivability.receive_damage(damage)
+
+	_visual.modulate = Color(1.5, 0.3, 0.2, 1.0)
+	_finish_rush(true)
+
+
+func _finish_rush(did_hit: bool) -> void:
+	_attack_phase = AttackPhase.NONE
+	_attack_phase_remaining = 0.0
+	_rush_cooldown_remaining = rush_cooldown
+	_attack_cooldown_remaining = maxf(attack_cooldown, 0.35)
+	_smoothed_velocity = Vector2.ZERO
+	velocity = Vector2.ZERO
+	_visual.modulate = Color.WHITE
+	_visual.scale = _base_visual_scale
+	_reset_weapon_pose()
+	_recover_remaining = rush_recovery if did_hit else rush_recovery * 1.15
+	_set_state(State.RECOVER)
 
 
 func _begin_attack_windup() -> void:
@@ -557,6 +701,8 @@ func _finish_attack() -> void:
 	_smoothed_velocity = Vector2.ZERO
 	velocity = Vector2.ZERO
 	_visual.modulate = Color.WHITE
+	_visual.scale = _base_visual_scale
+	_reset_weapon_pose()
 
 	match _get_archetype():
 		VerticalSliceArchetypePresets.Archetype.SCOUT:
@@ -576,6 +722,8 @@ func _cancel_attack() -> void:
 	_attack_phase_remaining = 0.0
 	_attack_resolved = false
 	_visual.modulate = Color.WHITE
+	_visual.scale = _base_visual_scale
+	_reset_weapon_pose()
 
 
 func _update_state() -> void:
@@ -708,6 +856,26 @@ func _try_begin_attack() -> void:
 		return
 
 	var archetype := _get_archetype()
+	var focus_dist := _get_focus_combat_distance()
+
+	# Brute charged rush at medium range before falling back to melee.
+	if (
+		archetype == VerticalSliceArchetypePresets.Archetype.BRUTE
+		and _rush_cooldown_remaining <= 0.0
+		and focus_dist >= rush_min_distance
+		and focus_dist <= rush_max_distance
+	):
+		var focus := _get_focus_target()
+		if focus == _player:
+			var player_health := _player.get_node_or_null("Health") as Health
+			if player_health == null or not player_health.is_alive():
+				return
+		elif focus == _dragon and not _is_valid_combat_target(_dragon):
+			return
+		if EnemyCombatSteering.has_clear_attack_line(self, _get_focus_position()):
+			_begin_rush_windup()
+			return
+
 	var cooldown_ok := _attack_cooldown_remaining <= 0.0
 	var range_limit := attack_range
 
@@ -724,21 +892,21 @@ func _try_begin_attack() -> void:
 
 	var focus_pos := _get_focus_position()
 	if global_position.distance_to(focus_pos) > range_limit:
-		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+		var overlap_reach := _get_body_radius() + _get_focus_body_radius() + 4.0
 		if _get_focus_combat_distance() > overlap_reach:
 			return
 
 	if not EnemyCombatSteering.has_clear_attack_line(self, focus_pos):
-		var overlap_reach := _get_body_radius() + PLAYER_BODY_RADIUS + 4.0
+		var overlap_reach := _get_body_radius() + _get_focus_body_radius() + 4.0
 		if _get_focus_combat_distance() > overlap_reach:
 			return
 
-	var focus := _get_focus_target()
-	if focus == _player:
-		var player_health := _player.get_node_or_null("Health") as Health
-		if player_health == null or not player_health.is_alive():
+	var focus_target := _get_focus_target()
+	if focus_target == _player:
+		var player_health2 := _player.get_node_or_null("Health") as Health
+		if player_health2 == null or not player_health2.is_alive():
 			return
-	elif focus == _dragon and not _is_valid_combat_target(_dragon):
+	elif focus_target == _dragon and not _is_valid_combat_target(_dragon):
 		return
 
 	_begin_attack_windup()
@@ -834,6 +1002,58 @@ func _get_archetype() -> VerticalSliceArchetypePresets.Archetype:
 	if has_meta("slice_archetype"):
 		return get_meta("slice_archetype") as VerticalSliceArchetypePresets.Archetype
 	return VerticalSliceArchetypePresets.Archetype.RAIDER
+
+
+func _ensure_weapon_visual() -> void:
+	if _visual == null:
+		return
+	_weapon_pivot = _visual.get_node_or_null("WeaponPivot") as Node2D
+	if _weapon_pivot == null:
+		_weapon_pivot = Node2D.new()
+		_weapon_pivot.name = "WeaponPivot"
+		_visual.add_child(_weapon_pivot)
+	_weapon_blade = _weapon_pivot.get_node_or_null("WeaponBlade") as Polygon2D
+	if _weapon_blade == null:
+		_weapon_blade = Polygon2D.new()
+		_weapon_blade.name = "WeaponBlade"
+		_weapon_blade.z_index = 1
+		_weapon_pivot.add_child(_weapon_blade)
+
+
+func _apply_weapon_style_for_archetype(archetype: VerticalSliceArchetypePresets.Archetype) -> void:
+	_ensure_weapon_visual()
+	if _weapon_blade == null or _weapon_pivot == null:
+		return
+	_weapon_style = EnemyWeaponVisualStyle.style_for_archetype(archetype)
+	_weapon_blade.polygon = _weapon_style.get("blade_polygon", PackedVector2Array())
+	_weapon_blade.color = _weapon_style.get("blade_color", Color.WHITE)
+	_weapon_blade.scale = _weapon_style.get("blade_scale", Vector2.ONE)
+	_reset_weapon_pose()
+
+
+func _reset_weapon_pose() -> void:
+	if _weapon_pivot == null or _weapon_style.is_empty():
+		return
+	_weapon_pivot.position = _weapon_style.get("rest_offset", Vector2(12.0, 0.0))
+	_weapon_rest_angle = deg_to_rad(float(_weapon_style.get("rest_angle_deg", 0.0)))
+	_weapon_pivot.rotation = _weapon_rest_angle
+
+
+func _update_weapon_attack_pose(ratio: float, striking: bool) -> void:
+	if _weapon_pivot == null or _weapon_style.is_empty():
+		return
+	var windup_deg := float(_weapon_style.get("windup_angle_deg", -40.0))
+	var strike_deg := float(_weapon_style.get("strike_angle_deg", 45.0))
+	var angle_deg := strike_deg if striking else lerpf(float(_weapon_style.get("rest_angle_deg", 0.0)), windup_deg, ratio)
+	_weapon_pivot.rotation = deg_to_rad(angle_deg)
+
+
+func _update_weapon_rush_pose(ratio: float) -> void:
+	if _weapon_pivot == null or _weapon_style.is_empty():
+		return
+	var pull := float(_weapon_style.get("rush_windup_angle_deg", _weapon_style.get("windup_angle_deg", -55.0)))
+	_weapon_pivot.rotation = deg_to_rad(lerpf(float(_weapon_style.get("rest_angle_deg", 0.0)), pull, ratio))
+	_weapon_pivot.position = _weapon_style.get("rest_offset", Vector2(12.0, 0.0)) + Vector2(-4.0 * ratio, 2.0 * ratio)
 
 
 func get_weapon_identity() -> WeaponIdentity.Id:

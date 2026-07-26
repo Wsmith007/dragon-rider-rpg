@@ -143,6 +143,8 @@ static func apply_to_enemy(enemy: CharacterBody2D, archetype: Archetype) -> void
 		_apply_silhouette(visual, archetype)
 
 	_apply_accent(enemy, visual, preset, archetype)
+	if enemy.has_method("apply_weapon_visual_for_archetype"):
+		enemy.apply_weapon_visual_for_archetype(archetype)
 
 	var collision := enemy.get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if collision != null and collision.shape is CircleShape2D and preset.has("body_collision_radius"):

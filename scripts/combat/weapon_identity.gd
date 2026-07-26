@@ -25,6 +25,7 @@ static func from_archetype(archetype: VerticalSliceArchetypePresets.Archetype) -
 		VerticalSliceArchetypePresets.Archetype.SCOUT:
 			return Id.DAGGER
 		VerticalSliceArchetypePresets.Archetype.BRUTE:
+			# Warhammer placeholder maps to POLEARM identity for audio reuse.
 			return Id.POLEARM
 		_:
 			return Id.SWORD

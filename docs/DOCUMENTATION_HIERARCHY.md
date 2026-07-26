@@ -47,7 +47,8 @@ Checkpoints describe **live or recently shipped behavior**. Each checkpoint owns
 |----------|------|
 | [`project_checkpoint_combat_feel_v1.md`](./checkpoints/project_checkpoint_combat_feel_v1.md) | Rider melee Passes 1–7, default enemy prototype combat, telegraphs, aim forgiveness |
 | [`project_checkpoint_combat_stakes_pass1.md`](./checkpoints/project_checkpoint_combat_stakes_pass1.md) | Readable HP/damage baseline, critical health feedback |
-| [`project_checkpoint_dragon_survivability_pass1.md`](./checkpoints/project_checkpoint_dragon_survivability_pass1.md) | Dragon HP, soft enemy targeting, knockout, Sync/Instability, revival, HUD |
+| [`project_checkpoint_dragon_survivability_pass1.md`](./checkpoints/project_checkpoint_dragon_survivability_pass1.md) | Dragon HP, soft targeting, interact revive, Sync/Instability, HUD |
+| [`project_checkpoint_enemy_combat_identity_pass1.md`](./checkpoints/project_checkpoint_enemy_combat_identity_pass1.md) | Scout/Raider/Brute weapons + Brute charged rush |
 
 **Scope note:** Written at Combat Feel v1 baseline. For **post-v1** systems, also read Combat Depth, Combat Stakes, and Audio checkpoints below.
 
@@ -175,6 +176,7 @@ When two documents disagree, apply in order:
 | How does melee work? | `checkpoints/project_checkpoint_combat_feel_v1.md` + `checkpoints/project_checkpoint_combat_depth_1B.md` |
 | Health stakes / critical feedback | `checkpoints/project_checkpoint_combat_stakes_pass1.md` |
 | Dragon knockout / revival | `checkpoints/project_checkpoint_dragon_survivability_pass1.md` |
+| Enemy weapons / Brute rush | `checkpoints/project_checkpoint_enemy_combat_identity_pass1.md` |
 | How do Sync/Instability change? | `checkpoints/project_checkpoint_milestone9A.md` |
 | How does audio fire? | `checkpoints/project_checkpoint_audio_feedback_pass1.md` |
 | Weapon swing / impact / audio profiles | `checkpoints/project_checkpoint_combat_audio_pass1.md` |
