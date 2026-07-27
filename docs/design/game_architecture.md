@@ -1,6 +1,7 @@
 # Game Overview
 
-**Vertical Slice design:** [`./vertical_slice_design_v1.md`](./vertical_slice_design_v1.md) — scope, experience goals, slice pillars, and **enemy archetypes** (Scout / Raider / Brute). This document describes the **full game** vision; the slice intentionally defers politics, races, magic, and large-world systems until the core rider–dragon loop is proven.
+**Vertical Slice design:** [`./vertical_slice_design_v1.md`](./vertical_slice_design_v1.md) -- scope, experience goals, slice pillars, and **enemy archetypes** (Scout / Raider / Brute).  
+**World / exploration constitution:** [`./world_design_framework.md`](./world_design_framework.md) -- persistent world, Area hierarchy, place-making standards. This document describes the **full game** vision; the slice intentionally defers politics, races, magic, and large-world systems until the core rider-dragon loop is proven. Exploration structure below is a high-level sketch -- **defer to the World Design Framework** for authoritative terminology and philosophy.
 
 The game is a 2D action adventure RPG focused on dragon rider relationships, political tension between races, and semi-independent dragon companions.
 
@@ -143,9 +144,9 @@ The bond system connects major gameplay systems through three **active** stats:
 
 | Stat | Role |
 |------|------|
-| `bond_strength` | Relationship **resilience** — protection, commands, communication (active); sync floors, instability resistance/recovery (planned) |
-| `sync` | Coordination — assist frequency (prototype) |
-| `instability` | Strain — assist reliability (prototype) |
+| `bond_strength` | Relationship **resilience** -- protection, commands, communication (active); sync floors, instability resistance/recovery (planned) |
+| `sync` | Coordination -- assist frequency (prototype) |
+| `instability` | Strain -- assist reliability (prototype) |
 
 ### Bond Strength = Resilience (Not Power)
 
@@ -153,14 +154,14 @@ High Bond Strength does not prevent conflict. It makes the relationship harder t
 
 ### Bond Tiers & Progress
 
-Relationship stages use four unequal tiers (0–30, 31–60, 61–85, 86–100). **Bond Tier Progress** (0.0–1.0) tracks advancement within a tier so Bond 100 is more resilient than Bond 86 even though both are Tier 4.
+Relationship stages use four unequal tiers (0-30, 31-60, 61-85, 86-100). **Bond Tier Progress** (0.0-1.0) tracks advancement within a tier so Bond 100 is more resilient than Bond 86 even though both are Tier 4.
 
-Central helpers live in `scripts/bond/bond_resilience.gd`. Protection, command delay, communication, and planned resilience effects all read tier boundaries from this module — do not duplicate thresholds.
+Central helpers live in `scripts/bond/bond_resilience.gd`. Protection, command delay, communication, and planned resilience effects all read tier boundaries from this module -- do not duplicate thresholds.
 
 Additional persisted fields (compatibility / future):
-- `trust_state` — **deprecated**, not used in gameplay
-- `communication_stage` — design only
-- `resonance_style` — design only
+- `trust_state` -- **deprecated**, not used in gameplay
+- `communication_stage` -- design only
+- `resonance_style` -- design only
 
 These variables influence (design target):
 - combat behavior
@@ -195,7 +196,9 @@ Combat pacing prioritizes:
 
 # Exploration Structure
 
-Exploration occurs through interconnected world regions.
+**Authoritative reference:** [`./world_design_framework.md`](./world_design_framework.md) (World -> Region -> Area -> POI -> Structure -> Room).
+
+Exploration occurs through interconnected world **Regions** composed of meaningful **Areas**.
 
 Exploration gameplay includes:
 - environmental traversal
@@ -205,7 +208,7 @@ Exploration gameplay includes:
 - hidden magical locations
 - optional encounters
 
-Some areas may react differently depending on:
+Some Areas may react differently depending on:
 - race
 - dragon status
 - faction alignment
@@ -229,7 +232,7 @@ Races are intended to feel fundamentally different rather than cosmetic.
 
 # Communication Philosophy
 
-Dragon communication evolves through `communication_stage` (`early` → `mid` → `deep`).
+Dragon communication evolves through `communication_stage` (`early` -> `mid` -> `deep`).
 
 At `early`, communication relies on:
 - emotions
@@ -282,16 +285,16 @@ Progression is intended to feel relational rather than purely statistical.
 
 | Axis | Role |
 |------|------|
-| **Character Level** | Personal power — rider combat capability |
+| **Character Level** | Personal power -- rider combat capability |
 | **Relationship Stats** | Rider/dragon effectiveness together (Bond, Sync, Instability) |
 | **World Regions** | Difficulty and content progression |
 | **Enemy Variants** | Strength and behavior progression within regions |
 
-Enemy scaling should come primarily from **region difficulty**, **enemy type**, and **enemy variants** — not full player-level scaling. Returning to earlier areas should demonstrate growth. **Relationship progression should remain as important as character progression.**
+Enemy scaling should come primarily from **region difficulty**, **enemy type**, and **enemy variants** -- not full player-level scaling. Returning to earlier areas should demonstrate growth. **Relationship progression should remain as important as character progression.**
 
 See `./relationship_event_framework.md` (Long-Term Progression Philosophy).
 
-## Relationship system (Milestone 9A — live)
+## Relationship system (Milestone 9A -- live)
 
 `RelationshipSystem` (autoload) tracks local encounters and applies **Sync** (Cooperation Rating) and **Instability** (Encounter Quality) at resolve. **Bond Strength is protected** from per-encounter rolls; future Bond changes are session/pattern-based.
 

@@ -40,6 +40,12 @@ func announce_area(area_name: String) -> void:
 	_show_area_announce()
 
 
+func show_toast(text: String) -> void:
+	if text.is_empty():
+		return
+	_show_relationship_toast(text)
+
+
 func bind(game_root: Node2D) -> void:
 	if game_root == null:
 		return

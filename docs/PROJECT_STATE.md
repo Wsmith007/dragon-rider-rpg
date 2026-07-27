@@ -1,14 +1,14 @@
 # Project State
 
-**Active development homepage** — understand the project in ~2 minutes, then follow links for detail.
+**Active development homepage** -- understand the project in ~2 minutes, then follow links for detail.
 
 | | |
 |--|--|
-| **Engine** | Godot 4.6 · GDScript |
-| **Playtest** | `TestWorld.tscn` (systems sandbox) · `VerticalSlice_Level_P1.tscn` (F6 — slice) |
-| **Last updated** | 2026-07-25 (Combat Foundation wrap-up) |
+| **Engine** | Godot 4.6 - GDScript |
+| **Playtest** | `TestWorld.tscn` (systems) - `VerticalSlice_Level_P1.tscn` (combat sandbox) - `Cinderwatch_Ridge.tscn` (exploration graybox -- **not approved**) |
+| **Last updated** | 2026-07-26 (Cinderwatch Graybox Pass 1 validation checkpoint) |
 
-**New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) → this file → [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) → domain checkpoint for your task.
+**New developer path:** [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) -> this file -> [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) -> domain checkpoint for your task.
 
 **Docs index:** [`README.md`](./README.md)
 
@@ -16,35 +16,39 @@
 
 ## Current Project Revision
 
-**Combat Foundation — complete**
+**Exploration & Dungeon Pass 1 -- Cinderwatch Graybox Pass 1 (validation failed)**
 
-Developer playtesting for Combat Stakes, Dragon Survivability, Enemy Combat Identity, target selection, and pressure distribution has concluded.
+Exploration planning documents are complete. Cinderwatch Ridge exists as a **playable first graybox** launched separately from the combat sandbox. **First experiential validation failed.** The Area is not approved and is not ready for Graybox Pass 2.
 
 ---
 
 ## Current Development Phase
 
-**Vertical Slice — post–Combat Foundation**
+**Vertical Slice -- Exploration era (correction pending)**
 
-Core combat stakes, dragon partner survivability, and enemy combat identity are implemented and developer-validated. Next work is formal slice evaluation — not new gameplay pillars (exploration, loot, progression, bosses).
+Combat Foundation remains a stable foundation. Exploration constitutions (World Design Framework, Exploration Framework, Representative Area Brief) remain authoritative. Cinderwatch implementation must be corrected before further expansion.
 
-Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md)
+> **Combat should serve exploration rather than exploration serving combat.**
+
+Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) - World: [`world_design_framework.md`](./design/world_design_framework.md) - Production: [`exploration_framework.md`](./design/exploration_framework.md) - Brief: [`representative_area_brief.md`](./design/representative_area_brief.md)
 
 ---
 
 ## Current Milestone
 
-**Structured Vertical Slice Playtest** — formal fifteen-minute arc evaluation
+**Cinderwatch Ridge Graybox Pass 1 -- Implemented, validation failed, correction required**
 
-**Previous chapter:** Combat Foundation (Combat Stakes · Dragon Survivability · Enemy Combat Identity · target/pressure retunes)
+**Checkpoint:** [`project_checkpoint_cinderwatch_graybox_pass1.md`](./checkpoints/project_checkpoint_cinderwatch_graybox_pass1.md)
+
+**Previous:** Exploration Framework Pass 1 - Representative Area Brief - World Design Framework Rev 1A - Combat Foundation
 
 ---
 
 ## Current Focus
 
-1. Run the **Structured Vertical Slice Playtest**
-2. Capture findings in [`playtest_observation_log.md`](./notes/playtest_observation_log.md)
-3. Address only **low-risk readability** fixes that fit the documented roadmap
+1. Do **not** treat Cinderwatch as complete or Pass-2-ready  
+2. Next work is **Graybox Identity and Access Correction** (see below)  
+3. Keep `VerticalSlice_Level_P1` as combat regression sandbox  
 
 ---
 
@@ -52,52 +56,50 @@ Design intent: [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1
 
 | Order | Milestone | What it is |
 |-------|-----------|------------|
-| 1 | **Structured Vertical Slice Playtest** | Formal fifteen-minute arc evaluation (**current**) |
-| 2 | **Documentation Cleanup Pass 2** | Resolve moderate/major doc conflicts (future) |
+| 1-3 | World Design / Brief / Exploration Framework | **complete** (docs) |
+| 4 | **Cinderwatch Graybox Pass 1** | Implemented -- **validation failed** |
+| 5 | **Cinderwatch Ridge -- Graybox Identity and Access Correction Pass** | Fix identity, span access, routes (**next**) |
+| 6 | **Graybox Pass 2** | Only after correction revalidation |
+| 7 | **Documentation Cleanup Pass 2** | Future |
 
-Do not invent milestones beyond this sequence without updating this file and [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) §12.
+Do **not** skip to Graybox Pass 2.
 
-### Next milestone candidates (after playtest — not started)
+### Confirmed problems (first review)
 
-Planning notes only; pick based on playtest findings:
+- First impression too similar to combat sandbox  
+- Weak ridge / elevation identity  
+- Broken Signal Span feels like a hard wall / level boundary  
+- Alternate routes unclear or inaccessible  
+- Large portions of intended experience unreachable or unclear  
+- Core Memory not fairly judgeable until access/identity are fixed  
 
-- **Hit feedback polish** — hit-stop, recoil, stagger, particles, camera shake
-- **Combat interaction depth** — enemy reactions, block/shield, material hit responses
-- **Weapon expansion** — new identities with audio profiles (staff, axe, club, hammer, spear)
-- **Enemy combat readability** — windups, attack tells, weapon-specific behavior
+Detail: validation checkpoint.
 
 ---
 
 ## What this project is
 
-Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat. The vertical slice is a ~15-minute handcrafted level teaching Scout / Raider / Brute roles, directional melee, dragon assist/protection, and live Sync/Instability from encounter resolve.
+Emberbound (Dragon Rider RPG) proves whether **rider-dragon partnership** is fun -- first in combat, then as a pair moving through a **persistent world of meaningful places**.
 
-`TestWorld` = systems sandbox. `VerticalSlice_Level_P1` = player-facing teaching arc.
+`TestWorld` = systems sandbox. `VerticalSlice_Level_P1` = combat teaching sandbox. `Cinderwatch_Ridge` = exploration graybox under correction (not approved).
 
 ---
 
 ## Where to read next
 
-| I need to know… | Read |
+| I need to know... | Read |
 |-----------------|------|
 | Docs folder map | [`README.md`](./README.md) |
 | Authority rules when docs disagree | [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) |
 | Agent / Cursor workflow | [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) |
 | Slice scope, pacing, defer list | [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) |
-| **Playtest observations** | [`playtest_observation_log.md`](./notes/playtest_observation_log.md) |
-| Melee combat (Passes 1–7) | [`project_checkpoint_combat_feel_v1.md`](./checkpoints/project_checkpoint_combat_feel_v1.md) |
-| Combat Stance + Target Focus | [`project_checkpoint_combat_depth_1B.md`](./checkpoints/project_checkpoint_combat_depth_1B.md) |
-| Sync / Instability / encounters | [`project_checkpoint_milestone9A.md`](./checkpoints/project_checkpoint_milestone9A.md) |
-| Player HUD without F10 | [`project_checkpoint_vertical_slice_polish_1A.md`](./checkpoints/project_checkpoint_vertical_slice_polish_1A.md) |
-| Dragon communication + behavioral personality | [`project_checkpoint_dragon_personality_pass1.md`](./checkpoints/project_checkpoint_dragon_personality_pass1.md) |
-| Player combat animation | [`project_checkpoint_player_animation_pass1.md`](./checkpoints/project_checkpoint_player_animation_pass1.md) |
-| **Combat stakes (HP / critical feedback)** | [`project_checkpoint_combat_stakes_pass1.md`](./checkpoints/project_checkpoint_combat_stakes_pass1.md) |
-| **Dragon survivability** | [`project_checkpoint_dragon_survivability_pass1.md`](./checkpoints/project_checkpoint_dragon_survivability_pass1.md) |
-| **Enemy combat identity (weapons + Brute rush)** | [`project_checkpoint_enemy_combat_identity_pass1.md`](./checkpoints/project_checkpoint_enemy_combat_identity_pass1.md) |
-| **Combat audio (swing + impact)** | [`project_checkpoint_combat_audio_pass1.md`](./checkpoints/project_checkpoint_combat_audio_pass1.md) |
-| Event audio architecture | [`project_checkpoint_audio_feedback_pass1.md`](./checkpoints/project_checkpoint_audio_feedback_pass1.md) |
-| F10 sidebar + viewport | [`project_checkpoint_developer_experience_pass1.md`](./checkpoints/project_checkpoint_developer_experience_pass1.md) |
-| Graybox level + encounters | [`vertical_slice_level_p1.md`](./level/vertical_slice_level_p1.md) |
+| World / Areas / exploration philosophy | [`world_design_framework.md`](./design/world_design_framework.md) |
+| How to author / review Areas | [`exploration_framework.md`](./design/exploration_framework.md) |
+| Representative Area fiction (Cinderwatch) | [`representative_area_brief.md`](./design/representative_area_brief.md) |
+| **Cinderwatch validation checkpoint** | [`project_checkpoint_cinderwatch_graybox_pass1.md`](./checkpoints/project_checkpoint_cinderwatch_graybox_pass1.md) |
+| Cinderwatch implementation notes | [`cinderwatch_ridge.md`](./level/cinderwatch_ridge.md) |
+| Combat sandbox graybox | [`vertical_slice_level_p1.md`](./level/vertical_slice_level_p1.md) |
+| Playtest observations | [`playtest_observation_log.md`](./notes/playtest_observation_log.md) |
 
 ---
 
@@ -105,67 +107,41 @@ Dragon Rider RPG proves whether **rider–dragon partnership** is fun in combat.
 
 | Area | Status | Detail in |
 |------|--------|-----------|
-| Rider melee + weapon profiles | Live | Combat Feel v1 · Combat Stakes Pass 1 |
-| Combat Stance + Target Focus | Live | Combat Depth 1B |
-| Scout / Raider / Brute | Live on slice | Level doc · design §3 · Combat Stakes Pass 1 · Enemy Combat Identity |
-| Dragon assist / protection | Live | Milestone 9A · `dragon_ai.md` |
-| Sync + Instability at resolve | Live | Milestone 9A |
-| Handcrafted slice level | Live | `level/vertical_slice_level_p1.md` |
-| Player feedback (no F10) | Live | Polish 1A |
-| F10 dev shell | Live (gated) | Developer Experience |
-| Placeholder event audio | **Pass 1A complete** | Audio Feedback Pass 1 |
-| **Combat audio (swing + impact)** | **Pass 1 complete** | Combat Audio Pass 1 |
-| Player combat animation | **Pass 1 complete** | Player Animation Pass 1 |
-| Dragon personality (behavioral) | **Pass 1 complete** — ambient bubbles rejected | Dragon Personality Pass 1 |
-| **Combat stakes (readable HP + critical feedback)** | **Pass 1 complete** | Combat Stakes Pass 1 |
-| **Dragon survivability (HP / KO / interact revive)** | **Pass 1 refined** | Dragon Survivability Pass 1 |
-| **Enemy combat identity (weapons + Brute rush)** | **Pass 1 complete** | Enemy Combat Identity Pass 1 |
-| **Enemy target selection / pressure distribution** | **Live (retuned)** | Dragon Survivability checkpoint |
-| Dev UI hidden (player build) | **Pass 1 complete** | `developer_tools_enabled` / DeveloperInput |
-| Bond Strength progression | Deferred | Milestone 9A |
-| Death/retry, save | Deferred | Design §8 |
+| Combat Foundation (stakes, survivability, identity, audio) | Live / complete chapter | Combat checkpoints |
+| World Design Framework | Rev 1A constitution | `design/world_design_framework.md` |
+| Exploration Framework | Pass 1 complete (docs) | `design/exploration_framework.md` |
+| Representative Area brief | Complete (docs) -- **not fulfilled by graybox** | `design/representative_area_brief.md` |
+| **Cinderwatch Ridge graybox** | **Implemented -- validation failed** | checkpoint + `level/cinderwatch_ridge.md` |
+| Vertical Slice P1 | Live combat sandbox | `level/vertical_slice_level_p1.md` |
 
 ---
 
 ## Recently completed
 
-**Combat Foundation chapter:** Enemy Combat Identity Pass 1 · Dragon Survivability Pass 1 (refined) · Combat Stakes Pass 1 · Combat Audio Pass 1
+**Cinderwatch Graybox Pass 1 checkpoint** -- implemented; validation failed; correction required  
 
-Earlier: Player Animation Pass 1 · Dragon Personality Pass 1 · Informal Playtest · Audio Feedback Pass 1A · Documentation Organization Pass 1 · Documentation Cleanup Pass 1 · Audio Feedback Pass 1 · Developer Experience Pass 1 · UI Cleanup Pass 1 · Polish Pass 1A · Combat Depth Phase A+B · Enemy Archetype Pass 1+1B · Level Pass 2 (P2.2) · Milestone 9A
+**Exploration planning triad** -- World Design Framework, Representative Area Brief, Exploration Framework  
 
-Dates: see individual checkpoint headers.
+**Combat Foundation chapter** -- Enemy Combat Identity, Dragon Survivability, Combat Stakes, Combat Audio  
 
 ---
 
 ## Known limitations
 
-Pointers only — full detail in checkpoints and design §8.
-
-- No inventory, dodge, magic, flight, or races in slice scope
-- Bond Strength preview only at encounter resolve
-- Swing whooshes and melee impacts are **placeholder/processed** assets until Audio Pass 2
-- Sword impact has one unique variation until `hit_sword_02` is replaced with a distinct recording
-- Placeholder polygon rider art
-- Player builds require `gameplay/developer_tools_enabled = false` in export — not yet a preset template
-- Structured fifteen-minute playtest not yet run as formal gate
-
----
-
-## Documentation debt (Pass 2)
-
-Tracked conflicts — not blockers for onboarding. See [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) §5.
-
-| Severity | Examples |
-|----------|----------|
-| **Moderate** | Combat Feel v1 §3 still centers default enemy narrative; `combat_feel_notes` journal size |
-| **Major** | Combat Feel v2 or addendum; Outcome Rating rename vs live labels; full-game docs vs slice defer list |
+- Cinderwatch does not yet satisfy Representative Area Brief identity/access goals  
+- Broken Signal Span access/identity problems block fair Core Memory evaluation  
+- No inventory, dodge, magic, flight, or races in slice scope  
+- Structured fifteen-minute combat playtest still a future gate on P1  
 
 ---
 
 ## Related
 
-- [`README.md`](./README.md) — docs folder map  
-- [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md) — standard agent workflow  
-- [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md) — which document wins  
-- [`vertical_slice_design_v1.md`](./design/vertical_slice_design_v1.md) — design constitution  
-- [`playtest_observation_log.md`](./notes/playtest_observation_log.md) — playtest journal
+- [`README.md`](./README.md)  
+- [`CURSOR_ONBOARDING.md`](./CURSOR_ONBOARDING.md)  
+- [`DOCUMENTATION_HIERARCHY.md`](./DOCUMENTATION_HIERARCHY.md)  
+- [`project_checkpoint_cinderwatch_graybox_pass1.md`](./checkpoints/project_checkpoint_cinderwatch_graybox_pass1.md)  
+- [`world_design_framework.md`](./design/world_design_framework.md)  
+- [`exploration_framework.md`](./design/exploration_framework.md)  
+- [`representative_area_brief.md`](./design/representative_area_brief.md)  
+- [`cinderwatch_ridge.md`](./level/cinderwatch_ridge.md)  

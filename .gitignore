@@ -14,3 +14,6 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+# Local playable exports (keep out of version control)
+Playable_Builds/

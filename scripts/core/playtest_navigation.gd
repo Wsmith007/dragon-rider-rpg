@@ -6,6 +6,7 @@ class_name PlaytestNavigation
 const LAUNCH_MENU_SCENE := "res://scenes/LaunchMenu.tscn"
 const TEST_WORLD_SCENE := "res://scenes/world/TestWorld.tscn"
 const VERTICAL_SLICE_SCENE := "res://scenes/world/VerticalSlice_Level_P1.tscn"
+const CINDERWATCH_RIDGE_SCENE := "res://scenes/world/Cinderwatch_Ridge.tscn"
 
 const RETURN_MENU_ACTION := &"playtest_return_menu"
 

@@ -63,4 +63,10 @@ text = "Test World"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 48)
 layout_mode = 2
-text = "Vertical Slice"
+text = "Vertical Slice (Combat Sandbox)"
+
+[node name="CinderwatchButton" type="Button" parent="Center/MenuPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 48)
+layout_mode = 2
+text = "Cinderwatch Ridge"
